@@ -1,0 +1,11 @@
+{
+	"id": "on-task",
+	"name": "On Task",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Task management plugin for Obsidian to help you stay organized and productive.",
+	"author": "On Task",
+	"authorUrl": "https://github.com/ontask/obsidian-sample-plugin",
+	"fundingUrl": "https://github.com/ontask/obsidian-sample-plugin",
+	"isDesktopOnly": false
+}
