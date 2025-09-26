@@ -495,3 +495,16 @@ If your plugin does not need CSS, delete this file.
 .is-mobile .ontask-top-task-item {
 	padding: 10px;
 }
+
+/* Status Bar Top Task Styles */
+.ontask-top-task-status {
+	font-weight: 500;
+	transition: opacity 0.2s ease;
+}
+
+.ontask-top-task-status:hover {
+	opacity: 1 !important;
+	background: var(--background-modifier-hover);
+	padding: 2px 6px;
+	border-radius: 3px;
+}

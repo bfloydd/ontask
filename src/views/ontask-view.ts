@@ -114,6 +114,11 @@ export class OnTaskView extends ItemView {
 		try {
 			this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted, this.onlyShowToday);
 			this.renderCheckboxes();
+			
+			// Update status bar with new top task
+			if (this.plugin && typeof (this.plugin as any).updateTopTaskStatusBar === 'function') {
+				await (this.plugin as any).updateTopTaskStatusBar();
+			}
 		} catch (error) {
 			console.error('Error loading checkboxes:', error);
 			this.showError('Failed to load checkboxes');

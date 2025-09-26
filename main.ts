@@ -16,6 +16,8 @@ export default class OnTask extends Plugin {
 	settings: OnTaskSettings;
 	streamsService: StreamsService;
 	checkboxFinder: CheckboxFinderService;
+	private topTaskStatusBarItem: HTMLElement;
+	private isTopTaskVisible: boolean = true;
 
 	async onload() {
 		await this.loadSettings();
@@ -41,6 +43,16 @@ export default class OnTask extends Plugin {
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
 		statusBarItemEl.setText('On Task Ready');
+
+		// Add top task status bar item
+		this.topTaskStatusBarItem = this.addStatusBarItem();
+		this.topTaskStatusBarItem.addClass('ontask-top-task-status');
+		this.topTaskStatusBarItem.style.cursor = 'pointer';
+		this.topTaskStatusBarItem.style.opacity = '0.7';
+		this.topTaskStatusBarItem.addEventListener('click', () => this.toggleTopTaskVisibility());
+		
+		// Initialize top task display
+		this.updateTopTaskStatusBar();
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
@@ -140,6 +152,16 @@ export default class OnTask extends Plugin {
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		
+		// Update top task status bar periodically
+		this.registerInterval(window.setInterval(() => {
+			this.updateTopTaskStatusBar();
+		}, 30 * 1000)); // Update every 30 seconds
+		
+		// Update status bar when files change
+		this.registerEvent(this.app.vault.on('modify', () => {
+			this.updateTopTaskStatusBar();
+		}));
 	}
 
 	onunload() {
@@ -276,6 +298,58 @@ export default class OnTask extends Plugin {
 				this.app.workspace.revealLeaf(leaf);
 			}
 		}
+	}
+
+	/**
+	 * Update the top task display in the status bar
+	 */
+	public async updateTopTaskStatusBar() {
+		try {
+			const checkboxes = await this.checkboxFinder.findAllCheckboxes(this.settings.hideCompletedTasks, this.settings.onlyShowToday);
+			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
+			
+			if (topTask) {
+				if (this.isTopTaskVisible) {
+					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
+					const displayText = remainingText || 'Top Task';
+					this.topTaskStatusBarItem.setText(`🔥 ${displayText}`);
+				} else {
+					this.topTaskStatusBarItem.setText('👁️');
+				}
+				this.topTaskStatusBarItem.style.display = 'block';
+			} else {
+				this.topTaskStatusBarItem.style.display = 'none';
+			}
+		} catch (error) {
+			console.error('Error updating top task status bar:', error);
+			this.topTaskStatusBarItem.style.display = 'none';
+		}
+	}
+
+	/**
+	 * Toggle top task visibility in status bar
+	 */
+	private toggleTopTaskVisibility() {
+		this.isTopTaskVisible = !this.isTopTaskVisible;
+		this.updateTopTaskStatusBar();
+	}
+
+	/**
+	 * Parse a checkbox line to extract text (helper method)
+	 */
+	private parseCheckboxLine(line: string): { remainingText: string } {
+		const trimmedLine = line.trim();
+		
+		// Look for checkbox pattern: - [ ] or - [x] or any other status
+		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]]*)\]\s*(.*)$/);
+		
+		if (checkboxMatch) {
+			const remainingText = checkboxMatch[2].trim();
+			return { remainingText };
+		}
+		
+		// Fallback if no match
+		return { remainingText: '' };
 	}
 }
 
