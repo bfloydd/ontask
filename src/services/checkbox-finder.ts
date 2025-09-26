@@ -22,12 +22,12 @@ export class CheckboxFinderService {
 	/**
 	 * Find all checkboxes in all streams
 	 */
-	public async findAllCheckboxes(): Promise<CheckboxItem[]> {
+	public async findAllCheckboxes(hideCompleted: boolean = false): Promise<CheckboxItem[]> {
 		const streams = this.streamsService.getAllStreams();
 		const allCheckboxes: CheckboxItem[] = [];
 
 		for (const stream of streams) {
-			const streamCheckboxes = await this.findCheckboxesInStream(stream);
+			const streamCheckboxes = await this.findCheckboxesInStream(stream, hideCompleted);
 			allCheckboxes.push(...streamCheckboxes);
 		}
 
@@ -37,7 +37,7 @@ export class CheckboxFinderService {
 	/**
 	 * Find checkboxes in a specific stream
 	 */
-	private async findCheckboxesInStream(stream: { name: string; path: string }): Promise<CheckboxItem[]> {
+	private async findCheckboxesInStream(stream: { name: string; path: string }, hideCompleted: boolean = false): Promise<CheckboxItem[]> {
 		const checkboxes: CheckboxItem[] = [];
 		
 		try {
@@ -50,12 +50,12 @@ export class CheckboxFinderService {
 				);
 				
 				for (const file of files) {
-					const fileCheckboxes = await this.findCheckboxesInFile(file, stream);
+					const fileCheckboxes = await this.findCheckboxesInFile(file, stream, hideCompleted);
 					checkboxes.push(...fileCheckboxes);
 				}
 			} else {
 				// If it's a single file
-				const fileCheckboxes = await this.findCheckboxesInFile(streamFolder, stream);
+				const fileCheckboxes = await this.findCheckboxesInFile(streamFolder, stream, hideCompleted);
 				checkboxes.push(...fileCheckboxes);
 			}
 		} catch (error) {
@@ -68,7 +68,7 @@ export class CheckboxFinderService {
 	/**
 	 * Find checkboxes in a specific file
 	 */
-	private async findCheckboxesInFile(file: TFile, stream: { name: string; path: string }): Promise<CheckboxItem[]> {
+	private async findCheckboxesInFile(file: TFile, stream: { name: string; path: string }, hideCompleted: boolean = false): Promise<CheckboxItem[]> {
 		const checkboxes: CheckboxItem[] = [];
 		
 		try {
@@ -80,6 +80,12 @@ export class CheckboxFinderService {
 				const checkboxMatch = this.findCheckboxInLine(line);
 				
 				if (checkboxMatch) {
+					// Check if this is a completed checkbox and if we should hide it
+					const isCompleted = this.isCheckboxCompleted(line);
+					if (hideCompleted && isCompleted) {
+						continue; // Skip completed checkboxes when hideCompleted is true
+					}
+					
 					checkboxes.push({
 						file: file,
 						lineNumber: i + 1, // 1-based line numbers
@@ -119,18 +125,39 @@ export class CheckboxFinderService {
 	}
 
 	/**
+	 * Check if a checkbox line is completed (checked)
+	 */
+	private isCheckboxCompleted(line: string): boolean {
+		const trimmedLine = line.trim();
+		
+		// Look for the pattern: - [x] or - [X] or - [checked]
+		const checkboxStart = trimmedLine.indexOf('- [');
+		if (checkboxStart === -1) return false;
+		
+		// Find the closing bracket
+		const closingBracket = trimmedLine.indexOf(']', checkboxStart);
+		if (closingBracket === -1) return false;
+		
+		// Extract the checkbox content
+		const checkboxContent = trimmedLine.substring(checkboxStart + 3, closingBracket).trim().toLowerCase();
+		
+		// Check if it's completed
+		return checkboxContent === 'x' || checkboxContent === 'checked';
+	}
+
+	/**
 	 * Get checkboxes by stream name
 	 */
-	public async getCheckboxesByStream(streamName: string): Promise<CheckboxItem[]> {
-		const allCheckboxes = await this.findAllCheckboxes();
+	public async getCheckboxesByStream(streamName: string, hideCompleted: boolean = false): Promise<CheckboxItem[]> {
+		const allCheckboxes = await this.findAllCheckboxes(hideCompleted);
 		return allCheckboxes.filter(checkbox => checkbox.streamName === streamName);
 	}
 
 	/**
 	 * Get checkboxes by file
 	 */
-	public async getCheckboxesByFile(filePath: string): Promise<CheckboxItem[]> {
-		const allCheckboxes = await this.findAllCheckboxes();
+	public async getCheckboxesByFile(filePath: string, hideCompleted: boolean = false): Promise<CheckboxItem[]> {
+		const allCheckboxes = await this.findAllCheckboxes(hideCompleted);
 		return allCheckboxes.filter(checkbox => checkbox.file.path === filePath);
 	}
 }

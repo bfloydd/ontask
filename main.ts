@@ -7,7 +7,8 @@ import { OnTaskView, ONTASK_VIEW_TYPE } from './src/views/ontask-view';
 // On Task Plugin - Task management for Obsidian
 
 const DEFAULT_SETTINGS: OnTaskSettings = {
-	mySetting: 'default'
+	mySetting: 'default',
+	hideCompletedTasks: false
 }
 
 export default class OnTask extends Plugin {
@@ -23,7 +24,7 @@ export default class OnTask extends Plugin {
 		this.checkboxFinder = new CheckboxFinderService(this.app, this.streamsService);
 
 		// Register the OnTaskView
-		this.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(leaf, this.checkboxFinder));
+		this.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(leaf, this.checkboxFinder, this.settings));
 
 		// Access Streams plugin data
 		this.initializeStreamsIntegration();
@@ -314,6 +315,16 @@ class OnTaskSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.mySetting)
 				.onChange(async (value) => {
 					this.plugin.settings.mySetting = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Hide completed tasks')
+			.setDesc('When enabled, completed checkboxes will not be displayed in the task view for better performance')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.hideCompletedTasks)
+				.onChange(async (value) => {
+					this.plugin.settings.hideCompletedTasks = value;
 					await this.plugin.saveSettings();
 				}));
 	}

@@ -24,7 +24,14 @@ If your plugin does not need CSS, delete this file.
 	color: var(--text-normal);
 }
 
-.ontask-refresh-btn {
+.ontask-buttons-container {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.ontask-refresh-btn,
+.ontask-hide-completed-btn {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border: none;
@@ -32,10 +39,17 @@ If your plugin does not need CSS, delete this file.
 	padding: 6px 12px;
 	cursor: pointer;
 	font-size: 12px;
+	transition: all 0.2s ease;
 }
 
-.ontask-refresh-btn:hover {
+.ontask-refresh-btn:hover,
+.ontask-hide-completed-btn:hover {
 	background: var(--interactive-accent-hover);
+}
+
+.ontask-refresh-btn:active,
+.ontask-hide-completed-btn:active {
+	transform: translateY(1px);
 }
 
 .ontask-loading {
@@ -206,6 +220,11 @@ If your plugin does not need CSS, delete this file.
 	flex-direction: column;
 	gap: 10px;
 	align-items: stretch;
+}
+
+.is-mobile .ontask-buttons-container {
+	justify-content: center;
+	flex-wrap: wrap;
 }
 
 .is-mobile .ontask-file-header h3 {

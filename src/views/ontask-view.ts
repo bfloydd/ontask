@@ -1,17 +1,22 @@
-import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice } from 'obsidian';
 import { CheckboxItem, CheckboxFinderService } from '../services/checkbox-finder';
+import { OnTaskSettings } from '../types';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
 export class OnTaskView extends ItemView {
 	private checkboxFinder: CheckboxFinderService;
+	private settings: OnTaskSettings;
 	private checkboxes: CheckboxItem[] = [];
 	private displayedCount: number = 100;
 	private currentPage: number = 0;
+	private hideCompleted: boolean = false;
 
-	constructor(leaf: WorkspaceLeaf, checkboxFinder: CheckboxFinderService) {
+	constructor(leaf: WorkspaceLeaf, checkboxFinder: CheckboxFinderService, settings: OnTaskSettings) {
 		super(leaf);
 		this.checkboxFinder = checkboxFinder;
+		this.settings = settings;
+		this.hideCompleted = settings.hideCompletedTasks;
 	}
 
 	getViewType(): string {
@@ -33,8 +38,18 @@ export class OnTaskView extends ItemView {
 		const header = this.contentEl.createEl('div', { cls: 'ontask-header' });
 		header.createEl('h2', { text: 'On Task - All Checkboxes' });
 		
+		// Add buttons container
+		const buttonsContainer = header.createEl('div', { cls: 'ontask-buttons-container' });
+		
+		// Add hide completed tasks button
+		const hideCompletedButton = buttonsContainer.createEl('button', { 
+			text: this.hideCompleted ? 'Show Completed' : 'Hide Completed',
+			cls: 'ontask-hide-completed-btn'
+		});
+		hideCompletedButton.addEventListener('click', () => this.toggleHideCompleted());
+		
 		// Add refresh button
-		const refreshButton = header.createEl('button', { 
+		const refreshButton = buttonsContainer.createEl('button', { 
 			text: 'Refresh',
 			cls: 'ontask-refresh-btn'
 		});
@@ -59,7 +74,7 @@ export class OnTaskView extends ItemView {
 
 	private async loadCheckboxes() {
 		try {
-			this.checkboxes = await this.checkboxFinder.findAllCheckboxes();
+			this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted);
 			this.renderCheckboxes();
 		} catch (error) {
 			console.error('Error loading checkboxes:', error);
@@ -78,6 +93,20 @@ export class OnTaskView extends ItemView {
 		
 		await this.loadCheckboxes();
 		loadingEl.remove();
+	}
+
+	private async toggleHideCompleted() {
+		this.hideCompleted = !this.hideCompleted;
+		this.settings.hideCompletedTasks = this.hideCompleted;
+		
+		// Update button text
+		const hideCompletedButton = this.contentEl.querySelector('.ontask-hide-completed-btn') as HTMLButtonElement;
+		if (hideCompletedButton) {
+			hideCompletedButton.textContent = this.hideCompleted ? 'Show Completed' : 'Hide Completed';
+		}
+		
+		// Reload checkboxes with new setting
+		await this.refreshCheckboxes();
 	}
 
 	private renderCheckboxes() {

@@ -2,6 +2,7 @@
 
 export interface OnTaskSettings {
 	mySetting: string;
+	hideCompletedTasks: boolean;
 }
 
 export interface Stream {
