@@ -9,7 +9,8 @@ import { OnTaskView, ONTASK_VIEW_TYPE } from './src/views/ontask-view';
 const DEFAULT_SETTINGS: OnTaskSettings = {
 	mySetting: 'default',
 	hideCompletedTasks: false,
-	onlyShowToday: false
+	onlyShowToday: false,
+	topTaskColor: 'neutral'
 }
 
 export default class OnTask extends Plugin {
@@ -50,6 +51,7 @@ export default class OnTask extends Plugin {
 		this.topTaskStatusBarItem.style.cursor = 'pointer';
 		this.topTaskStatusBarItem.style.opacity = '0.7';
 		this.topTaskStatusBarItem.addEventListener('click', () => this.toggleTopTaskVisibility());
+		this.topTaskStatusBarItem.addEventListener('contextmenu', (e) => this.showColorMenu(e));
 		
 		// Initialize top task display
 		this.updateTopTaskStatusBar();
@@ -316,6 +318,9 @@ export default class OnTask extends Plugin {
 				} else {
 					this.topTaskStatusBarItem.setText('👁️');
 				}
+				
+				// Apply color styling
+				this.applyTopTaskColor();
 				this.topTaskStatusBarItem.style.display = 'block';
 			} else {
 				this.topTaskStatusBarItem.style.display = 'none';
@@ -327,11 +332,153 @@ export default class OnTask extends Plugin {
 	}
 
 	/**
+	 * Apply the selected color to the top task status bar
+	 */
+	private applyTopTaskColor() {
+		const colorMap: { [key: string]: { bg: string; text: string } } = {
+			neutral: { bg: 'transparent', text: 'var(--text-normal)' },
+			red: { bg: '#ff6b6b', text: 'white' },
+			orange: { bg: '#ffa726', text: 'white' },
+			yellow: { bg: '#ffeb3b', text: 'black' },
+			green: { bg: '#66bb6a', text: 'white' },
+			blue: { bg: '#42a5f5', text: 'white' },
+			purple: { bg: '#ab47bc', text: 'white' },
+			pink: { bg: '#ec407a', text: 'white' },
+			teal: { bg: '#26a69a', text: 'white' },
+			indigo: { bg: '#5c6bc0', text: 'white' }
+		};
+
+		const color = colorMap[this.settings.topTaskColor] || colorMap.neutral;
+		this.topTaskStatusBarItem.style.backgroundColor = color.bg;
+		this.topTaskStatusBarItem.style.color = color.text;
+		this.topTaskStatusBarItem.style.padding = '2px 8px';
+		this.topTaskStatusBarItem.style.borderRadius = '4px';
+		this.topTaskStatusBarItem.style.border = color.bg === 'transparent' ? '1px solid var(--background-modifier-border)' : 'none';
+	}
+
+	/**
 	 * Toggle top task visibility in status bar
 	 */
 	private toggleTopTaskVisibility() {
 		this.isTopTaskVisible = !this.isTopTaskVisible;
 		this.updateTopTaskStatusBar();
+	}
+
+	/**
+	 * Show color selection menu for top task
+	 */
+	private showColorMenu(event: MouseEvent) {
+		event.preventDefault();
+		
+		// Remove any existing color menu
+		const existingMenu = document.querySelector('.ontask-color-menu');
+		if (existingMenu) {
+			existingMenu.remove();
+		}
+
+		// Create color menu
+		const menu = document.createElement('div');
+		menu.className = 'ontask-color-menu';
+		menu.style.position = 'fixed';
+		menu.style.left = `${event.clientX - 200}px`; // Position to the left
+		menu.style.top = `${event.clientY - 300}px`; // Position above
+		menu.style.zIndex = '1000';
+		menu.style.background = 'var(--background-primary)';
+		menu.style.border = '1px solid var(--background-modifier-border)';
+		menu.style.borderRadius = '6px';
+		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+		menu.style.padding = '8px';
+		menu.style.minWidth = '200px';
+		menu.style.maxHeight = '300px';
+		menu.style.overflowY = 'auto';
+
+		// Color options
+		const colors = [
+			{ name: 'Neutral', value: 'neutral', bg: 'transparent', text: 'var(--text-normal)' },
+			{ name: 'Red', value: 'red', bg: '#ff6b6b', text: 'white' },
+			{ name: 'Orange', value: 'orange', bg: '#ffa726', text: 'white' },
+			{ name: 'Yellow', value: 'yellow', bg: '#ffeb3b', text: 'black' },
+			{ name: 'Green', value: 'green', bg: '#66bb6a', text: 'white' },
+			{ name: 'Blue', value: 'blue', bg: '#42a5f5', text: 'white' },
+			{ name: 'Purple', value: 'purple', bg: '#ab47bc', text: 'white' },
+			{ name: 'Pink', value: 'pink', bg: '#ec407a', text: 'white' },
+			{ name: 'Teal', value: 'teal', bg: '#26a69a', text: 'white' },
+			{ name: 'Indigo', value: 'indigo', bg: '#5c6bc0', text: 'white' }
+		];
+
+		// Add menu items
+		for (const color of colors) {
+			const menuItem = document.createElement('div');
+			menuItem.className = 'ontask-color-menu-item';
+			menuItem.style.padding = '8px 12px';
+			menuItem.style.cursor = 'pointer';
+			menuItem.style.display = 'flex';
+			menuItem.style.alignItems = 'center';
+			menuItem.style.gap = '8px';
+			menuItem.style.fontSize = '14px';
+			menuItem.style.color = 'var(--text-normal)';
+			menuItem.style.borderRadius = '4px';
+
+			// Add color preview
+			const colorPreview = document.createElement('div');
+			colorPreview.style.width = '16px';
+			colorPreview.style.height = '16px';
+			colorPreview.style.borderRadius = '50%';
+			colorPreview.style.border = '2px solid var(--background-modifier-border)';
+			colorPreview.style.backgroundColor = color.bg;
+			colorPreview.style.flexShrink = '0';
+
+			// Add color name
+			const colorName = document.createElement('span');
+			colorName.textContent = color.name;
+
+			// Add checkmark if this is the current color
+			if (this.settings.topTaskColor === color.value) {
+				const checkmark = document.createElement('span');
+				checkmark.textContent = '✓';
+				checkmark.style.color = 'var(--text-accent)';
+				checkmark.style.fontWeight = 'bold';
+				checkmark.style.marginLeft = 'auto';
+				menuItem.appendChild(checkmark);
+			}
+
+			menuItem.appendChild(colorPreview);
+			menuItem.appendChild(colorName);
+
+			// Add hover effect
+			menuItem.addEventListener('mouseenter', () => {
+				menuItem.style.background = 'var(--background-modifier-hover)';
+			});
+			menuItem.addEventListener('mouseleave', () => {
+				menuItem.style.background = 'transparent';
+			});
+
+			// Add click handler
+			menuItem.addEventListener('click', async () => {
+				this.settings.topTaskColor = color.value;
+				await this.saveSettings();
+				this.updateTopTaskStatusBar();
+				menu.remove();
+			});
+
+			menu.appendChild(menuItem);
+		}
+
+		// Add to document
+		document.body.appendChild(menu);
+
+		// Close menu when clicking outside
+		const closeMenu = (e: MouseEvent) => {
+			if (!menu.contains(e.target as Node)) {
+				menu.remove();
+				document.removeEventListener('click', closeMenu);
+			}
+		};
+
+		// Use setTimeout to avoid immediate closure
+		setTimeout(() => {
+			document.addEventListener('click', closeMenu);
+		}, 0);
 	}
 
 	/**
