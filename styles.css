@@ -357,6 +357,99 @@ If your plugin does not need CSS, delete this file.
 	transform: translateY(1px);
 }
 
+/* Top Task Section Styles */
+.ontask-top-task-section {
+	margin-bottom: 25px;
+	border: 2px solid var(--text-error);
+	border-radius: 8px;
+	background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+	box-shadow: 0 4px 12px rgba(255, 0, 0, 0.1);
+	overflow: hidden;
+	position: relative;
+}
+
+.ontask-top-task-section::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: linear-gradient(90deg, var(--text-error), var(--text-warning), var(--text-accent));
+}
+
+.ontask-top-task-header {
+	background: var(--text-error);
+	color: var(--text-on-accent);
+	padding: 12px 15px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.ontask-top-task-header h2 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ontask-top-task-source {
+	font-size: 11px;
+	opacity: 0.9;
+	font-style: italic;
+}
+
+.ontask-top-task-content {
+	padding: 15px;
+}
+
+.ontask-top-task-item {
+	border: none !important;
+	background: var(--background-primary);
+	border-radius: 6px;
+	padding: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ontask-top-task-item .ontask-checkbox-label {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	padding: 8px 12px;
+	border-radius: 4px;
+}
+
+.ontask-top-task-item .ontask-checkbox-display {
+	font-size: 14px;
+	font-weight: bold;
+	min-width: 24px;
+	padding: 4px 6px;
+	border: 2px solid var(--text-error);
+	background: var(--text-error);
+	color: var(--text-on-accent);
+}
+
+.ontask-top-task-item .ontask-checkbox-text {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-normal);
+}
+
+.ontask-top-task-item .ontask-link-btn {
+	opacity: 1;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	font-weight: 500;
+}
+
+.ontask-top-task-item .ontask-link-btn:hover {
+	background: var(--interactive-accent-hover);
+	opacity: 1;
+}
+
 /* Mobile responsive */
 .is-mobile .ontask-header {
 	flex-direction: column;
@@ -386,4 +479,19 @@ If your plugin does not need CSS, delete this file.
 .is-mobile .ontask-load-more-btn {
 	padding: 10px 20px;
 	font-size: 16px;
+}
+
+.is-mobile .ontask-top-task-header {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	padding: 10px 12px;
+}
+
+.is-mobile .ontask-top-task-content {
+	padding: 12px;
+}
+
+.is-mobile .ontask-top-task-item {
+	padding: 10px;
 }

@@ -180,16 +180,25 @@ export class OnTaskView extends ItemView {
 			return;
 		}
 
-		// Calculate pagination
+		// Separate top task from regular tasks
+		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
+		const regularTasks = this.checkboxes.filter(checkbox => !checkbox.isTopTask);
+
+		// Render Top Task section if it exists
+		if (topTask) {
+			this.renderTopTaskSection(contentEl as HTMLElement, topTask);
+		}
+
+		// Calculate pagination for regular tasks
 		const startIndex = this.currentPage * this.displayedCount;
-		const endIndex = Math.min(startIndex + this.displayedCount, this.checkboxes.length);
-		const displayedCheckboxes = this.checkboxes.slice(startIndex, endIndex);
-		const hasMore = endIndex < this.checkboxes.length;
+		const endIndex = Math.min(startIndex + this.displayedCount, regularTasks.length);
+		const displayedCheckboxes = regularTasks.slice(startIndex, endIndex);
+		const hasMore = endIndex < regularTasks.length;
 
 		// Add pagination info
 		const paginationInfo = contentEl.createEl('div', { cls: 'ontask-pagination-info' });
 		paginationInfo.createEl('span', { 
-			text: `Showing ${startIndex + 1}-${endIndex} of ${this.checkboxes.length} checkboxes`,
+			text: `Showing ${startIndex + 1}-${endIndex} of ${regularTasks.length} regular tasks${topTask ? ' (plus 1 top task)' : ''}`,
 			cls: 'ontask-pagination-text'
 		});
 
@@ -220,60 +229,7 @@ export class OnTaskView extends ItemView {
 			const checkboxesList = fileSection.createEl('div', { cls: 'ontask-checkboxes-list' });
 			
 			for (const checkbox of fileCheckboxes) {
-				const checkboxEl = checkboxesList.createEl('div', { cls: 'ontask-checkbox-item' });
-				
-				// Create a container for the checkbox, text, and button
-				const checkboxContainer = checkboxEl.createEl('div', { cls: 'ontask-checkbox-container' });
-				
-				// Extract checkbox state and text
-				const { isChecked, checkboxText, remainingText } = this.parseCheckboxLine(checkbox.lineContent);
-				
-				// Create a custom checkbox display that shows the actual status
-				const checkboxDisplay = checkboxContainer.createEl('div', {
-					cls: 'ontask-checkbox-display'
-				});
-				
-				// Extract the current status symbol
-				const { statusSymbol } = this.parseCheckboxLine(checkbox.lineContent);
-				const cleanSymbol = statusSymbol.trim();
-				checkboxDisplay.textContent = cleanSymbol;
-				checkboxDisplay.setAttribute('data-status', cleanSymbol);
-				checkboxDisplay.setAttribute('data-checkbox-id', `${checkbox.file.path}-${checkbox.lineNumber}`);
-				
-				// Create label for the checkbox
-				const checkboxLabel = checkboxContainer.createEl('label', { cls: 'ontask-checkbox-label' });
-				checkboxLabel.appendChild(checkboxDisplay);
-				
-				// Add click handler to toggle between empty and x
-				checkboxDisplay.addEventListener('click', async () => {
-					const currentSymbol = statusSymbol.trim();
-					const newSymbol = currentSymbol === 'x' ? ' ' : 'x';
-					await this.updateTaskStatus(checkbox, newSymbol);
-				});
-				
-				// Add the remaining text (without the checkbox mark)
-				if (remainingText) {
-					checkboxLabel.createEl('span', { 
-						text: remainingText,
-						cls: 'ontask-checkbox-text'
-					});
-				}
-				
-				// Add Go to button inline with the task
-				const linkButton = checkboxLabel.createEl('button', {
-					text: 'Go to',
-					cls: 'ontask-link-btn'
-				});
-				linkButton.addEventListener('click', (e) => {
-					e.stopPropagation(); // Prevent checkbox toggle when clicking button
-					this.goToFile(checkbox);
-				});
-
-				// Add right-click context menu for task status
-				checkboxEl.addEventListener('contextmenu', (e) => {
-					e.preventDefault();
-					this.showTaskStatusMenu(e, checkbox);
-				});
+				this.renderCheckboxItem(checkboxesList, checkbox);
 			}
 		}
 
@@ -588,5 +544,86 @@ export class OnTaskView extends ItemView {
 			element.textContent = newSymbol.trim();
 			element.setAttribute('data-status', newSymbol.trim());
 		}
+	}
+
+	/**
+	 * Render the top task section prominently at the top
+	 */
+	private renderTopTaskSection(contentEl: HTMLElement, topTask: CheckboxItem) {
+		const topTaskSection = contentEl.createEl('div', { cls: 'ontask-top-task-section' });
+		
+		// Top task header
+		const topTaskHeader = topTaskSection.createEl('div', { cls: 'ontask-top-task-header' });
+		topTaskHeader.createEl('h2', { text: '🔥 Top Task' });
+		topTaskHeader.createEl('span', { 
+			text: `From: ${topTask.file.name}`,
+			cls: 'ontask-top-task-source'
+		});
+		
+		// Top task content
+		const topTaskContent = topTaskSection.createEl('div', { cls: 'ontask-top-task-content' });
+		this.renderCheckboxItem(topTaskContent, topTask, true);
+	}
+
+	/**
+	 * Render a single checkbox item
+	 */
+	private renderCheckboxItem(container: HTMLElement, checkbox: CheckboxItem, isTopTask: boolean = false) {
+		const checkboxEl = container.createEl('div', { 
+			cls: isTopTask ? 'ontask-checkbox-item ontask-top-task-item' : 'ontask-checkbox-item'
+		});
+		
+		// Create a container for the checkbox, text, and button
+		const checkboxContainer = checkboxEl.createEl('div', { cls: 'ontask-checkbox-container' });
+		
+		// Extract checkbox state and text
+		const { isChecked, checkboxText, remainingText } = this.parseCheckboxLine(checkbox.lineContent);
+		
+		// Create a custom checkbox display that shows the actual status
+		const checkboxDisplay = checkboxContainer.createEl('div', {
+			cls: 'ontask-checkbox-display'
+		});
+		
+		// Extract the current status symbol
+		const { statusSymbol } = this.parseCheckboxLine(checkbox.lineContent);
+		const cleanSymbol = statusSymbol.trim();
+		checkboxDisplay.textContent = cleanSymbol;
+		checkboxDisplay.setAttribute('data-status', cleanSymbol);
+		checkboxDisplay.setAttribute('data-checkbox-id', `${checkbox.file.path}-${checkbox.lineNumber}`);
+		
+		// Create label for the checkbox
+		const checkboxLabel = checkboxContainer.createEl('label', { cls: 'ontask-checkbox-label' });
+		checkboxLabel.appendChild(checkboxDisplay);
+		
+		// Add click handler to toggle between empty and x
+		checkboxDisplay.addEventListener('click', async () => {
+			const currentSymbol = statusSymbol.trim();
+			const newSymbol = currentSymbol === 'x' ? ' ' : 'x';
+			await this.updateTaskStatus(checkbox, newSymbol);
+		});
+		
+		// Add the remaining text (without the checkbox mark)
+		if (remainingText) {
+			checkboxLabel.createEl('span', { 
+				text: remainingText,
+				cls: 'ontask-checkbox-text'
+			});
+		}
+		
+		// Add Go to button inline with the task
+		const linkButton = checkboxLabel.createEl('button', {
+			text: 'Go to',
+			cls: 'ontask-link-btn'
+		});
+		linkButton.addEventListener('click', (e) => {
+			e.stopPropagation(); // Prevent checkbox toggle when clicking button
+			this.goToFile(checkbox);
+		});
+
+		// Add right-click context menu for task status
+		checkboxEl.addEventListener('contextmenu', (e) => {
+			e.preventDefault();
+			this.showTaskStatusMenu(e, checkbox);
+		});
 	}
 }

@@ -8,6 +8,7 @@ export interface CheckboxItem {
 	checkboxText: string;
 	streamName: string;
 	streamPath: string;
+	isTopTask?: boolean;
 }
 
 export class CheckboxFinderService {
@@ -41,7 +42,8 @@ export class CheckboxFinderService {
 			console.log(`OnTask: Found ${allCheckboxes.length} checkboxes from today's files`);
 		}
 
-		return allCheckboxes;
+		// Process and prioritize top tasks
+		return this.processTopTasks(allCheckboxes);
 	}
 
 	/**
@@ -261,5 +263,61 @@ export class CheckboxFinderService {
 			// DD/MM/YYYY pattern
 			new RegExp(`${day}/${month}/${year}`),
 		];
+	}
+
+	/**
+	 * Process and prioritize top tasks (tasks marked with [!])
+	 */
+	private processTopTasks(checkboxes: CheckboxItem[]): CheckboxItem[] {
+		// First, identify all top tasks
+		const topTasks: CheckboxItem[] = [];
+		const regularTasks: CheckboxItem[] = [];
+
+		for (const checkbox of checkboxes) {
+			if (this.isTopTask(checkbox)) {
+				checkbox.isTopTask = true;
+				topTasks.push(checkbox);
+			} else {
+				checkbox.isTopTask = false;
+				regularTasks.push(checkbox);
+			}
+		}
+
+		// If there are multiple top tasks, only keep the most recent one
+		let finalTopTask: CheckboxItem | null = null;
+		if (topTasks.length > 0) {
+			// Sort by file modification time (most recent first)
+			topTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+			finalTopTask = topTasks[0];
+			
+			// Mark all other top tasks as regular tasks
+			for (let i = 1; i < topTasks.length; i++) {
+				topTasks[i].isTopTask = false;
+				regularTasks.push(topTasks[i]);
+			}
+		}
+
+		// Return top task first, then regular tasks
+		const result: CheckboxItem[] = [];
+		if (finalTopTask) {
+			result.push(finalTopTask);
+		}
+		result.push(...regularTasks);
+
+		console.log(`OnTask: Found ${topTasks.length} top tasks, using most recent: ${finalTopTask ? finalTopTask.file.name : 'none'}`);
+		
+		return result;
+	}
+
+	/**
+	 * Check if a checkbox is a top task (marked with [!])
+	 */
+	private isTopTask(checkbox: CheckboxItem): boolean {
+		const line = checkbox.lineContent;
+		
+		// Look for the pattern: - [!] or - [!x] or - [! ] etc.
+		const checkboxMatch = line.match(/^-\s*\[!([^\]]*)\]/);
+		
+		return checkboxMatch !== null;
 	}
 }
