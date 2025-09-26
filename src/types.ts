@@ -3,6 +3,7 @@
 export interface OnTaskSettings {
 	mySetting: string;
 	hideCompletedTasks: boolean;
+	onlyShowToday: boolean;
 }
 
 export interface Stream {

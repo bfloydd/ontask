@@ -8,7 +8,8 @@ import { OnTaskView, ONTASK_VIEW_TYPE } from './src/views/ontask-view';
 
 const DEFAULT_SETTINGS: OnTaskSettings = {
 	mySetting: 'default',
-	hideCompletedTasks: false
+	hideCompletedTasks: false,
+	onlyShowToday: false
 }
 
 export default class OnTask extends Plugin {
@@ -325,6 +326,16 @@ class OnTaskSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.hideCompletedTasks)
 				.onChange(async (value) => {
 					this.plugin.settings.hideCompletedTasks = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Only show today')
+			.setDesc('When enabled, only tasks from today\'s files will be displayed in the task view')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.onlyShowToday)
+				.onChange(async (value) => {
+					this.plugin.settings.onlyShowToday = value;
 					await this.plugin.saveSettings();
 				}));
 	}

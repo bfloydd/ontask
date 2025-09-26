@@ -5,6 +5,32 @@ import { Plugin } from 'obsidian';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
+interface TaskStatus {
+	symbol: string;
+	name: string;
+	description: string;
+}
+
+const TASK_STATUSES: TaskStatus[] = [
+	{ symbol: ' ', name: 'To-do', description: 'Empty checkbox' },
+	{ symbol: '/', name: 'Incomplete', description: 'Partially done' },
+	{ symbol: 'x', name: 'Done', description: 'Completed task' },
+	{ symbol: '-', name: 'Canceled', description: 'Cancelled task' },
+	{ symbol: '>', name: 'Forward', description: 'Forwarded task' },
+	{ symbol: '?', name: 'Question', description: 'Question or inquiry' },
+	{ symbol: '!', name: 'Important', description: 'Important task' },
+	{ symbol: '*', name: 'Star', description: 'Starred task' },
+	{ symbol: '+', name: 'Add', description: 'Add to list' },
+	{ symbol: 'i', name: 'Idea', description: 'Idea or concept' },
+	{ symbol: 'r', name: 'Research', description: 'Research needed' },
+	{ symbol: 'b', name: 'Brainstorm', description: 'Brainstorming' },
+	{ symbol: '<', name: 'Scheduling', description: 'Scheduled task' },
+	{ symbol: 'd', name: 'Date', description: 'Date-specific' },
+	{ symbol: '"', name: 'Quote', description: 'Quote or reference' },
+	{ symbol: 'l', name: 'Location', description: 'Location-based' },
+	{ symbol: 'b', name: 'Bookmark', description: 'Bookmark' }
+];
+
 export class OnTaskView extends ItemView {
 	private checkboxFinder: CheckboxFinderService;
 	private settings: OnTaskSettings;
@@ -13,6 +39,7 @@ export class OnTaskView extends ItemView {
 	private displayedCount: number = 100;
 	private currentPage: number = 0;
 	private hideCompleted: boolean = false;
+	private onlyShowToday: boolean = false;
 
 	constructor(leaf: WorkspaceLeaf, checkboxFinder: CheckboxFinderService, settings: OnTaskSettings, plugin: Plugin) {
 		super(leaf);
@@ -20,6 +47,7 @@ export class OnTaskView extends ItemView {
 		this.settings = settings;
 		this.plugin = plugin;
 		this.hideCompleted = settings.hideCompletedTasks;
+		this.onlyShowToday = settings.onlyShowToday;
 	}
 
 	getViewType(): string {
@@ -51,6 +79,13 @@ export class OnTaskView extends ItemView {
 		});
 		hideCompletedButton.addEventListener('click', () => this.toggleHideCompleted());
 		
+		// Add only show today button
+		const onlyTodayButton = buttonsContainer.createEl('button', { 
+			text: this.onlyShowToday ? 'Show All Days' : 'Only Show Today',
+			cls: 'ontask-only-today-btn'
+		});
+		onlyTodayButton.addEventListener('click', () => this.toggleOnlyShowToday());
+		
 		// Add refresh button
 		const refreshButton = buttonsContainer.createEl('button', { 
 			text: 'Refresh',
@@ -77,7 +112,7 @@ export class OnTaskView extends ItemView {
 
 	private async loadCheckboxes() {
 		try {
-			this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted);
+			this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted, this.onlyShowToday);
 			this.renderCheckboxes();
 		} catch (error) {
 			console.error('Error loading checkboxes:', error);
@@ -109,6 +144,23 @@ export class OnTaskView extends ItemView {
 		const hideCompletedButton = this.contentEl.querySelector('.ontask-hide-completed-btn') as HTMLButtonElement;
 		if (hideCompletedButton) {
 			hideCompletedButton.textContent = this.hideCompleted ? 'Show Completed' : 'Hide Completed';
+		}
+		
+		// Reload checkboxes with new setting
+		await this.refreshCheckboxes();
+	}
+
+	private async toggleOnlyShowToday() {
+		this.onlyShowToday = !this.onlyShowToday;
+		this.settings.onlyShowToday = this.onlyShowToday;
+		
+		// Save the setting to data.json
+		await this.plugin.saveData(this.settings);
+		
+		// Update button text
+		const onlyTodayButton = this.contentEl.querySelector('.ontask-only-today-btn') as HTMLButtonElement;
+		if (onlyTodayButton) {
+			onlyTodayButton.textContent = this.onlyShowToday ? 'Show All Days' : 'Only Show Today';
 		}
 		
 		// Reload checkboxes with new setting
@@ -176,21 +228,28 @@ export class OnTaskView extends ItemView {
 				// Extract checkbox state and text
 				const { isChecked, checkboxText, remainingText } = this.parseCheckboxLine(checkbox.lineContent);
 				
-				// Create the actual checkbox input
-				const checkboxInput = checkboxContainer.createEl('input', {
-					type: 'checkbox',
-					cls: 'ontask-checkbox-input'
-				}) as HTMLInputElement;
-				checkboxInput.checked = isChecked;
-				
-				// Add click handler to toggle checkbox
-				checkboxInput.addEventListener('change', async () => {
-					await this.toggleCheckbox(checkbox, checkboxInput.checked);
+				// Create a custom checkbox display that shows the actual status
+				const checkboxDisplay = checkboxContainer.createEl('div', {
+					cls: 'ontask-checkbox-display'
 				});
+				
+				// Extract the current status symbol
+				const { statusSymbol } = this.parseCheckboxLine(checkbox.lineContent);
+				const cleanSymbol = statusSymbol.trim();
+				checkboxDisplay.textContent = cleanSymbol;
+				checkboxDisplay.setAttribute('data-status', cleanSymbol);
+				checkboxDisplay.setAttribute('data-checkbox-id', `${checkbox.file.path}-${checkbox.lineNumber}`);
 				
 				// Create label for the checkbox
 				const checkboxLabel = checkboxContainer.createEl('label', { cls: 'ontask-checkbox-label' });
-				checkboxLabel.appendChild(checkboxInput);
+				checkboxLabel.appendChild(checkboxDisplay);
+				
+				// Add click handler to toggle between empty and x
+				checkboxDisplay.addEventListener('click', async () => {
+					const currentSymbol = statusSymbol.trim();
+					const newSymbol = currentSymbol === 'x' ? ' ' : 'x';
+					await this.updateTaskStatus(checkbox, newSymbol);
+				});
 				
 				// Add the remaining text (without the checkbox mark)
 				if (remainingText) {
@@ -208,6 +267,12 @@ export class OnTaskView extends ItemView {
 				linkButton.addEventListener('click', (e) => {
 					e.stopPropagation(); // Prevent checkbox toggle when clicking button
 					this.goToFile(checkbox);
+				});
+
+				// Add right-click context menu for task status
+				checkboxEl.addEventListener('contextmenu', (e) => {
+					e.preventDefault();
+					this.showTaskStatusMenu(e, checkbox);
 				});
 			}
 		}
@@ -263,21 +328,23 @@ export class OnTaskView extends ItemView {
 	/**
 	 * Parse a checkbox line to extract state and text
 	 */
-	private parseCheckboxLine(line: string): { isChecked: boolean; checkboxText: string; remainingText: string } {
+	private parseCheckboxLine(line: string): { isChecked: boolean; checkboxText: string; remainingText: string; statusSymbol: string } {
 		const trimmedLine = line.trim();
 		
-		// Look for checkbox pattern: - [ ] or - [x]
+		// Look for checkbox pattern: - [ ] or - [x] or any other status
 		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]]*)\]\s*(.*)$/);
 		
 		if (checkboxMatch) {
 			const checkboxContent = checkboxMatch[1].trim();
 			const remainingText = checkboxMatch[2].trim();
+			// Only 'x' and 'checked' are considered checked for the visual checkbox
 			const isChecked = checkboxContent.toLowerCase() === 'x' || checkboxContent.toLowerCase() === 'checked';
 			
 			return {
 				isChecked,
 				checkboxText: `- [${checkboxContent}]`,
-				remainingText
+				remainingText,
+				statusSymbol: checkboxContent
 			};
 		}
 		
@@ -285,7 +352,8 @@ export class OnTaskView extends ItemView {
 		return {
 			isChecked: false,
 			checkboxText: trimmedLine,
-			remainingText: ''
+			remainingText: '',
+			statusSymbol: ' '
 		};
 	}
 
@@ -369,6 +437,156 @@ export class OnTaskView extends ItemView {
 		} catch (error) {
 			console.error('Error opening file:', error);
 			new Notice('Error opening file');
+		}
+	}
+
+	/**
+	 * Show context menu for changing task status
+	 */
+	private showTaskStatusMenu(event: MouseEvent, checkbox: CheckboxItem) {
+		// Remove any existing context menu
+		const existingMenu = document.querySelector('.ontask-context-menu');
+		if (existingMenu) {
+			existingMenu.remove();
+		}
+
+		// Create context menu
+		const menu = document.createElement('div');
+		menu.className = 'ontask-context-menu';
+		menu.style.position = 'fixed';
+		menu.style.left = `${event.clientX}px`;
+		menu.style.top = `${event.clientY}px`;
+		menu.style.zIndex = '1000';
+		menu.style.background = 'var(--background-primary)';
+		menu.style.border = '1px solid var(--background-modifier-border)';
+		menu.style.borderRadius = '6px';
+		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+		menu.style.padding = '4px 0';
+		menu.style.minWidth = '200px';
+
+		// Add menu items
+		for (const status of TASK_STATUSES) {
+			const menuItem = document.createElement('div');
+			menuItem.className = 'ontask-context-menu-item';
+			menuItem.style.padding = '8px 16px';
+			menuItem.style.cursor = 'pointer';
+			menuItem.style.display = 'flex';
+			menuItem.style.alignItems = 'center';
+			menuItem.style.gap = '8px';
+			menuItem.style.fontSize = '14px';
+			menuItem.style.color = 'var(--text-normal)';
+
+			// Add symbol
+			const symbol = document.createElement('span');
+			symbol.textContent = `[${status.symbol}]`;
+			symbol.style.fontFamily = 'var(--font-monospace)';
+			symbol.style.fontWeight = 'bold';
+			symbol.style.minWidth = '30px';
+
+			// Add name and description
+			const text = document.createElement('span');
+			text.innerHTML = `<strong>${status.name}</strong><br><small style="color: var(--text-muted);">${status.description}</small>`;
+
+			menuItem.appendChild(symbol);
+			menuItem.appendChild(text);
+
+			// Add hover effect
+			menuItem.addEventListener('mouseenter', () => {
+				menuItem.style.background = 'var(--background-modifier-hover)';
+			});
+			menuItem.addEventListener('mouseleave', () => {
+				menuItem.style.background = 'transparent';
+			});
+
+			// Add click handler
+			menuItem.addEventListener('click', async () => {
+				await this.updateTaskStatus(checkbox, status.symbol);
+				menu.remove();
+			});
+
+			menu.appendChild(menuItem);
+		}
+
+		// Add to document
+		document.body.appendChild(menu);
+
+		// Close menu when clicking outside
+		const closeMenu = (e: MouseEvent) => {
+			if (!menu.contains(e.target as Node)) {
+				menu.remove();
+				document.removeEventListener('click', closeMenu);
+			}
+		};
+
+		// Use setTimeout to avoid immediate closure
+		setTimeout(() => {
+			document.addEventListener('click', closeMenu);
+		}, 0);
+	}
+
+	/**
+	 * Update task status in the file
+	 */
+	private async updateTaskStatus(checkbox: CheckboxItem, newSymbol: string) {
+		try {
+			// Read the current file content
+			const content = await this.app.vault.read(checkbox.file);
+			const lines = content.split('\n');
+			
+			// Update the specific line
+			const lineIndex = checkbox.lineNumber - 1;
+			if (lineIndex >= 0 && lineIndex < lines.length) {
+				const currentLine = lines[lineIndex];
+				const newLine = this.updateCheckboxSymbolInLine(currentLine, newSymbol);
+				lines[lineIndex] = newLine;
+				
+				// Write the updated content back to the file
+				await this.app.vault.modify(checkbox.file, lines.join('\n'));
+				
+				// Update the checkbox item
+				checkbox.lineContent = newLine.trim();
+				
+				// Update the display immediately
+				this.updateCheckboxDisplay(checkbox, newSymbol);
+				
+				// Show success notification
+				const statusName = TASK_STATUSES.find(s => s.symbol === newSymbol)?.name || 'Unknown';
+				new Notice(`Task status changed to: ${statusName}`);
+			}
+		} catch (error) {
+			console.error('Error updating task status:', error);
+			new Notice('Error updating task status');
+		}
+	}
+
+	/**
+	 * Update checkbox symbol in a line
+	 */
+	private updateCheckboxSymbolInLine(line: string, newSymbol: string): string {
+		const trimmedLine = line.trim();
+		const checkboxMatch = trimmedLine.match(/^(-\s*)\[([^\]]*)\](.*)$/);
+		
+		if (checkboxMatch) {
+			const prefix = checkboxMatch[1];
+			const suffix = checkboxMatch[3];
+			return `${prefix}[${newSymbol}]${suffix}`;
+		}
+		
+		// Fallback - return original line
+		return line;
+	}
+
+	/**
+	 * Update the visual display of a checkbox
+	 */
+	private updateCheckboxDisplay(checkbox: CheckboxItem, newSymbol: string) {
+		// Find the specific checkbox display element
+		const checkboxId = `${checkbox.file.path}-${checkbox.lineNumber}`;
+		const element = this.contentEl.querySelector(`[data-checkbox-id="${checkboxId}"]`) as HTMLElement;
+		
+		if (element) {
+			element.textContent = newSymbol.trim();
+			element.setAttribute('data-status', newSymbol.trim());
 		}
 	}
 }

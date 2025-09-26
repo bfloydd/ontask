@@ -22,13 +22,23 @@ export class CheckboxFinderService {
 	/**
 	 * Find all checkboxes in all streams
 	 */
-	public async findAllCheckboxes(hideCompleted: boolean = false): Promise<CheckboxItem[]> {
+	public async findAllCheckboxes(hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
 		const streams = this.streamsService.getAllStreams();
 		const allCheckboxes: CheckboxItem[] = [];
 
+		if (onlyShowToday) {
+			const today = new Date();
+			const todayString = today.toISOString().split('T')[0];
+			console.log(`OnTask: Searching for files dated ${todayString} (Only Show Today enabled)`);
+		}
+
 		for (const stream of streams) {
-			const streamCheckboxes = await this.findCheckboxesInStream(stream, hideCompleted);
+			const streamCheckboxes = await this.findCheckboxesInStream(stream, hideCompleted, onlyShowToday);
 			allCheckboxes.push(...streamCheckboxes);
+		}
+
+		if (onlyShowToday) {
+			console.log(`OnTask: Found ${allCheckboxes.length} checkboxes from today's files`);
 		}
 
 		return allCheckboxes;
@@ -37,7 +47,7 @@ export class CheckboxFinderService {
 	/**
 	 * Find checkboxes in a specific stream
 	 */
-	private async findCheckboxesInStream(stream: { name: string; path: string }, hideCompleted: boolean = false): Promise<CheckboxItem[]> {
+	private async findCheckboxesInStream(stream: { name: string; path: string }, hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
 		const checkboxes: CheckboxItem[] = [];
 		
 		try {
@@ -45,17 +55,28 @@ export class CheckboxFinderService {
 			const streamFolder = this.app.vault.getAbstractFileByPath(stream.path);
 			if (!streamFolder || !(streamFolder instanceof TFile)) {
 				// If it's not a file, try to get files from the directory
-				const files = this.app.vault.getMarkdownFiles().filter(file => 
+				let files = this.app.vault.getMarkdownFiles().filter(file => 
 					file.path.startsWith(stream.path)
 				);
 				
+				// Performance optimization: Filter files by today before reading their content
+				if (onlyShowToday) {
+					const originalCount = files.length;
+					files = files.filter(file => this.isTodayFile(file));
+					console.log(`OnTask: Filtered ${originalCount} files to ${files.length} today's files for performance`);
+				}
+				
 				for (const file of files) {
-					const fileCheckboxes = await this.findCheckboxesInFile(file, stream, hideCompleted);
+					const fileCheckboxes = await this.findCheckboxesInFile(file, stream, hideCompleted, onlyShowToday);
 					checkboxes.push(...fileCheckboxes);
 				}
 			} else {
-				// If it's a single file
-				const fileCheckboxes = await this.findCheckboxesInFile(streamFolder, stream, hideCompleted);
+				// If it's a single file, check if it's from today before processing
+				if (onlyShowToday && !this.isTodayFile(streamFolder)) {
+					return checkboxes; // Skip this file entirely if it's not from today
+				}
+				
+				const fileCheckboxes = await this.findCheckboxesInFile(streamFolder, stream, hideCompleted, onlyShowToday);
 				checkboxes.push(...fileCheckboxes);
 			}
 		} catch (error) {
@@ -68,7 +89,7 @@ export class CheckboxFinderService {
 	/**
 	 * Find checkboxes in a specific file
 	 */
-	private async findCheckboxesInFile(file: TFile, stream: { name: string; path: string }, hideCompleted: boolean = false): Promise<CheckboxItem[]> {
+	private async findCheckboxesInFile(file: TFile, stream: { name: string; path: string }, hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
 		const checkboxes: CheckboxItem[] = [];
 		
 		try {
@@ -85,6 +106,8 @@ export class CheckboxFinderService {
 					if (hideCompleted && isCompleted) {
 						continue; // Skip completed checkboxes when hideCompleted is true
 					}
+					
+					// Note: onlyShowToday filtering is now done at the stream level for better performance
 					
 					checkboxes.push({
 						file: file,
@@ -141,23 +164,102 @@ export class CheckboxFinderService {
 		// Extract the checkbox content
 		const checkboxContent = trimmedLine.substring(checkboxStart + 3, closingBracket).trim().toLowerCase();
 		
-		// Check if it's completed
+		// Check if it's completed (only 'x' and 'checked' are considered completed)
 		return checkboxContent === 'x' || checkboxContent === 'checked';
 	}
 
 	/**
 	 * Get checkboxes by stream name
 	 */
-	public async getCheckboxesByStream(streamName: string, hideCompleted: boolean = false): Promise<CheckboxItem[]> {
-		const allCheckboxes = await this.findAllCheckboxes(hideCompleted);
+	public async getCheckboxesByStream(streamName: string, hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+		const allCheckboxes = await this.findAllCheckboxes(hideCompleted, onlyShowToday);
 		return allCheckboxes.filter(checkbox => checkbox.streamName === streamName);
 	}
 
 	/**
 	 * Get checkboxes by file
 	 */
-	public async getCheckboxesByFile(filePath: string, hideCompleted: boolean = false): Promise<CheckboxItem[]> {
-		const allCheckboxes = await this.findAllCheckboxes(hideCompleted);
+	public async getCheckboxesByFile(filePath: string, hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+		const allCheckboxes = await this.findAllCheckboxes(hideCompleted, onlyShowToday);
 		return allCheckboxes.filter(checkbox => checkbox.file.path === filePath);
+	}
+
+	/**
+	 * Check if a file is specifically dated for today (not just created/modified today)
+	 */
+	private isTodayFile(file: TFile): boolean {
+		const today = new Date();
+		
+		// Generate multiple date formats that might be used in filenames
+		const todayFormats = this.getTodayDateFormats(today);
+		
+		// Check if filename contains today's date in any common format
+		const fileName = file.name.toLowerCase();
+		const filePath = file.path.toLowerCase();
+		
+		// Check both filename and full path for date patterns
+		for (const dateFormat of todayFormats) {
+			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
+				console.log(`OnTask: Found today's file: ${file.name} (matches date: ${dateFormat})`);
+				return true;
+			}
+		}
+		
+		// Check for date patterns in the filename using regex
+		const datePatterns = this.getDatePatterns(today);
+		for (const pattern of datePatterns) {
+			if (pattern.test(fileName) || pattern.test(filePath)) {
+				console.log(`OnTask: Found today's file: ${file.name} (matches pattern: ${pattern})`);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Get various date formats for today
+	 */
+	private getTodayDateFormats(today: Date): string[] {
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, '0');
+		const day = String(today.getDate()).padStart(2, '0');
+		
+		return [
+			`${year}-${month}-${day}`,           // 2024-01-15
+			`${year}${month}${day}`,             // 20240115
+			`${year}-${month}-${day}`,           // 2024-01-15
+			`${month}-${day}-${year}`,           // 01-15-2024
+			`${month}/${day}/${year}`,           // 01/15/2024
+			`${day}-${month}-${year}`,           // 15-01-2024
+			`${day}/${month}/${year}`,           // 15/01/2024
+			`${year}${month}${day}`,             // 20240115
+			`${month}${day}${year}`,             // 01152024
+			`${day}${month}${year}`,             // 15012024
+		];
+	}
+
+	/**
+	 * Get regex patterns for today's date
+	 */
+	private getDatePatterns(today: Date): RegExp[] {
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, '0');
+		const day = String(today.getDate()).padStart(2, '0');
+		
+		return [
+			// YYYY-MM-DD pattern
+			new RegExp(`${year}-${month}-${day}`),
+			// YYYYMMDD pattern
+			new RegExp(`${year}${month}${day}`),
+			// MM-DD-YYYY pattern
+			new RegExp(`${month}-${day}-${year}`),
+			// MM/DD/YYYY pattern
+			new RegExp(`${month}/${day}/${year}`),
+			// DD-MM-YYYY pattern
+			new RegExp(`${day}-${month}-${year}`),
+			// DD/MM/YYYY pattern
+			new RegExp(`${day}/${month}/${year}`),
+		];
 	}
 }

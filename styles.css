@@ -31,7 +31,8 @@ If your plugin does not need CSS, delete this file.
 }
 
 .ontask-refresh-btn,
-.ontask-hide-completed-btn {
+.ontask-hide-completed-btn,
+.ontask-only-today-btn {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border: none;
@@ -43,12 +44,14 @@ If your plugin does not need CSS, delete this file.
 }
 
 .ontask-refresh-btn:hover,
-.ontask-hide-completed-btn:hover {
+.ontask-hide-completed-btn:hover,
+.ontask-only-today-btn:hover {
 	background: var(--interactive-accent-hover);
 }
 
 .ontask-refresh-btn:active,
-.ontask-hide-completed-btn:active {
+.ontask-hide-completed-btn:active,
+.ontask-only-today-btn:active {
 	transform: translateY(1px);
 }
 
@@ -149,9 +152,117 @@ If your plugin does not need CSS, delete this file.
 	background: var(--background-modifier-hover);
 }
 
-.ontask-checkbox-input {
+.ontask-checkbox-display {
 	margin: 0;
 	flex-shrink: 0;
+	font-family: var(--font-monospace);
+	font-size: 13px;
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: 3px;
+	transition: all 0.2s ease;
+	min-width: 20px;
+	text-align: center;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	position: relative;
+	display: inline-block;
+}
+
+.ontask-checkbox-display:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border-hover);
+}
+
+/* Status-specific styling */
+.ontask-checkbox-display[data-status="x"] {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.ontask-checkbox-display[data-status="!"] {
+	background: var(--text-error);
+	color: var(--text-on-accent);
+	border-color: var(--text-error);
+}
+
+.ontask-checkbox-display[data-status="?"] {
+	background: var(--text-warning);
+	color: var(--text-on-accent);
+	border-color: var(--text-warning);
+}
+
+.ontask-checkbox-display[data-status="*"] {
+	background: var(--text-accent);
+	color: var(--text-on-accent);
+	border-color: var(--text-accent);
+}
+
+.ontask-checkbox-display[data-status="+"] {
+	background: var(--text-success);
+	color: var(--text-on-accent);
+	border-color: var(--text-success);
+}
+
+.ontask-checkbox-display[data-status="i"] {
+	background: var(--text-info);
+	color: var(--text-on-accent);
+	border-color: var(--text-info);
+}
+
+.ontask-checkbox-display[data-status="r"] {
+	background: var(--text-muted);
+	color: var(--text-on-accent);
+	border-color: var(--text-muted);
+}
+
+.ontask-checkbox-display[data-status="b"] {
+	background: var(--text-accent);
+	color: var(--text-on-accent);
+	border-color: var(--text-accent);
+}
+
+.ontask-checkbox-display[data-status="<"] {
+	background: var(--text-warning);
+	color: var(--text-on-accent);
+	border-color: var(--text-warning);
+}
+
+.ontask-checkbox-display[data-status="d"] {
+	background: var(--text-info);
+	color: var(--text-on-accent);
+	border-color: var(--text-info);
+}
+
+.ontask-checkbox-display[data-status="\""] {
+	background: var(--text-muted);
+	color: var(--text-on-accent);
+	border-color: var(--text-muted);
+}
+
+.ontask-checkbox-display[data-status="l"] {
+	background: var(--text-success);
+	color: var(--text-on-accent);
+	border-color: var(--text-success);
+}
+
+.ontask-checkbox-display[data-status=">"] {
+	background: var(--text-accent);
+	color: var(--text-on-accent);
+	border-color: var(--text-accent);
+}
+
+.ontask-checkbox-display[data-status="-"] {
+	background: var(--text-error);
+	color: var(--text-on-accent);
+	border-color: var(--text-error);
+}
+
+.ontask-checkbox-display[data-status="/"] {
+	background: var(--text-warning);
+	color: var(--text-on-accent);
+	border-color: var(--text-warning);
 }
 
 .ontask-checkbox-text {
