@@ -273,6 +273,12 @@ export class OnTaskView extends ItemView {
 		
 		// Sort files in reverse alphabetical order (Z-A)
 		const sortedEntries = Array.from(grouped.entries()).sort(([a], [b]) => b.localeCompare(a));
+		
+		// Sort checkboxes within each file by line number to maintain file order
+		for (const [fileName, fileCheckboxes] of sortedEntries) {
+			fileCheckboxes.sort((a, b) => a.lineNumber - b.lineNumber);
+		}
+		
 		return new Map(sortedEntries);
 	}
 
