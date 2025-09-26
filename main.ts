@@ -24,7 +24,7 @@ export default class OnTask extends Plugin {
 		this.checkboxFinder = new CheckboxFinderService(this.app, this.streamsService);
 
 		// Register the OnTaskView
-		this.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(leaf, this.checkboxFinder, this.settings));
+		this.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(leaf, this.checkboxFinder, this.settings, this));
 
 		// Access Streams plugin data
 		this.initializeStreamsIntegration();

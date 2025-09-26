@@ -136,8 +136,8 @@ If your plugin does not need CSS, delete this file.
 
 .ontask-checkbox-label {
 	display: flex;
-	align-items: flex-start;
-	gap: 3px;
+	align-items: center;
+	gap: 8px;
 	cursor: pointer;
 	padding: 1px 3px;
 	background: var(--background-modifier-border);
@@ -152,7 +152,6 @@ If your plugin does not need CSS, delete this file.
 .ontask-checkbox-input {
 	margin: 0;
 	flex-shrink: 0;
-	margin-top: 2px;
 }
 
 .ontask-checkbox-text {
@@ -169,11 +168,43 @@ If your plugin does not need CSS, delete this file.
 	font-size: 11px;
 	padding: 0;
 	text-align: right;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
 }
 
 .ontask-line-number {
 	color: var(--text-muted);
 	font-style: italic;
+}
+
+.ontask-link-btn {
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 3px;
+	padding: 4px 8px;
+	cursor: pointer;
+	font-size: 11px;
+	opacity: 0;
+	transition: all 0.2s ease;
+	flex-shrink: 0;
+	margin-left: auto;
+}
+
+.ontask-checkbox-item:hover .ontask-link-btn {
+	opacity: 0.8;
+}
+
+.ontask-link-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+	border-color: var(--background-modifier-border-hover);
+	opacity: 1;
+}
+
+.ontask-link-btn:active {
+	transform: translateY(1px);
 }
 
 /* Pagination styles */

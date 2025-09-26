@@ -1,21 +1,24 @@
-import { ItemView, WorkspaceLeaf, Notice } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, MarkdownView } from 'obsidian';
 import { CheckboxItem, CheckboxFinderService } from '../services/checkbox-finder';
 import { OnTaskSettings } from '../types';
+import { Plugin } from 'obsidian';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
 export class OnTaskView extends ItemView {
 	private checkboxFinder: CheckboxFinderService;
 	private settings: OnTaskSettings;
+	private plugin: Plugin;
 	private checkboxes: CheckboxItem[] = [];
 	private displayedCount: number = 100;
 	private currentPage: number = 0;
 	private hideCompleted: boolean = false;
 
-	constructor(leaf: WorkspaceLeaf, checkboxFinder: CheckboxFinderService, settings: OnTaskSettings) {
+	constructor(leaf: WorkspaceLeaf, checkboxFinder: CheckboxFinderService, settings: OnTaskSettings, plugin: Plugin) {
 		super(leaf);
 		this.checkboxFinder = checkboxFinder;
 		this.settings = settings;
+		this.plugin = plugin;
 		this.hideCompleted = settings.hideCompletedTasks;
 	}
 
@@ -36,7 +39,7 @@ export class OnTaskView extends ItemView {
 		
 		// Add header
 		const header = this.contentEl.createEl('div', { cls: 'ontask-header' });
-		header.createEl('h2', { text: 'On Task - All Checkboxes' });
+		header.createEl('h2', { text: 'On Task' });
 		
 		// Add buttons container
 		const buttonsContainer = header.createEl('div', { cls: 'ontask-buttons-container' });
@@ -98,6 +101,9 @@ export class OnTaskView extends ItemView {
 	private async toggleHideCompleted() {
 		this.hideCompleted = !this.hideCompleted;
 		this.settings.hideCompletedTasks = this.hideCompleted;
+		
+		// Save the setting to data.json
+		await this.plugin.saveData(this.settings);
 		
 		// Update button text
 		const hideCompletedButton = this.contentEl.querySelector('.ontask-hide-completed-btn') as HTMLButtonElement;
@@ -164,7 +170,7 @@ export class OnTaskView extends ItemView {
 			for (const checkbox of fileCheckboxes) {
 				const checkboxEl = checkboxesList.createEl('div', { cls: 'ontask-checkbox-item' });
 				
-				// Create a container for the checkbox and text
+				// Create a container for the checkbox, text, and button
 				const checkboxContainer = checkboxEl.createEl('div', { cls: 'ontask-checkbox-container' });
 				
 				// Extract checkbox state and text
@@ -194,11 +200,14 @@ export class OnTaskView extends ItemView {
 					});
 				}
 				
-				// Line info
-				const lineInfo = checkboxEl.createEl('div', { cls: 'ontask-line-info' });
-				lineInfo.createEl('span', { 
-					text: `Line ${checkbox.lineNumber}`,
-					cls: 'ontask-line-number'
+				// Add Go to button inline with the task
+				const linkButton = checkboxLabel.createEl('button', {
+					text: 'Go to',
+					cls: 'ontask-link-btn'
+				});
+				linkButton.addEventListener('click', (e) => {
+					e.stopPropagation(); // Prevent checkbox toggle when clicking button
+					this.goToFile(checkbox);
 				});
 			}
 		}
@@ -336,5 +345,30 @@ export class OnTaskView extends ItemView {
 			text: message,
 			cls: 'ontask-error'
 		});
+	}
+
+	/**
+	 * Navigate to the file and scroll to the specific line
+	 */
+	private async goToFile(checkbox: CheckboxItem) {
+		try {
+			// Open the file in a new leaf
+			const leaf = this.app.workspace.getLeaf('tab');
+			await leaf.openFile(checkbox.file);
+			
+			// Wait a moment for the file to load, then scroll to the line
+			setTimeout(() => {
+				const view = leaf.view;
+				if (view instanceof MarkdownView && view.editor) {
+					// Scroll to the specific line (convert to 0-based index)
+					const lineIndex = checkbox.lineNumber - 1;
+					view.editor.setCursor({ line: lineIndex, ch: 0 });
+					view.editor.scrollIntoView({ from: { line: lineIndex, ch: 0 }, to: { line: lineIndex, ch: 0 } }, true);
+				}
+			}, 100);
+		} catch (error) {
+			console.error('Error opening file:', error);
+			new Notice('Error opening file');
+		}
 	}
 }
