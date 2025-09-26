@@ -25,14 +25,13 @@ export default class OnTask extends Plugin {
 		await this.loadSettings();
 
 		// Initialize services
-		this.streamsService = new StreamsService();
+		this.streamsService = new StreamsService(this.app);
 		this.checkboxFinder = new CheckboxFinderService(this.app, this.streamsService);
 
 		// Register the OnTaskView
 		this.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(leaf, this.checkboxFinder, this.settings, this));
 
-		// Access Streams plugin data
-		this.initializeStreamsIntegration();
+		// Streams plugin integration is now handled by StreamsService
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('checkmark', 'On Task', (_evt: MouseEvent) => {
@@ -93,14 +92,6 @@ export default class OnTask extends Plugin {
 			}
 		});
 
-		// Command to demonstrate Streams plugin integration
-		this.addCommand({
-			id: 'get-streams-data',
-			name: 'Get current streams data',
-			callback: () => {
-				this.getStreamsData();
-			}
-		});
 
 		// Command to test the stub data directly
 		this.addCommand({
@@ -118,19 +109,130 @@ export default class OnTask extends Plugin {
 			id: 'test-streams-service',
 			name: 'Test streams service functionality',
 			callback: () => {
+				const isAvailable = this.streamsService.isStreamsPluginAvailable();
 				const streams = this.streamsService.getAllStreams();
 				const personalStream = this.streamsService.getStreamByName('Personal');
-				const workStream = this.streamsService.getStreamByPath('Assets/Streams/Work');
+				const workStream = this.streamsService.getStreamByFolder('Assets/Streams/Work');
 				const hasPersonal = this.streamsService.hasStream('Personal');
 				const streamNames = this.streamsService.getStreamNames();
+				const streamFolders = this.streamsService.getStreamFolders();
+				const ribbonStreams = this.streamsService.getRibbonStreams();
+				const commandStreams = this.streamsService.getCommandStreams();
 				
+				console.log('Streams plugin available:', isAvailable);
 				console.log('All streams:', streams);
 				console.log('Personal stream:', personalStream);
 				console.log('Work stream:', workStream);
 				console.log('Has Personal stream:', hasPersonal);
 				console.log('Stream names:', streamNames);
+				console.log('Stream folders:', streamFolders);
+				console.log('Ribbon streams:', ribbonStreams);
+				console.log('Command streams:', commandStreams);
 				
-				new Notice(`Streams service test complete. Check console for details.`);
+				new Notice(`Streams service test complete. Found ${streams.length} streams. Plugin available: ${isAvailable}. Check console for details.`);
+			}
+		});
+
+		// Command to demonstrate streams plugin integration with UI
+		this.addCommand({
+			id: 'show-streams-ui',
+			name: 'Show streams data in notice',
+			callback: () => {
+				const streams = this.streamsService.getAllStreams();
+				if (streams.length === 0) {
+					new Notice('No streams found. Make sure the Streams plugin is installed and enabled.');
+					return;
+				}
+				
+				const streamNames = streams.map(s => s.name).join(', ');
+				new Notice(`Available streams: ${streamNames}`);
+			}
+		});
+
+		// Command to validate streams integration
+		this.addCommand({
+			id: 'validate-streams-integration',
+			name: 'Validate streams integration',
+			callback: () => {
+				const validation = this.streamsService.validateIntegration();
+				
+				console.log('=== STREAMS INTEGRATION VALIDATION ===');
+				console.log('Plugin Available:', validation.isPluginAvailable);
+				console.log('Streams Count:', validation.streamsCount);
+				console.log('Errors:', validation.errors);
+				console.log('Warnings:', validation.warnings);
+				console.log('Streams:', validation.streams);
+				
+				// Show summary in notice
+				let message = `Streams Integration: `;
+				if (validation.errors.length > 0) {
+					message += `❌ ${validation.errors.length} errors`;
+				} else if (validation.warnings.length > 0) {
+					message += `⚠️ ${validation.warnings.length} warnings, ${validation.streamsCount} streams`;
+				} else {
+					message += `✅ Working! ${validation.streamsCount} streams found`;
+				}
+				
+				new Notice(message);
+				console.log('Check console for detailed validation results');
+			}
+		});
+
+		// Command to get detailed debug information
+		this.addCommand({
+			id: 'debug-streams-plugin',
+			name: 'Debug streams plugin details',
+			callback: () => {
+				const debugInfo = this.streamsService.getDebugInfo();
+				
+				console.log('=== STREAMS PLUGIN DEBUG INFO ===');
+				console.log('App Plugins:', debugInfo.appPlugins);
+				console.log('Streams Plugin:', debugInfo.streamsPlugin);
+				console.log('Plugin Methods:', debugInfo.streamsPluginMethods);
+				console.log('Plugin Properties:', debugInfo.streamsPluginProperties);
+				console.log('Validation:', debugInfo.validation);
+				
+				new Notice('Debug info logged to console. Check developer tools.');
+			}
+		});
+
+		// Command to test streams plugin availability
+		this.addCommand({
+			id: 'test-streams-availability',
+			name: 'Test streams plugin availability',
+			callback: () => {
+				const isAvailable = this.streamsService.isStreamsPluginAvailable();
+				const streams = this.streamsService.getAllStreams();
+				
+				console.log('=== STREAMS AVAILABILITY TEST ===');
+				console.log('Plugin Available:', isAvailable);
+				console.log('Streams Retrieved:', streams.length);
+				console.log('Streams Data:', streams);
+				
+				if (isAvailable) {
+					new Notice(`✅ Streams plugin is available! Found ${streams.length} streams.`);
+				} else {
+					new Notice('❌ Streams plugin is not available. Check if it\'s installed and enabled.');
+				}
+			}
+		});
+
+		// Command to test checkbox finder
+		this.addCommand({
+			id: 'test-checkbox-finder',
+			name: 'Test checkbox finder with streams',
+			callback: async () => {
+				console.log('=== CHECKBOX FINDER TEST ===');
+				const checkboxes = await this.checkboxFinder.findAllCheckboxes(this.settings.hideCompletedTasks, this.settings.onlyShowToday);
+				
+				console.log('Found checkboxes:', checkboxes.length);
+				console.log('Checkboxes data:', checkboxes);
+				
+				if (checkboxes.length === 0) {
+					new Notice('No checkboxes found. Check console for details.');
+				} else {
+					new Notice(`Found ${checkboxes.length} checkboxes! Check console for details.`);
+				}
 			}
 		});
 
@@ -152,13 +254,7 @@ export default class OnTask extends Plugin {
 			console.log('click', evt);
 		});
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-		
-		// Update top task status bar periodically
-		this.registerInterval(window.setInterval(() => {
-			this.updateTopTaskStatusBar();
-		}, 30 * 1000)); // Update every 30 seconds
+		// Removed timers - status bar updates only on file changes now
 		
 		// Update status bar when files change
 		this.registerEvent(this.app.vault.on('modify', () => {
@@ -178,109 +274,6 @@ export default class OnTask extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	/**
-	 * Initialize integration with the Streams plugin
-	 */
-	private initializeStreamsIntegration() {
-		// Wait for all plugins to load
-		this.app.workspace.onLayoutReady(() => {
-			// Access plugins through the app's internal structure
-			const streamsPlugin = (this.app as any).plugins?.plugins?.['streams'];
-			
-			if (streamsPlugin) {
-				console.log('Streams plugin found:', streamsPlugin);
-				
-				// Method 1: Try to access public methods
-				if (typeof streamsPlugin.getCurrentStreams === 'function') {
-					const currentStreams = streamsPlugin.getCurrentStreams();
-					console.log('Current streams:', currentStreams);
-				}
-				
-				// Method 2: Try to access public properties
-				if (streamsPlugin.currentStreams) {
-					console.log('Streams data:', streamsPlugin.currentStreams);
-				}
-				
-				// Method 3: Listen for custom events if the plugin publishes them
-				// Note: This requires the Streams plugin to emit custom events
-				// You may need to check the Streams plugin documentation for event names
-				this.registerEvent(
-					this.app.workspace.on('file-open', (file) => {
-						// Check if this is a streams-related file or trigger
-						if (file?.path?.includes('streams')) {
-							console.log('Streams-related file opened:', file.path);
-							// Re-check streams data
-							if (typeof streamsPlugin.getCurrentStreams === 'function') {
-								const currentStreams = streamsPlugin.getCurrentStreams();
-								console.log('Updated streams:', currentStreams);
-							}
-						}
-					})
-				);
-			} else {
-				console.log('Streams plugin not found or not loaded');
-			}
-		});
-	}
-
-
-	/**
-	 * Get current streams data from the Streams plugin
-	 */
-	private getStreamsData() {
-		const streamsPlugin = (this.app as any).plugins?.plugins?.['streams'];
-		
-		if (!streamsPlugin) {
-			new Notice('Streams plugin not found or not loaded');
-			// Fall back to our stub data
-			const streamsData = this.streamsService.getAllStreams();
-			new Notice(`Using stub data: Found ${streamsData.length} streams`);
-			return streamsData;
-		}
-
-		try {
-			// Try different methods to access streams data
-			let streamsData = null;
-			
-			// Method 1: Try public method
-			if (typeof streamsPlugin.getCurrentStreams === 'function') {
-				streamsData = streamsPlugin.getCurrentStreams();
-			}
-			// Method 2: Try public property
-			else if (streamsPlugin.currentStreams) {
-				streamsData = streamsPlugin.currentStreams;
-			}
-			// Method 3: Try other common property names
-			else if (streamsPlugin.streams) {
-				streamsData = streamsPlugin.streams;
-			}
-			// Method 4: Try data property
-			else if (streamsPlugin.data) {
-				streamsData = streamsPlugin.data;
-			}
-
-			if (streamsData) {
-				console.log('Streams data retrieved from plugin:', streamsData);
-				new Notice(`Found ${Array.isArray(streamsData) ? streamsData.length : 'some'} streams from plugin`);
-				
-				// You can now use streamsData in your task management logic
-				// For example, create tasks based on streams, or filter tasks by stream data
-				return streamsData;
-			} else {
-				new Notice('No streams data found in the Streams plugin, using stub data');
-				console.log('Available properties on Streams plugin:', Object.keys(streamsPlugin));
-				// Fall back to our stub data
-				const fallbackData = this.streamsService.getAllStreams();
-				return fallbackData;
-			}
-		} catch (error) {
-			console.error('Error accessing Streams plugin data:', error);
-			new Notice('Error accessing Streams plugin data, using stub data');
-			// Fall back to our stub data
-			const fallbackData = this.streamsService.getAllStreams();
-			return fallbackData;
-		}
-	}
 
 	/**
 	 * Open the OnTaskView pane
