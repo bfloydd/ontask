@@ -343,11 +343,11 @@ export class OnTaskView extends ItemView {
 				// Write the updated content back to the file
 				await this.app.vault.modify(checkbox.file, lines.join('\n'));
 				
-				// Update the checkbox item
-				checkbox.lineContent = newLine.trim();
-				
 				// Show success notification
 				new Notice(`Checkbox ${isChecked ? 'checked' : 'unchecked'} in ${checkbox.file.name}`);
+				
+				// Refresh the entire view to update top task and status bar
+				await this.refreshCheckboxes();
 			}
 		} catch (error) {
 			console.error('Error toggling checkbox:', error);
@@ -510,15 +510,12 @@ export class OnTaskView extends ItemView {
 				// Write the updated content back to the file
 				await this.app.vault.modify(checkbox.file, lines.join('\n'));
 				
-				// Update the checkbox item
-				checkbox.lineContent = newLine.trim();
-				
-				// Update the display immediately
-				this.updateCheckboxDisplay(checkbox, newSymbol);
-				
 				// Show success notification
 				const statusName = TASK_STATUSES.find(s => s.symbol === newSymbol)?.name || 'Unknown';
 				new Notice(`Task status changed to: ${statusName}`);
+				
+				// Refresh the entire view to update top task and status bar
+				await this.refreshCheckboxes();
 			}
 		} catch (error) {
 			console.error('Error updating task status:', error);
