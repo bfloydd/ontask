@@ -1,10 +1,10 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { OnTaskSettings } from './src/types';
+import { StreamsService } from './src/services/streams';
+import { CheckboxFinderService } from './src/services/checkbox-finder';
+import { OnTaskView, ONTASK_VIEW_TYPE } from './src/views/ontask-view';
 
 // On Task Plugin - Task management for Obsidian
-
-interface OnTaskSettings {
-	mySetting: string;
-}
 
 const DEFAULT_SETTINGS: OnTaskSettings = {
 	mySetting: 'default'
@@ -12,14 +12,26 @@ const DEFAULT_SETTINGS: OnTaskSettings = {
 
 export default class OnTask extends Plugin {
 	settings: OnTaskSettings;
+	streamsService: StreamsService;
+	checkboxFinder: CheckboxFinderService;
 
 	async onload() {
 		await this.loadSettings();
 
+		// Initialize services
+		this.streamsService = new StreamsService();
+		this.checkboxFinder = new CheckboxFinderService(this.app, this.streamsService);
+
+		// Register the OnTaskView
+		this.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(leaf, this.checkboxFinder));
+
+		// Access Streams plugin data
+		this.initializeStreamsIntegration();
+
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('checkmark', 'On Task', (_evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('On Task plugin activated!');
+			// Open the OnTaskView
+			this.openOnTaskView();
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('on-task-ribbon-class');
@@ -65,6 +77,56 @@ export default class OnTask extends Plugin {
 			}
 		});
 
+		// Command to demonstrate Streams plugin integration
+		this.addCommand({
+			id: 'get-streams-data',
+			name: 'Get current streams data',
+			callback: () => {
+				this.getStreamsData();
+			}
+		});
+
+		// Command to test the stub data directly
+		this.addCommand({
+			id: 'test-stub-streams',
+			name: 'Test stub streams data',
+			callback: () => {
+				const streams = this.streamsService.getAllStreams();
+				new Notice(`Stub data: Found ${streams.length} streams`);
+				console.log('Stub streams:', streams);
+			}
+		});
+
+		// Command to test streams service functionality
+		this.addCommand({
+			id: 'test-streams-service',
+			name: 'Test streams service functionality',
+			callback: () => {
+				const streams = this.streamsService.getAllStreams();
+				const personalStream = this.streamsService.getStreamByName('Personal');
+				const workStream = this.streamsService.getStreamByPath('Assets/Streams/Work');
+				const hasPersonal = this.streamsService.hasStream('Personal');
+				const streamNames = this.streamsService.getStreamNames();
+				
+				console.log('All streams:', streams);
+				console.log('Personal stream:', personalStream);
+				console.log('Work stream:', workStream);
+				console.log('Has Personal stream:', hasPersonal);
+				console.log('Stream names:', streamNames);
+				
+				new Notice(`Streams service test complete. Check console for details.`);
+			}
+		});
+
+		// Command to open OnTaskView
+		this.addCommand({
+			id: 'open-ontask-view',
+			name: 'Open On Task view',
+			callback: () => {
+				this.openOnTaskView();
+			}
+		});
+
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new OnTaskSettingTab(this.app, this));
 
@@ -88,6 +150,130 @@ export default class OnTask extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	/**
+	 * Initialize integration with the Streams plugin
+	 */
+	private initializeStreamsIntegration() {
+		// Wait for all plugins to load
+		this.app.workspace.onLayoutReady(() => {
+			// Access plugins through the app's internal structure
+			const streamsPlugin = (this.app as any).plugins?.plugins?.['streams'];
+			
+			if (streamsPlugin) {
+				console.log('Streams plugin found:', streamsPlugin);
+				
+				// Method 1: Try to access public methods
+				if (typeof streamsPlugin.getCurrentStreams === 'function') {
+					const currentStreams = streamsPlugin.getCurrentStreams();
+					console.log('Current streams:', currentStreams);
+				}
+				
+				// Method 2: Try to access public properties
+				if (streamsPlugin.currentStreams) {
+					console.log('Streams data:', streamsPlugin.currentStreams);
+				}
+				
+				// Method 3: Listen for custom events if the plugin publishes them
+				// Note: This requires the Streams plugin to emit custom events
+				// You may need to check the Streams plugin documentation for event names
+				this.registerEvent(
+					this.app.workspace.on('file-open', (file) => {
+						// Check if this is a streams-related file or trigger
+						if (file?.path?.includes('streams')) {
+							console.log('Streams-related file opened:', file.path);
+							// Re-check streams data
+							if (typeof streamsPlugin.getCurrentStreams === 'function') {
+								const currentStreams = streamsPlugin.getCurrentStreams();
+								console.log('Updated streams:', currentStreams);
+							}
+						}
+					})
+				);
+			} else {
+				console.log('Streams plugin not found or not loaded');
+			}
+		});
+	}
+
+
+	/**
+	 * Get current streams data from the Streams plugin
+	 */
+	private getStreamsData() {
+		const streamsPlugin = (this.app as any).plugins?.plugins?.['streams'];
+		
+		if (!streamsPlugin) {
+			new Notice('Streams plugin not found or not loaded');
+			// Fall back to our stub data
+			const streamsData = this.streamsService.getAllStreams();
+			new Notice(`Using stub data: Found ${streamsData.length} streams`);
+			return streamsData;
+		}
+
+		try {
+			// Try different methods to access streams data
+			let streamsData = null;
+			
+			// Method 1: Try public method
+			if (typeof streamsPlugin.getCurrentStreams === 'function') {
+				streamsData = streamsPlugin.getCurrentStreams();
+			}
+			// Method 2: Try public property
+			else if (streamsPlugin.currentStreams) {
+				streamsData = streamsPlugin.currentStreams;
+			}
+			// Method 3: Try other common property names
+			else if (streamsPlugin.streams) {
+				streamsData = streamsPlugin.streams;
+			}
+			// Method 4: Try data property
+			else if (streamsPlugin.data) {
+				streamsData = streamsPlugin.data;
+			}
+
+			if (streamsData) {
+				console.log('Streams data retrieved from plugin:', streamsData);
+				new Notice(`Found ${Array.isArray(streamsData) ? streamsData.length : 'some'} streams from plugin`);
+				
+				// You can now use streamsData in your task management logic
+				// For example, create tasks based on streams, or filter tasks by stream data
+				return streamsData;
+			} else {
+				new Notice('No streams data found in the Streams plugin, using stub data');
+				console.log('Available properties on Streams plugin:', Object.keys(streamsPlugin));
+				// Fall back to our stub data
+				const fallbackData = this.streamsService.getAllStreams();
+				return fallbackData;
+			}
+		} catch (error) {
+			console.error('Error accessing Streams plugin data:', error);
+			new Notice('Error accessing Streams plugin data, using stub data');
+			// Fall back to our stub data
+			const fallbackData = this.streamsService.getAllStreams();
+			return fallbackData;
+		}
+	}
+
+	/**
+	 * Open the OnTaskView pane
+	 */
+	private async openOnTaskView() {
+		// Check if the view is already open
+		const existingLeaf = this.app.workspace.getLeavesOfType(ONTASK_VIEW_TYPE)[0];
+		
+		if (existingLeaf) {
+			// If already open, just reveal it
+			this.app.workspace.revealLeaf(existingLeaf);
+		} else {
+			// Create a new leaf for the view
+			const leaf = this.app.workspace.getRightLeaf(false);
+			if (leaf) {
+				await leaf.setViewState({ type: ONTASK_VIEW_TYPE });
+				this.app.workspace.revealLeaf(leaf);
+			}
+		}
 	}
 }
 

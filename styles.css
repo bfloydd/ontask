@@ -6,3 +6,223 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+/* On Task Plugin Styles */
+
+/* OnTaskView Styles */
+.ontask-header {
+	border-bottom: 1px solid var(--background-modifier-border);
+	padding-bottom: 10px;
+	margin-bottom: 15px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.ontask-header h2 {
+	margin: 0;
+	color: var(--text-normal);
+}
+
+.ontask-refresh-btn {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 4px;
+	padding: 6px 12px;
+	cursor: pointer;
+	font-size: 12px;
+}
+
+.ontask-refresh-btn:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.ontask-loading {
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+	padding: 20px;
+}
+
+.ontask-empty {
+	text-align: center;
+	color: var(--text-muted);
+	padding: 40px 20px;
+	font-style: italic;
+}
+
+.ontask-error {
+	text-align: center;
+	color: var(--text-error);
+	padding: 20px;
+	background: var(--background-modifier-error);
+	border-radius: 4px;
+}
+
+.ontask-file-section {
+	margin-bottom: 25px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.ontask-file-header {
+	background: var(--background-modifier-border);
+	padding: 12px 15px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.ontask-file-header h3 {
+	margin: 0;
+	color: var(--text-normal);
+	font-size: 15px;
+	font-weight: 600;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.ontask-stream-info {
+	margin-top: 2px;
+}
+
+.ontask-stream-names {
+	color: var(--text-muted);
+	font-size: 11px;
+	font-style: italic;
+}
+
+.ontask-count {
+	color: var(--text-muted);
+	font-size: 12px;
+	background: var(--background-primary);
+	padding: 2px 8px;
+	border-radius: 10px;
+}
+
+.ontask-checkboxes-list {
+	padding: 10px;
+}
+
+.ontask-checkbox-item {
+	padding: 8px 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.ontask-checkbox-item:last-child {
+	border-bottom: none;
+}
+
+.ontask-checkbox-container {
+	margin-bottom: 6px;
+}
+
+.ontask-checkbox-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	cursor: pointer;
+	padding: 6px 8px;
+	background: var(--background-modifier-border);
+	border-radius: 4px;
+	transition: background-color 0.2s ease;
+}
+
+.ontask-checkbox-label:hover {
+	background: var(--background-modifier-hover);
+}
+
+.ontask-checkbox-input {
+	margin: 0;
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+.ontask-checkbox-text {
+	font-family: var(--font-monospace);
+	font-size: 13px;
+	line-height: 1.4;
+	word-wrap: break-word;
+	white-space: pre-wrap;
+	flex: 1;
+}
+
+.ontask-line-info {
+	color: var(--text-muted);
+	font-size: 11px;
+	padding: 2px 0;
+	text-align: right;
+}
+
+.ontask-line-number {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+/* Pagination styles */
+.ontask-pagination-info {
+	text-align: center;
+	padding: 10px;
+	margin-bottom: 15px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.ontask-pagination-text {
+	color: var(--text-muted);
+	font-size: 12px;
+}
+
+.ontask-load-more-container {
+	text-align: center;
+	padding: 20px;
+	border-top: 1px solid var(--background-modifier-border);
+	margin-top: 15px;
+}
+
+.ontask-load-more-btn {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 4px;
+	padding: 8px 16px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.ontask-load-more-btn:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.ontask-load-more-btn:active {
+	transform: translateY(1px);
+}
+
+/* Mobile responsive */
+.is-mobile .ontask-header {
+	flex-direction: column;
+	gap: 10px;
+	align-items: stretch;
+}
+
+.is-mobile .ontask-file-header h3 {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+}
+
+.is-mobile .ontask-file-header {
+	padding: 10px 12px;
+}
+
+.is-mobile .ontask-load-more-container {
+	padding: 15px;
+}
+
+.is-mobile .ontask-load-more-btn {
+	padding: 10px 20px;
+	font-size: 16px;
+}
