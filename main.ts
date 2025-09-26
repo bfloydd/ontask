@@ -10,7 +10,8 @@ const DEFAULT_SETTINGS: OnTaskSettings = {
 	mySetting: 'default',
 	hideCompletedTasks: false,
 	onlyShowToday: false,
-	topTaskColor: 'neutral'
+	topTaskColor: 'neutral',
+	showTopTaskInStatusBar: true
 }
 
 export default class OnTask extends Plugin {
@@ -42,8 +43,7 @@ export default class OnTask extends Plugin {
 		ribbonIconEl.addClass('on-task-ribbon-class');
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('On Task Ready');
+		// Removed "On Task Ready" status bar item
 
 		// Add top task status bar item
 		this.topTaskStatusBarItem = this.addStatusBarItem();
@@ -53,7 +53,7 @@ export default class OnTask extends Plugin {
 		this.topTaskStatusBarItem.addEventListener('click', () => this.toggleTopTaskVisibility());
 		this.topTaskStatusBarItem.addEventListener('contextmenu', (e) => this.showColorMenu(e));
 		
-		// Initialize top task display
+		// Initialize top task display based on setting
 		this.updateTopTaskStatusBar();
 
 		// This adds a simple command that can be triggered anywhere
@@ -307,6 +307,12 @@ export default class OnTask extends Plugin {
 	 */
 	public async updateTopTaskStatusBar() {
 		try {
+			// Check if status bar is enabled
+			if (!this.settings.showTopTaskInStatusBar) {
+				this.topTaskStatusBarItem.style.display = 'none';
+				return;
+			}
+
 			const checkboxes = await this.checkboxFinder.findAllCheckboxes(this.settings.hideCompletedTasks, this.settings.onlyShowToday);
 			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
 			
@@ -558,6 +564,18 @@ class OnTaskSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.onlyShowToday = value;
 					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Show top task in status bar')
+			.setDesc('When enabled, the current top task will be displayed in the status bar')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showTopTaskInStatusBar)
+				.onChange(async (value) => {
+					this.plugin.settings.showTopTaskInStatusBar = value;
+					await this.plugin.saveSettings();
+					// Update status bar immediately when setting changes
+					await this.plugin.updateTopTaskStatusBar();
 				}));
 	}
 }

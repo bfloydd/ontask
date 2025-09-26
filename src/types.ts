@@ -5,6 +5,7 @@ export interface OnTaskSettings {
 	hideCompletedTasks: boolean;
 	onlyShowToday: boolean;
 	topTaskColor: string;
+	showTopTaskInStatusBar: boolean;
 }
 
 export interface Stream {
