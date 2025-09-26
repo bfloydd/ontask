@@ -212,8 +212,8 @@ export class OnTaskView extends ItemView {
 			grouped.get(fileName)!.push(checkbox);
 		}
 		
-		// Sort files alphabetically
-		const sortedEntries = Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
+		// Sort files in reverse alphabetical order (Z-A)
+		const sortedEntries = Array.from(grouped.entries()).sort(([a], [b]) => b.localeCompare(a));
 		return new Map(sortedEntries);
 	}
 
