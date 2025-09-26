@@ -29,13 +29,6 @@ export class CheckboxFinderService {
 		const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');
 		const allCheckboxes: CheckboxItem[] = [];
 
-		console.log(`OnTask: Starting checkbox search in ${streams.length} streams (filtered from ${allStreams.length} total streams)`);
-		console.log('Streams:', streams.map(s => `${s.name} (${s.folder})`));
-		
-		if (allStreams.length > streams.length) {
-			const emptyStreams = allStreams.filter(stream => !stream.folder || stream.folder.trim() === '');
-			console.log(`OnTask: Skipped ${emptyStreams.length} streams with empty folder paths:`, emptyStreams.map(s => s.name));
-		}
 
 		if (onlyShowToday) {
 			const today = new Date();
@@ -43,34 +36,9 @@ export class CheckboxFinderService {
 			console.log(`OnTask: Searching for files dated ${todayString} (Only Show Today enabled)`);
 		}
 
-		const processedFiles = new Map<string, string[]>(); // file path -> list of streams that processed it
-		
 		for (const stream of streams) {
-			console.log(`OnTask: Searching stream: ${stream.name} in folder: ${stream.folder}`);
 			const streamCheckboxes = await this.findCheckboxesInStream(stream, hideCompleted, onlyShowToday);
-			console.log(`OnTask: Found ${streamCheckboxes.length} checkboxes in stream: ${stream.name}`);
-			
-			// Track which files are processed by which streams
-			const filePaths = streamCheckboxes.map(cb => cb.file.path);
-			console.log(`OnTask: Files processed in stream ${stream.name}:`, filePaths);
-			
-			// Track file-to-stream mapping to identify overlaps
-			for (const filePath of filePaths) {
-				if (!processedFiles.has(filePath)) {
-					processedFiles.set(filePath, []);
-				}
-				processedFiles.get(filePath)!.push(stream.name);
-			}
-			
 			allCheckboxes.push(...streamCheckboxes);
-		}
-		
-		// Report file overlaps
-		console.log(`OnTask: File processing summary:`);
-		for (const [filePath, streams] of processedFiles.entries()) {
-			if (streams.length > 1) {
-				console.log(`OnTask: ⚠️  File processed by multiple streams: ${filePath} -> ${streams.join(', ')}`);
-			}
 		}
 
 		if (onlyShowToday) {
@@ -90,15 +58,12 @@ export class CheckboxFinderService {
 		try {
 			// Get all files in the stream directory
 			const streamFolder = this.app.vault.getAbstractFileByPath(stream.folder);
-			console.log(`OnTask: Stream folder lookup for ${stream.folder}:`, streamFolder);
 			
 			if (!streamFolder || !(streamFolder instanceof TFile)) {
 				// If it's not a file, try to get files from the directory
 				let files = this.app.vault.getMarkdownFiles().filter(file => 
 					file.path.startsWith(stream.folder)
 				);
-				console.log(`OnTask: Found ${files.length} files in stream folder ${stream.folder}`);
-				console.log(`OnTask: Files in ${stream.folder}:`, files.map(f => f.path));
 				
 				// Performance optimization: Filter files by today before reading their content
 				if (onlyShowToday) {
@@ -108,9 +73,7 @@ export class CheckboxFinderService {
 				}
 				
 				for (const file of files) {
-					console.log(`OnTask: Processing file ${file.path} in stream ${stream.name}`);
 					const fileCheckboxes = await this.findCheckboxesInFile(file, stream, hideCompleted, onlyShowToday);
-					console.log(`OnTask: Found ${fileCheckboxes.length} checkboxes in file ${file.path}`);
 					checkboxes.push(...fileCheckboxes);
 				}
 			} else {
@@ -152,7 +115,6 @@ export class CheckboxFinderService {
 					
 					// Note: onlyShowToday filtering is now done at the stream level for better performance
 					
-					console.log(`OnTask: Adding checkbox from ${file.path}:${i + 1} - "${line.trim()}"`);
 					checkboxes.push({
 						file: file,
 						lineNumber: i + 1, // 1-based line numbers
