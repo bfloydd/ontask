@@ -1,7 +1,7 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { OnTaskSettings } from './src/types';
 import { StreamsService } from './src/services/streams';
-import { CheckboxFinderService } from './src/services/checkbox-finder';
+import { CheckboxFinderService } from './src/services/checkbox-finder/checkbox-finder-service';
 import { OnTaskView, ONTASK_VIEW_TYPE } from './src/views/ontask-view';
 
 // On Task Plugin - Task management for Obsidian
@@ -10,7 +10,10 @@ const DEFAULT_SETTINGS: OnTaskSettings = {
 	hideCompletedTasks: false,
 	onlyShowToday: false,
 	topTaskColor: 'neutral',
-	showTopTaskInStatusBar: true
+	showTopTaskInStatusBar: true,
+	checkboxSource: 'streams',
+	customFolderPath: '',
+	includeSubfolders: true
 }
 
 export default class OnTask extends Plugin {
@@ -26,6 +29,9 @@ export default class OnTask extends Plugin {
 		// Initialize services
 		this.streamsService = new StreamsService(this.app);
 		this.checkboxFinder = new CheckboxFinderService(this.app, this.streamsService);
+		
+		// Configure checkbox source based on settings
+		this.configureCheckboxSource();
 		
 		// Set up streams service ready callback
 		this.setupStreamsReadyCallback();
@@ -378,6 +384,33 @@ export default class OnTask extends Plugin {
 	}
 
 	/**
+	 * Configure checkbox source based on settings
+	 */
+	public configureCheckboxSource() {
+		const strategies: string[] = [];
+		
+		switch (this.settings.checkboxSource) {
+			case 'streams':
+				strategies.push('streams');
+				break;
+			case 'daily-notes':
+				strategies.push('daily-notes');
+				break;
+			case 'folder':
+				// Create and register folder strategy if not already registered
+				const folderStrategy = this.checkboxFinder.createFolderStrategy(
+					this.settings.customFolderPath,
+					this.settings.includeSubfolders
+				);
+				this.checkboxFinder.registerStrategy('custom-folder', folderStrategy);
+				strategies.push('custom-folder');
+				break;
+		}
+		
+		this.checkboxFinder.setActiveStrategies(strategies);
+	}
+
+	/**
 	 * Parse a checkbox line to extract text (helper method)
 	 */
 	private parseCheckboxLine(line: string): { remainingText: string } {
@@ -456,5 +489,50 @@ class OnTaskSettingTab extends PluginSettingTab {
 					// Update status bar immediately when setting changes
 					await this.plugin.updateTopTaskStatusBar();
 				}));
+
+		// Add separator
+		containerEl.createEl('hr');
+
+		// Checkbox source selection
+		new Setting(containerEl)
+			.setName('Checkbox source')
+			.setDesc('Choose where to find checkboxes from')
+			.addDropdown(dropdown => dropdown
+				.addOption('streams', 'Streams Plugin')
+				.addOption('daily-notes', 'Daily Notes')
+				.addOption('folder', 'Custom Folder')
+				.setValue(this.plugin.settings.checkboxSource)
+				.onChange(async (value: 'streams' | 'daily-notes' | 'folder') => {
+					this.plugin.settings.checkboxSource = value;
+					await this.plugin.saveSettings();
+					this.plugin.configureCheckboxSource();
+					this.display(); // Refresh settings to show/hide folder options
+				}));
+
+		// Folder path setting (only show when folder is selected)
+		if (this.plugin.settings.checkboxSource === 'folder') {
+			new Setting(containerEl)
+				.setName('Folder path')
+				.setDesc('Path to the folder containing your task files')
+				.addText(text => text
+					.setPlaceholder('e.g., /My Tasks or My Tasks')
+					.setValue(this.plugin.settings.customFolderPath)
+					.onChange(async (value) => {
+						this.plugin.settings.customFolderPath = value;
+						await this.plugin.saveSettings();
+						this.plugin.configureCheckboxSource();
+					}));
+
+			new Setting(containerEl)
+				.setName('Include subfolders')
+				.setDesc('When enabled, also search in subfolders')
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.includeSubfolders)
+					.onChange(async (value) => {
+						this.plugin.settings.includeSubfolders = value;
+						await this.plugin.saveSettings();
+						this.plugin.configureCheckboxSource();
+					}));
+		}
 	}
 }

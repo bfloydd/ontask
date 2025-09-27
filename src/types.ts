@@ -5,6 +5,9 @@ export interface OnTaskSettings {
 	onlyShowToday: boolean;
 	topTaskColor: string;
 	showTopTaskInStatusBar: boolean;
+	checkboxSource: 'streams' | 'daily-notes' | 'folder';
+	customFolderPath: string;
+	includeSubfolders: boolean;
 }
 
 export interface Stream {

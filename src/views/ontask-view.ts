@@ -1,5 +1,6 @@
 import { ItemView, WorkspaceLeaf, Notice, MarkdownView } from 'obsidian';
-import { CheckboxItem, CheckboxFinderService } from '../services/checkbox-finder';
+import { CheckboxItem } from '../services/checkbox-finder/interfaces';
+import { CheckboxFinderService } from '../services/checkbox-finder/checkbox-finder-service';
 import { OnTaskSettings } from '../types';
 import { Plugin } from 'obsidian';
 
@@ -281,12 +282,12 @@ export class OnTaskView extends ItemView {
 				cls: 'ontask-count'
 			});
 			
-			// Add stream info to file header
-			const streamInfo = fileHeader.createEl('div', { cls: 'ontask-stream-info' });
-			const streamNames = [...new Set(fileCheckboxes.map(cb => cb.streamName))];
-			streamInfo.createEl('span', { 
-				text: `Streams: ${streamNames.join(', ')}`,
-				cls: 'ontask-stream-names'
+			// Add source info to file header
+			const sourceInfo = fileHeader.createEl('div', { cls: 'ontask-source-info' });
+			const sourceNames = [...new Set(fileCheckboxes.map(cb => cb.sourceName))];
+			sourceInfo.createEl('span', { 
+				text: `Sources: ${sourceNames.join(', ')}`,
+				cls: 'ontask-source-names'
 			});
 			
 			// Checkboxes list
@@ -317,14 +318,14 @@ export class OnTaskView extends ItemView {
 		}
 	}
 
-	private groupCheckboxesByStream(checkboxes: CheckboxItem[] = this.checkboxes): Map<string, CheckboxItem[]> {
+	private groupCheckboxesBySource(checkboxes: CheckboxItem[] = this.checkboxes): Map<string, CheckboxItem[]> {
 		const grouped = new Map<string, CheckboxItem[]>();
 		
 		for (const checkbox of checkboxes) {
-			if (!grouped.has(checkbox.streamName)) {
-				grouped.set(checkbox.streamName, []);
+			if (!grouped.has(checkbox.sourceName)) {
+				grouped.set(checkbox.sourceName, []);
 			}
-			grouped.get(checkbox.streamName)!.push(checkbox);
+			grouped.get(checkbox.sourceName)!.push(checkbox);
 		}
 		
 		return grouped;
