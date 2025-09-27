@@ -4,7 +4,7 @@ import { CheckboxFinderFactoryImpl } from './checkbox-finder-factory';
 import { StreamsService } from '../streams';
 
 // Re-export CheckboxItem for backward compatibility
-export { CheckboxItem } from './interfaces';
+export type { CheckboxItem } from './interfaces';
 
 export class CheckboxFinderService {
 	private app: App;
