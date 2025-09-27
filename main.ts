@@ -494,7 +494,7 @@ class OnTaskSettingTab extends PluginSettingTab {
 		containerEl.createEl('hr');
 
 		// Checkbox source selection
-		new Setting(containerEl)
+		const sourceSetting = new Setting(containerEl)
 			.setName('Checkbox source')
 			.setDesc('Choose where to find checkboxes from')
 			.addDropdown(dropdown => dropdown
@@ -508,6 +508,24 @@ class OnTaskSettingTab extends PluginSettingTab {
 					this.plugin.configureCheckboxSource();
 					this.display(); // Refresh settings to show/hide folder options
 				}));
+
+		// Add warning for Daily Notes if plugin is not available
+		if (this.plugin.settings.checkboxSource === 'daily-notes') {
+			const dailyNotesPlugin = (this.app as any).plugins?.getPlugin('daily-notes');
+			const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
+			const hasDailyNotesCore = dailyNotesCore && dailyNotesCore.enabled;
+			const isDailyNotesAvailable = dailyNotesPlugin !== null || hasDailyNotesCore;
+			
+			if (!isDailyNotesAvailable) {
+				const warningEl = containerEl.createEl('div', { 
+					cls: 'setting-item-description',
+					text: '⚠️ Daily Notes plugin is not enabled. Please enable it in Settings → Community plugins.'
+				});
+				warningEl.style.color = 'var(--text-error)';
+				warningEl.style.fontWeight = 'bold';
+				warningEl.style.marginTop = '8px';
+			}
+		}
 
 		// Folder path setting (only show when folder is selected)
 		if (this.plugin.settings.checkboxSource === 'folder') {

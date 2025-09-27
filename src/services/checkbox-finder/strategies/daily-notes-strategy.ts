@@ -13,44 +13,66 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 	}
 
 	isAvailable(): boolean {
-		// Check if Daily Notes plugin is available
+		// Check if Daily Notes plugin is available or if Daily Notes is a core feature
 		const dailyNotesPlugin = (this.app as any).plugins?.getPlugin('daily-notes');
-		return dailyNotesPlugin !== null;
+		const hasDailyNotesPlugin = dailyNotesPlugin !== null;
+		
+		// Check if Daily Notes core feature is enabled
+		const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
+		const hasDailyNotesCore = dailyNotesCore && dailyNotesCore.enabled;
+		
+		console.log('OnTask: Daily Notes availability check:', {
+			plugin: dailyNotesPlugin,
+			hasPlugin: hasDailyNotesPlugin,
+			corePlugin: dailyNotesCore,
+			hasCore: hasDailyNotesCore,
+			coreEnabled: dailyNotesCore?.enabled,
+			corePlugins: Object.keys((this.app as any).internalPlugins?.plugins || {})
+		});
+		
+		return hasDailyNotesPlugin || hasDailyNotesCore;
 	}
 
 	async findCheckboxes(context: CheckboxFinderContext): Promise<CheckboxItem[]> {
 		const checkboxes: CheckboxItem[] = [];
 		
 		try {
-			// Get today's daily note
-			const today = new Date();
-			const dailyNotesPlugin = (this.app as any).plugins?.getPlugin('daily-notes');
-			
-			if (!dailyNotesPlugin) {
-				console.log('OnTask: Daily Notes plugin not available');
+			// Get Daily Notes configuration from core plugin
+			const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
+			if (!dailyNotesCore || !dailyNotesCore.enabled) {
+				console.log('OnTask: Daily Notes core plugin not available or disabled');
 				return checkboxes;
 			}
 
-			// Get today's note file
-			const todayNote = await this.getTodaysDailyNote(dailyNotesPlugin, today);
-			if (!todayNote) {
-				console.log('OnTask: No daily note found for today');
+			// Get Daily Notes folder path from settings
+			const dailyNotesFolder = dailyNotesCore.instance?.options?.folder || '';
+			console.log('OnTask: Daily Notes folder:', dailyNotesFolder);
+
+			if (!dailyNotesFolder) {
+				console.log('OnTask: Daily Notes folder not configured');
 				return checkboxes;
 			}
 
-			// Find checkboxes in today's note
-			const fileCheckboxes = await this.findCheckboxesInFile(todayNote, context);
-			checkboxes.push(...fileCheckboxes);
+			// Get all markdown files in the Daily Notes folder
+			const allFiles = this.app.vault.getMarkdownFiles();
+			const dailyNotesFiles = allFiles.filter(file => 
+				file.path.startsWith(dailyNotesFolder)
+			);
 
-			// If onlyShowToday is false, also get checkboxes from recent daily notes
-			if (!context.onlyShowToday) {
-				const recentNotes = await this.getRecentDailyNotes(dailyNotesPlugin, 7); // Last 7 days
-				for (const note of recentNotes) {
-					if (note.path !== todayNote.path) { // Skip today's note as we already processed it
-						const fileCheckboxes = await this.findCheckboxesInFile(note, context);
-						checkboxes.push(...fileCheckboxes);
-					}
-				}
+			console.log('OnTask: Found Daily Notes files:', dailyNotesFiles.map(f => f.path));
+
+			// Filter files by today if onlyShowToday is enabled
+			let filesToProcess = dailyNotesFiles;
+			if (context.onlyShowToday) {
+				const originalCount = filesToProcess.length;
+				filesToProcess = dailyNotesFiles.filter(file => this.isTodayFile(file));
+				console.log(`OnTask: Filtered ${originalCount} Daily Notes files to ${filesToProcess.length} today's files`);
+			}
+
+			// Process each Daily Notes file
+			for (const file of filesToProcess) {
+				const fileCheckboxes = await this.findCheckboxesInFile(file, context);
+				checkboxes.push(...fileCheckboxes);
 			}
 
 		} catch (error) {
@@ -225,5 +247,71 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 		const checkboxMatch = line.match(/^-\s*\[!([^\]]*)\]/);
 		
 		return checkboxMatch !== null;
+	}
+
+	private isTodayFile(file: TFile): boolean {
+		const today = new Date();
+		
+		// Generate multiple date formats that might be used in filenames
+		const todayFormats = this.getTodayDateFormats(today);
+		
+		// Check if filename contains today's date in any common format
+		const fileName = file.name.toLowerCase();
+		const filePath = file.path.toLowerCase();
+		
+		// Check both filename and full path for date patterns
+		for (const dateFormat of todayFormats) {
+			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
+				console.log(`OnTask: Found today's file: ${file.name} (matches date: ${dateFormat})`);
+				return true;
+			}
+		}
+		
+		// Check for date patterns in the filename using regex
+		const datePatterns = this.getDatePatterns(today);
+		for (const pattern of datePatterns) {
+			if (pattern.test(fileName) || pattern.test(filePath)) {
+				console.log(`OnTask: Found today's file: ${file.name} (matches pattern: ${pattern})`);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	private getTodayDateFormats(today: Date): string[] {
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, '0');
+		const day = String(today.getDate()).padStart(2, '0');
+		
+		return [
+			`${year}-${month}-${day}`,           // 2024-01-15
+			`${year}${month}${day}`,             // 20240115
+			`${month}-${day}-${year}`,           // 01-15-2024
+			`${month}/${day}/${year}`,           // 01/15/2024
+			`${day}-${month}-${year}`,           // 15-01-2024
+			`${day}/${month}/${year}`,           // 15/01/2024
+		];
+	}
+
+	private getDatePatterns(today: Date): RegExp[] {
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, '0');
+		const day = String(today.getDate()).padStart(2, '0');
+		
+		return [
+			// YYYY-MM-DD pattern
+			new RegExp(`${year}-${month}-${day}`),
+			// YYYYMMDD pattern
+			new RegExp(`${year}${month}${day}`),
+			// MM-DD-YYYY pattern
+			new RegExp(`${month}-${day}-${year}`),
+			// MM/DD/YYYY pattern
+			new RegExp(`${month}/${day}/${year}`),
+			// DD-MM-YYYY pattern
+			new RegExp(`${day}-${month}-${year}`),
+			// DD/MM/YYYY pattern
+			new RegExp(`${day}/${month}/${year}`),
+		];
 	}
 }

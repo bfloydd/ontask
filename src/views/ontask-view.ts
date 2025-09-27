@@ -231,8 +231,38 @@ export class OnTaskView extends ItemView {
 		}
 		
 		if (this.checkboxes.length === 0) {
+			// Check if Daily Notes is selected but plugin is not available
+			const dailyNotesPlugin = (this.app as any).plugins?.getPlugin('daily-notes');
+			const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
+			const hasDailyNotesCore = dailyNotesCore && dailyNotesCore.enabled;
+			const isDailyNotesAvailable = dailyNotesPlugin !== null || hasDailyNotesCore;
+			
+			console.log('OnTask: Daily Notes plugin check:', { 
+				plugin: dailyNotesPlugin, 
+				hasCore: hasDailyNotesCore,
+				available: isDailyNotesAvailable,
+				settings: this.settings.checkboxSource,
+				allPlugins: Object.keys((this.app as any).plugins?.plugins || {}),
+				corePlugins: Object.keys((this.app as any).internalPlugins?.plugins || {})
+			});
+			
+			if (this.settings.checkboxSource === 'daily-notes' && !isDailyNotesAvailable) {
+				const warningEl = contentEl.createEl('div', { 
+					cls: 'ontask-warning'
+				});
+				warningEl.createEl('div', { 
+					text: '⚠️ Daily Notes plugin is not enabled',
+					cls: 'ontask-warning-title'
+				});
+				warningEl.createEl('div', { 
+					text: 'Please enable the Daily Notes plugin in Settings → Community plugins to use this feature.',
+					cls: 'ontask-warning-description'
+				});
+				return;
+			}
+			
 			contentEl.createEl('div', { 
-				text: 'No checkboxes found in any streams.',
+				text: 'No checkboxes found.',
 				cls: 'ontask-empty'
 			});
 			return;

@@ -9,6 +9,29 @@ If your plugin does not need CSS, delete this file.
 
 /* On Task Plugin Styles */
 
+/* Warning styles */
+.ontask-warning {
+	background: var(--background-modifier-error);
+	border: 1px solid var(--text-error);
+	border-radius: 6px;
+	padding: 16px;
+	margin: 16px 0;
+	text-align: center;
+}
+
+.ontask-warning-title {
+	font-weight: bold;
+	color: var(--text-error);
+	font-size: 16px;
+	margin-bottom: 8px;
+}
+
+.ontask-warning-description {
+	color: var(--text-muted);
+	font-size: 14px;
+	line-height: 1.4;
+}
+
 /* OnTaskView Styles */
 .ontask-header {
 	border-bottom: 1px solid var(--background-modifier-border);
