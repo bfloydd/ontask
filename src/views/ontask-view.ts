@@ -36,8 +36,7 @@ export class OnTaskView extends ItemView {
 	private settings: OnTaskSettings;
 	private plugin: Plugin;
 	private checkboxes: CheckboxItem[] = [];
-	private displayedCount: number = 20;
-	private currentPage: number = 0;
+	private itemsPerLoad: number = 20;
 	private hideCompleted: boolean = false;
 	private onlyShowToday: boolean = false;
 	private currentlyDisplayed: number = 0;
@@ -172,8 +171,7 @@ export class OnTaskView extends ItemView {
 			cls: 'ontask-loading'
 		});
 		
-		// Reset pagination and display count
-		this.currentPage = 0;
+		// Reset display count
 		this.currentlyDisplayed = 0;
 		
 		await this.loadCheckboxes();
@@ -241,22 +239,22 @@ export class OnTaskView extends ItemView {
 
 		// Calculate how many more tasks to show
 		const startIndex = this.currentlyDisplayed;
-		const endIndex = Math.min(startIndex + this.displayedCount, regularTasks.length);
+		const endIndex = Math.min(startIndex + this.itemsPerLoad, regularTasks.length);
 		const displayedCheckboxes = regularTasks.slice(startIndex, endIndex);
 		const hasMore = endIndex < regularTasks.length;
 
 		// Update currently displayed count
 		this.currentlyDisplayed = endIndex;
 
-		// Add or update pagination info
-		let paginationInfo = contentEl.querySelector('.ontask-pagination-info') as HTMLElement;
-		if (!paginationInfo) {
-			paginationInfo = contentEl.createEl('div', { cls: 'ontask-pagination-info' });
+		// Add or update task count info
+		let taskCountInfo = contentEl.querySelector('.ontask-task-count-info') as HTMLElement;
+		if (!taskCountInfo) {
+			taskCountInfo = contentEl.createEl('div', { cls: 'ontask-task-count-info' });
 		}
-		paginationInfo.empty();
-		paginationInfo.createEl('span', { 
-			text: `Showing ${startIndex + 1}-${endIndex} of ${regularTasks.length} regular tasks${topTask ? ' (plus 1 top task)' : ''}`,
-			cls: 'ontask-pagination-text'
+		taskCountInfo.empty();
+		taskCountInfo.createEl('span', { 
+			text: `Showing ${endIndex} of ${regularTasks.length} regular tasks${topTask ? ' (plus 1 top task)' : ''}`,
+			cls: 'ontask-task-count-text'
 		});
 
 		// Group displayed checkboxes by file
