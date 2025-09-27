@@ -13,7 +13,7 @@ export interface CheckboxItem {
 
 export class CheckboxFinderService {
 	private app: App;
-	private streamsService: StreamsService;
+	public streamsService: StreamsService;
 
 	constructor(app: App, streamsService: StreamsService) {
 		this.app = app;

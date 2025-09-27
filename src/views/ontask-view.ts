@@ -119,6 +119,15 @@ export class OnTaskView extends ItemView {
 		
 		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
+				// Check if streams are available before attempting to load checkboxes
+				if (!this.checkboxFinder.streamsService.isStreamsPluginAvailable()) {
+					console.log(`OnTask: Waiting for streams plugin to load (attempt ${attempt}/${maxRetries})`);
+					if (attempt < maxRetries) {
+						await new Promise(resolve => setTimeout(resolve, retryDelay));
+						continue;
+					}
+				}
+				
 				this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted, this.onlyShowToday);
 				
 				// If we found checkboxes or this is the last attempt, render and break

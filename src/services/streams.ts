@@ -51,7 +51,7 @@ export class StreamsService {
 	public getAllStreams(): Stream[] {
 		// Check if the streams plugin is available
 		if (!this.streamsPlugin) {
-			console.log('StreamsService: Streams plugin not available, returning empty array');
+			console.log('StreamsService: Streams plugin not ready yet, returning empty array');
 			return [];
 		}
 
