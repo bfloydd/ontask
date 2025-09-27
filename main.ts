@@ -7,7 +7,6 @@ import { OnTaskView, ONTASK_VIEW_TYPE } from './src/views/ontask-view';
 // On Task Plugin - Task management for Obsidian
 
 const DEFAULT_SETTINGS: OnTaskSettings = {
-	mySetting: 'default',
 	hideCompletedTasks: false,
 	onlyShowToday: false,
 	topTaskColor: 'neutral',
@@ -27,6 +26,9 @@ export default class OnTask extends Plugin {
 		// Initialize services
 		this.streamsService = new StreamsService(this.app);
 		this.checkboxFinder = new CheckboxFinderService(this.app, this.streamsService);
+		
+		// Set up streams service ready callback
+		this.setupStreamsReadyCallback();
 
 		// Register the OnTaskView
 		this.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(leaf, this.checkboxFinder, this.settings, this));
@@ -141,6 +143,32 @@ export default class OnTask extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	/**
+	 * Set up callback to refresh OnTaskView when streams become available
+	 */
+	private setupStreamsReadyCallback() {
+		// Wait for layout ready to ensure streams plugin is loaded
+		this.app.workspace.onLayoutReady(() => {
+			// Check if streams are available and refresh any open OnTaskView
+			if (this.streamsService.isStreamsPluginAvailable()) {
+				this.refreshOnTaskViews();
+			}
+		});
+	}
+
+	/**
+	 * Refresh all open OnTaskView instances
+	 */
+	private async refreshOnTaskViews() {
+		const leaves = this.app.workspace.getLeavesOfType(ONTASK_VIEW_TYPE);
+		for (const leaf of leaves) {
+			if (leaf.view instanceof OnTaskView) {
+				// Trigger a refresh of the view
+				await (leaf.view as OnTaskView).refreshCheckboxes();
+			}
+		}
 	}
 
 
@@ -396,17 +424,6 @@ class OnTaskSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
 
 		new Setting(containerEl)
 			.setName('Hide completed tasks')

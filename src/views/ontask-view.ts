@@ -99,8 +99,8 @@ export class OnTaskView extends ItemView {
 			cls: 'ontask-loading'
 		});
 		
-		// Load checkboxes
-		await this.loadCheckboxes();
+		// Load checkboxes with retry mechanism
+		await this.loadCheckboxesWithRetry();
 		
 		// Remove loading indicator
 		loadingEl.remove();
@@ -108,6 +108,40 @@ export class OnTaskView extends ItemView {
 
 	async onClose() {
 		// Cleanup if needed
+	}
+
+	private async loadCheckboxesWithRetry() {
+		const maxRetries = 5;
+		const retryDelay = 1000; // 1 second
+		
+		for (let attempt = 1; attempt <= maxRetries; attempt++) {
+			try {
+				this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted, this.onlyShowToday);
+				
+				// If we found checkboxes or this is the last attempt, render and break
+				if (this.checkboxes.length > 0 || attempt === maxRetries) {
+					this.renderCheckboxes();
+					
+					// Update status bar with new top task
+					if (this.plugin && typeof (this.plugin as any).updateTopTaskStatusBar === 'function') {
+						await (this.plugin as any).updateTopTaskStatusBar();
+					}
+					break;
+				}
+				
+				// If no checkboxes found and not the last attempt, wait and retry
+				if (attempt < maxRetries) {
+					await new Promise(resolve => setTimeout(resolve, retryDelay));
+				}
+			} catch (error) {
+				console.error(`Error loading checkboxes (attempt ${attempt}):`, error);
+				if (attempt === maxRetries) {
+					this.showError('Failed to load checkboxes after multiple attempts');
+				} else {
+					await new Promise(resolve => setTimeout(resolve, retryDelay));
+				}
+			}
+		}
 	}
 
 	private async loadCheckboxes() {
@@ -125,7 +159,7 @@ export class OnTaskView extends ItemView {
 		}
 	}
 
-	private async refreshCheckboxes() {
+	public async refreshCheckboxes() {
 		const loadingEl = this.contentEl.createEl('div', { 
 			text: 'Refreshing...',
 			cls: 'ontask-loading'
