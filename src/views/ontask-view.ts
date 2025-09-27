@@ -36,10 +36,11 @@ export class OnTaskView extends ItemView {
 	private settings: OnTaskSettings;
 	private plugin: Plugin;
 	private checkboxes: CheckboxItem[] = [];
-	private displayedCount: number = 100;
+	private displayedCount: number = 20;
 	private currentPage: number = 0;
 	private hideCompleted: boolean = false;
 	private onlyShowToday: boolean = false;
+	private currentlyDisplayed: number = 0;
 
 	constructor(leaf: WorkspaceLeaf, checkboxFinder: CheckboxFinderService, settings: OnTaskSettings, plugin: Plugin) {
 		super(leaf);
@@ -114,6 +115,9 @@ export class OnTaskView extends ItemView {
 		const maxRetries = 5;
 		const retryDelay = 1000; // 1 second
 		
+		// Reset display count for fresh load
+		this.currentlyDisplayed = 0;
+		
 		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
 				this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted, this.onlyShowToday);
@@ -146,6 +150,9 @@ export class OnTaskView extends ItemView {
 
 	private async loadCheckboxes() {
 		try {
+			// Reset display count for fresh load
+			this.currentlyDisplayed = 0;
+			
 			this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted, this.onlyShowToday);
 			this.renderCheckboxes();
 			
@@ -165,8 +172,9 @@ export class OnTaskView extends ItemView {
 			cls: 'ontask-loading'
 		});
 		
-		// Reset pagination
+		// Reset pagination and display count
 		this.currentPage = 0;
+		this.currentlyDisplayed = 0;
 		
 		await this.loadCheckboxes();
 		loadingEl.remove();
@@ -206,10 +214,13 @@ export class OnTaskView extends ItemView {
 		await this.refreshCheckboxes();
 	}
 
-	private renderCheckboxes() {
-		// Clear existing content (except header)
+	private renderCheckboxes(append: boolean = false) {
+		// Clear existing content (except header) only if not appending
 		const contentEl = this.contentEl.querySelector('.ontask-content') || this.contentEl.createEl('div', { cls: 'ontask-content' });
-		contentEl.empty();
+		if (!append) {
+			contentEl.empty();
+			this.currentlyDisplayed = 0;
+		}
 		
 		if (this.checkboxes.length === 0) {
 			contentEl.createEl('div', { 
@@ -223,19 +234,26 @@ export class OnTaskView extends ItemView {
 		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
 		const regularTasks = this.checkboxes.filter(checkbox => !checkbox.isTopTask);
 
-		// Render Top Task section if it exists
-		if (topTask) {
+		// Render Top Task section if it exists (only on initial render)
+		if (topTask && !append) {
 			this.renderTopTaskSection(contentEl as HTMLElement, topTask);
 		}
 
-		// Calculate pagination for regular tasks
-		const startIndex = this.currentPage * this.displayedCount;
+		// Calculate how many more tasks to show
+		const startIndex = this.currentlyDisplayed;
 		const endIndex = Math.min(startIndex + this.displayedCount, regularTasks.length);
 		const displayedCheckboxes = regularTasks.slice(startIndex, endIndex);
 		const hasMore = endIndex < regularTasks.length;
 
-		// Add pagination info
-		const paginationInfo = contentEl.createEl('div', { cls: 'ontask-pagination-info' });
+		// Update currently displayed count
+		this.currentlyDisplayed = endIndex;
+
+		// Add or update pagination info
+		let paginationInfo = contentEl.querySelector('.ontask-pagination-info') as HTMLElement;
+		if (!paginationInfo) {
+			paginationInfo = contentEl.createEl('div', { cls: 'ontask-pagination-info' });
+		}
+		paginationInfo.empty();
 		paginationInfo.createEl('span', { 
 			text: `Showing ${startIndex + 1}-${endIndex} of ${regularTasks.length} regular tasks${topTask ? ' (plus 1 top task)' : ''}`,
 			cls: 'ontask-pagination-text'
@@ -272,7 +290,13 @@ export class OnTaskView extends ItemView {
 			}
 		}
 
-		// Add Load More button if there are more checkboxes
+		// Remove any existing Load More button first
+		const existingLoadMoreContainer = contentEl.querySelector('.ontask-load-more-container') as HTMLElement;
+		if (existingLoadMoreContainer) {
+			existingLoadMoreContainer.remove();
+		}
+
+		// Add Load More button at the bottom if there are more checkboxes
 		if (hasMore) {
 			const loadMoreContainer = contentEl.createEl('div', { cls: 'ontask-load-more-container' });
 			const loadMoreButton = loadMoreContainer.createEl('button', {
@@ -322,8 +346,7 @@ export class OnTaskView extends ItemView {
 	}
 
 	private loadMoreCheckboxes() {
-		this.currentPage++;
-		this.renderCheckboxes();
+		this.renderCheckboxes(true); // true = append mode
 	}
 
 	/**
