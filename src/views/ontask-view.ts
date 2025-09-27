@@ -516,8 +516,6 @@ export class OnTaskView extends ItemView {
 		const menu = document.createElement('div');
 		menu.className = 'ontask-context-menu';
 		menu.style.position = 'fixed';
-		menu.style.left = `${event.clientX}px`;
-		menu.style.top = `${event.clientY}px`;
 		menu.style.zIndex = '1000';
 		menu.style.background = 'var(--background-primary)';
 		menu.style.border = '1px solid var(--background-modifier-border)';
@@ -525,6 +523,9 @@ export class OnTaskView extends ItemView {
 		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
 		menu.style.padding = '4px 0';
 		menu.style.minWidth = '200px';
+		menu.style.maxWidth = '300px';
+		menu.style.maxHeight = '70vh';
+		menu.style.overflowY = 'auto';
 
 		// Add menu items
 		for (const status of TASK_STATUSES) {
@@ -569,8 +570,11 @@ export class OnTaskView extends ItemView {
 			menu.appendChild(menuItem);
 		}
 
-		// Add to document
+		// Add to document first to get dimensions
 		document.body.appendChild(menu);
+
+		// Smart positioning logic
+		this.positionContextMenu(menu, event);
 
 		// Close menu when clicking outside
 		const closeMenu = (e: MouseEvent) => {
@@ -584,6 +588,46 @@ export class OnTaskView extends ItemView {
 		setTimeout(() => {
 			document.addEventListener('click', closeMenu);
 		}, 0);
+	}
+
+	/**
+	 * Position context menu smartly to stay within viewport
+	 */
+	private positionContextMenu(menu: HTMLElement, event: MouseEvent) {
+		const viewport = {
+			width: window.innerWidth,
+			height: window.innerHeight
+		};
+
+		const menuRect = menu.getBoundingClientRect();
+		const menuWidth = menuRect.width;
+		const menuHeight = menuRect.height;
+
+		// Calculate initial position
+		let left = event.clientX;
+		let top = event.clientY;
+
+		// Adjust horizontal position if menu would go off-screen
+		if (left + menuWidth > viewport.width) {
+			left = viewport.width - menuWidth - 10; // 10px margin from edge
+		}
+		if (left < 10) {
+			left = 10; // 10px margin from left edge
+		}
+
+		// Adjust vertical position if menu would go off-screen
+		if (top + menuHeight > viewport.height) {
+			// Try to position above the cursor
+			top = event.clientY - menuHeight - 10;
+			// If still off-screen, position at top of viewport
+			if (top < 10) {
+				top = 10;
+			}
+		}
+
+		// Apply positioning
+		menu.style.left = `${left}px`;
+		menu.style.top = `${top}px`;
 	}
 
 	/**

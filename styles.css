@@ -536,3 +536,56 @@ If your plugin does not need CSS, delete this file.
 .ontask-color-menu-item:hover {
 	transform: translateX(2px);
 }
+
+/* Context Menu Styles */
+.ontask-context-menu {
+	font-family: var(--font-interface);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+.ontask-context-menu-item {
+	transition: all 0.15s ease;
+	border-bottom: 1px solid var(--background-modifier-border-focus);
+}
+
+.ontask-context-menu-item:last-child {
+	border-bottom: none;
+}
+
+.ontask-context-menu-item:hover {
+	background: var(--background-modifier-hover);
+	transform: translateX(2px);
+}
+
+.ontask-context-menu-item:active {
+	background: var(--background-modifier-active);
+	transform: translateX(1px);
+}
+
+/* Mobile responsive context menu */
+.is-mobile .ontask-context-menu {
+	min-width: 250px;
+	max-width: 90vw;
+	font-size: 16px;
+}
+
+.is-mobile .ontask-context-menu-item {
+	padding: 12px 16px;
+	min-height: 44px; /* iOS touch target minimum */
+}
+
+.is-mobile .ontask-context-menu-item:hover {
+	transform: none; /* Disable transform on mobile */
+}
+
+/* Phone specific adjustments */
+.is-phone .ontask-context-menu {
+	min-width: 200px;
+	max-width: 85vw;
+}
+
+.is-phone .ontask-context-menu-item {
+	padding: 10px 14px;
+	font-size: 15px;
+}
