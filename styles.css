@@ -101,28 +101,48 @@ If your plugin does not need CSS, delete this file.
 }
 
 .ontask-file-section {
-	margin-bottom: 25px;
+	margin-bottom: 20px;
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
+	border-radius: 8px;
 	overflow: hidden;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	background: var(--background-primary);
+}
+
+.ontask-file-section:not(:last-child) {
+	border-bottom: 2px solid var(--background-modifier-border);
 }
 
 .ontask-file-header {
-	background: var(--background-modifier-border);
-	padding: 12px 15px;
+	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-modifier-border) 100%);
+	padding: 14px 16px;
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	position: relative;
+}
+
+.ontask-file-header::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(90deg, transparent 0%, var(--text-accent) 50%, transparent 100%);
 }
 
 .ontask-file-header h3 {
 	margin: 0;
 	color: var(--text-normal);
-	font-size: 15px;
-	font-weight: 600;
+	font-size: 16px;
+	font-weight: 700;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 .ontask-stream-info {
@@ -144,7 +164,8 @@ If your plugin does not need CSS, delete this file.
 }
 
 .ontask-checkboxes-list {
-	padding: 2px;
+	padding: 8px;
+	background: var(--background-primary);
 }
 
 .ontask-checkbox-item {
@@ -475,10 +496,15 @@ If your plugin does not need CSS, delete this file.
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 4px;
+	font-size: 15px;
 }
 
 .is-mobile .ontask-file-header {
-	padding: 10px 12px;
+	padding: 12px 14px;
+}
+
+.is-mobile .ontask-file-section {
+	margin-bottom: 16px;
 }
 
 .is-mobile .ontask-load-more-container {

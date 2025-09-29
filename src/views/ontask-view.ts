@@ -301,18 +301,7 @@ export class OnTaskView extends ItemView {
 			// File header
 			const fileHeader = fileSection.createEl('div', { cls: 'ontask-file-header' });
 			fileHeader.createEl('h3', { text: fileName });
-			fileHeader.createEl('span', { 
-				text: `${fileCheckboxes.length} checkbox${fileCheckboxes.length !== 1 ? 'es' : ''}`,
-				cls: 'ontask-count'
-			});
 			
-			// Add source info to file header
-			const sourceInfo = fileHeader.createEl('div', { cls: 'ontask-source-info' });
-			const sourceNames = [...new Set(fileCheckboxes.map(cb => cb.sourceName))];
-			sourceInfo.createEl('span', { 
-				text: `Sources: ${sourceNames.join(', ')}`,
-				cls: 'ontask-source-names'
-			});
 			
 			// Checkboxes list
 			const checkboxesList = fileSection.createEl('div', { cls: 'ontask-checkboxes-list' });
