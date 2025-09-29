@@ -220,8 +220,8 @@ If your plugin does not need CSS, delete this file.
 
 /* Status-specific styling */
 .ontask-checkbox-display[data-status=""] {
-	background: var(--text-muted);
-	color: var(--text-on-accent);
+	background: transparent;
+	color: var(--text-muted);
 	border-color: var(--text-muted);
 	min-height: 20px;
 	min-width: 20px;
