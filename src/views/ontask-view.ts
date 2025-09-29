@@ -13,7 +13,7 @@ interface TaskStatus {
 }
 
 const TASK_STATUSES: TaskStatus[] = [
-	{ symbol: ' ', name: 'To-do', description: 'Empty checkbox' },
+	{ symbol: '.', name: 'To-do', description: 'Empty checkbox' },
 	{ symbol: '/', name: 'Incomplete', description: 'Partially done' },
 	{ symbol: 'x', name: 'Done', description: 'Completed task' },
 	{ symbol: '-', name: 'Canceled', description: 'Cancelled task' },
@@ -21,15 +21,9 @@ const TASK_STATUSES: TaskStatus[] = [
 	{ symbol: '?', name: 'Question', description: 'Question or inquiry' },
 	{ symbol: '!', name: 'Important', description: 'Important task' },
 	{ symbol: '*', name: 'Star', description: 'Starred task' },
-	{ symbol: '+', name: 'Add', description: 'Add to list' },
-	{ symbol: 'i', name: 'Idea', description: 'Idea or concept' },
 	{ symbol: 'r', name: 'Research', description: 'Research needed' },
 	{ symbol: 'b', name: 'Brainstorm', description: 'Brainstorming' },
-	{ symbol: '<', name: 'Scheduling', description: 'Scheduled task' },
-	{ symbol: 'd', name: 'Date', description: 'Date-specific' },
-	{ symbol: '"', name: 'Quote', description: 'Quote or reference' },
-	{ symbol: 'l', name: 'Location', description: 'Location-based' },
-	{ symbol: 'b', name: 'Bookmark', description: 'Bookmark' }
+	{ symbol: '<', name: 'Scheduling', description: 'Scheduled task' }
 ];
 
 export class OnTaskView extends ItemView {

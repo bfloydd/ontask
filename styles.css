@@ -198,6 +198,12 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Status-specific styling */
+.ontask-checkbox-display[data-status="."] {
+	background: var(--text-muted);
+	color: var(--text-on-accent);
+	border-color: var(--text-muted);
+}
+
 .ontask-checkbox-display[data-status="x"] {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
@@ -222,17 +228,7 @@ If your plugin does not need CSS, delete this file.
 	border-color: var(--text-accent);
 }
 
-.ontask-checkbox-display[data-status="+"] {
-	background: var(--text-success);
-	color: var(--text-on-accent);
-	border-color: var(--text-success);
-}
 
-.ontask-checkbox-display[data-status="i"] {
-	background: var(--text-info);
-	color: var(--text-on-accent);
-	border-color: var(--text-info);
-}
 
 .ontask-checkbox-display[data-status="r"] {
 	background: var(--text-muted);
@@ -252,23 +248,8 @@ If your plugin does not need CSS, delete this file.
 	border-color: var(--text-warning);
 }
 
-.ontask-checkbox-display[data-status="d"] {
-	background: var(--text-info);
-	color: var(--text-on-accent);
-	border-color: var(--text-info);
-}
 
-.ontask-checkbox-display[data-status="\""] {
-	background: var(--text-muted);
-	color: var(--text-on-accent);
-	border-color: var(--text-muted);
-}
 
-.ontask-checkbox-display[data-status="l"] {
-	background: var(--text-success);
-	color: var(--text-on-accent);
-	border-color: var(--text-success);
-}
 
 .ontask-checkbox-display[data-status=">"] {
 	background: var(--text-accent);
