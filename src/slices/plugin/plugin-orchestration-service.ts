@@ -174,6 +174,9 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 				case 'showTopTaskInStatusBar':
 					this.updateTopTaskStatusBar();
 					break;
+				case 'showTopTaskInEditor':
+					// Editor integration service will handle this via its own event listener
+					break;
 			}
 		});
 		this.eventListeners.push(() => settingsSubscription.unsubscribe());

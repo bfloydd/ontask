@@ -5,6 +5,7 @@ import { SettingsService, SettingsServiceImpl } from '../settings';
 import { StreamsService } from '../../services/streams';
 import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
 import { PluginOrchestrator, PluginOrchestrationServiceImpl, PluginDependencies } from '../plugin';
+import { EditorIntegrationService, EditorIntegrationServiceImpl } from '../editor';
 import { App, Plugin } from 'obsidian';
 
 export class ServiceConfiguration {
@@ -37,6 +38,15 @@ export class ServiceConfiguration {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
 			const streamsService = container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
 			return new CheckboxFinderService(app, streamsService);
+		});
+
+		// Register editor integration service
+		container.registerSingleton(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE, (container) => {
+			const app = container.resolve<App>(SERVICE_IDS.APP);
+			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
+			const checkboxFinderService = container.resolve<CheckboxFinderService>(SERVICE_IDS.CHECKBOX_FINDER_SERVICE);
+			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
+			return new EditorIntegrationServiceImpl(app, settingsService, checkboxFinderService, eventSystem);
 		});
 
 		// Register plugin orchestrator

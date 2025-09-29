@@ -42,6 +42,7 @@ export const SERVICE_IDS = {
 	STREAMS_SERVICE: Symbol('StreamsService'),
 	CHECKBOX_FINDER_SERVICE: Symbol('CheckboxFinderService'),
 	PLUGIN_ORCHESTRATOR: Symbol('PluginOrchestrator'),
+	EDITOR_INTEGRATION_SERVICE: Symbol('EditorIntegrationService'),
 	
 	// App dependencies
 	APP: Symbol('App'),

@@ -2,6 +2,7 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 import { OnTaskSettings, DEFAULT_SETTINGS, SettingsService, OnTaskSettingsTab } from './src/slices/settings';
 import { PluginOrchestrator } from './src/slices/plugin';
 import { EventSystem } from './src/slices/events';
+import { EditorIntegrationService } from './src/slices/editor';
 import { DIContainer, DIContainerImpl, ServiceConfiguration, SERVICE_IDS } from './src/slices/di';
 import { StreamsService } from './src/services/streams';
 import { CheckboxFinderService } from './src/services/checkbox-finder/checkbox-finder-service';
@@ -17,6 +18,7 @@ export default class OnTask extends Plugin {
 	private checkboxFinder: CheckboxFinderService;
 	private orchestrator: PluginOrchestrator;
 	private eventSystem: EventSystem;
+	private editorIntegrationService: EditorIntegrationService;
 
 	async onload() {
 		// Initialize dependency injection container
@@ -29,11 +31,13 @@ export default class OnTask extends Plugin {
 		this.streamsService = this.container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
 		this.checkboxFinder = this.container.resolve<CheckboxFinderService>(SERVICE_IDS.CHECKBOX_FINDER_SERVICE);
 		this.orchestrator = this.container.resolve<PluginOrchestrator>(SERVICE_IDS.PLUGIN_ORCHESTRATOR);
+		this.editorIntegrationService = this.container.resolve<EditorIntegrationService>(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE);
 
 		// Initialize services
 		await this.settingsService.initialize();
 		this.settings = this.settingsService.getSettings();
 		await this.orchestrator.initialize();
+		await this.editorIntegrationService.initialize();
 
 		// Add settings tab
 		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService));
@@ -45,6 +49,10 @@ export default class OnTask extends Plugin {
 	async onunload() {
 		if (this.orchestrator) {
 			await this.orchestrator.shutdown();
+		}
+		
+		if (this.editorIntegrationService) {
+			this.editorIntegrationService.cleanup();
 		}
 		
 		// Clear DI container

@@ -5,6 +5,7 @@ export interface OnTaskSettings {
 	onlyShowToday: boolean;
 	topTaskColor: string;
 	showTopTaskInStatusBar: boolean;
+	showTopTaskInEditor: boolean;
 	checkboxSource: 'streams' | 'daily-notes' | 'folder';
 	customFolderPath: string;
 	includeSubfolders: boolean;
@@ -15,6 +16,7 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	onlyShowToday: false,
 	topTaskColor: 'neutral',
 	showTopTaskInStatusBar: true,
+	showTopTaskInEditor: false,
 	checkboxSource: 'streams',
 	customFolderPath: '',
 	includeSubfolders: true

@@ -59,6 +59,20 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 						value 
 					});
 				}));
+
+		new Setting(containerEl)
+			.setName('Show top task in editor')
+			.setDesc('When enabled, the current top task will be displayed at the top of every editor page below the heading')
+			.addToggle(toggle => toggle
+				.setValue(settings.showTopTaskInEditor)
+				.onChange(async (value) => {
+					await this.settingsService.updateSetting('showTopTaskInEditor', value);
+					// Trigger editor update
+					this.app.workspace.trigger('ontask:settings-changed', { 
+						key: 'showTopTaskInEditor', 
+						value 
+					});
+				}));
 	}
 
 	private renderCheckboxSourceSettings(containerEl: HTMLElement): void {
