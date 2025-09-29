@@ -13,7 +13,7 @@ interface TaskStatus {
 }
 
 const TASK_STATUSES: TaskStatus[] = [
-	{ symbol: '.', name: 'To-do', description: 'Empty checkbox' },
+	{ symbol: ' ', name: 'To-do', description: 'Empty checkbox' },
 	{ symbol: '/', name: 'Incomplete', description: 'Partially done' },
 	{ symbol: 'x', name: 'Done', description: 'Completed task' },
 	{ symbol: '-', name: 'Canceled', description: 'Cancelled task' },
@@ -409,7 +409,7 @@ export class OnTaskView extends ItemView {
 			isChecked: false,
 			checkboxText: trimmedLine,
 			remainingText: '',
-			statusSymbol: ' '
+			statusSymbol: ''
 		};
 	}
 
@@ -739,7 +739,7 @@ export class OnTaskView extends ItemView {
 		// Add click handler to toggle between empty and x
 		checkboxDisplay.addEventListener('click', async () => {
 			const currentSymbol = statusSymbol.trim();
-			const newSymbol = currentSymbol === 'x' ? ' ' : 'x';
+			const newSymbol = currentSymbol === 'x' ? '' : 'x';
 			await this.updateTaskStatus(checkbox, newSymbol);
 		});
 		

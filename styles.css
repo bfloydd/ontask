@@ -198,10 +198,15 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Status-specific styling */
-.ontask-checkbox-display[data-status="."] {
+.ontask-checkbox-display[data-status=""] {
 	background: var(--text-muted);
 	color: var(--text-on-accent);
 	border-color: var(--text-muted);
+	min-height: 20px;
+	min-width: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .ontask-checkbox-display[data-status="x"] {
