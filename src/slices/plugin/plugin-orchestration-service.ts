@@ -244,16 +244,6 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			}
 		});
 
-		// Command to test streams data
-		plugin.addCommand({
-			id: 'test-stub-streams',
-			name: 'Test stub streams data',
-			callback: () => {
-				const streams = this.dependencies.streamsService.getAllStreams();
-				new (plugin as any).app.workspace.Notice(`Stub data: Found ${streams.length} streams`);
-				console.log('Stub streams:', streams);
-			}
-		});
 	}
 
 	private setupStreamsReadyCallback(app: App, streamsService: StreamsService): void {

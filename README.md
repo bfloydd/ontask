@@ -5,12 +5,12 @@ This is a task management plugin for Obsidian (https://obsidian.md) to help you 
 This project uses TypeScript to provide type checking and documentation.
 The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
 
-This On Task plugin provides task management functionality for Obsidian.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Task Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+This On Task plugin provides comprehensive task management functionality for Obsidian:
+- Displays your top task in the status bar and editor
+- Provides a dedicated view to manage all your tasks
+- Supports multiple task sources (daily notes, folders, streams)
+- Offers flexible task filtering and organization
+- Integrates seamlessly with Obsidian's interface
 
 ## First time developing plugins?
 
@@ -30,7 +30,7 @@ Quick starting guide for new plugin devs:
 
 - Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
 - Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
+- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`.
 - Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
 - Publish the release.
 

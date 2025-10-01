@@ -5,7 +5,7 @@
 	"minAppVersion": "0.15.0",
 	"description": "Task management plugin for Obsidian to help you stay organized and productive.",
 	"author": "On Task",
-	"authorUrl": "https://github.com/ontask/obsidian-sample-plugin",
-	"fundingUrl": "https://github.com/ontask/obsidian-sample-plugin",
+	"authorUrl": "https://github.com/ontask/obsidian-ontask",
+	"fundingUrl": "https://github.com/ontask/obsidian-ontask",
 	"isDesktopOnly": false
 }
