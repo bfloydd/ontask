@@ -298,9 +298,10 @@ export class OnTaskView extends ItemView {
 		for (const [fileName, fileCheckboxes] of checkboxesByFile) {
 			const fileSection = contentEl.createEl('div', { cls: 'ontask-file-section' });
 			
-			// File header
+			// File header - remove .md extension for display
+			const displayName = fileName.replace(/\.md$/i, '');
 			const fileHeader = fileSection.createEl('div', { cls: 'ontask-file-header' });
-			fileHeader.createEl('h3', { text: fileName });
+			fileHeader.createEl('h3', { text: displayName });
 			
 			
 			// Checkboxes list
@@ -422,7 +423,7 @@ export class OnTaskView extends ItemView {
 				await this.app.vault.modify(checkbox.file, lines.join('\n'));
 				
 				// Show success notification
-				new Notice(`Checkbox ${isChecked ? 'checked' : 'unchecked'} in ${checkbox.file.name}`);
+				new Notice(`Checkbox ${isChecked ? 'checked' : 'unchecked'} in ${checkbox.file.name.replace(/\.md$/i, '')}`);
 				
 				// Refresh the entire view to update top task and status bar
 				await this.refreshCheckboxes();
@@ -686,7 +687,7 @@ export class OnTaskView extends ItemView {
 		const topTaskHeader = topTaskSection.createEl('div', { cls: 'ontask-top-task-header' });
 		topTaskHeader.createEl('h2', { text: '🔥 Top Task' });
 		topTaskHeader.createEl('span', { 
-			text: `From: ${topTask.file.name}`,
+			text: `From: ${topTask.file.name.replace(/\.md$/i, '')}`,
 			cls: 'ontask-top-task-source'
 		});
 		
