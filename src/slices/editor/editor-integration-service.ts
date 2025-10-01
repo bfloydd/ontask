@@ -32,39 +32,52 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		// Listen for settings changes
 		this.eventSystem.on('settings:changed', (event) => {
 			if (event.data.key === 'showTopTaskInEditor') {
-				this.updateEditorDecorations();
+				setTimeout(() => {
+					this.updateEditorDecorations();
+				}, 100);
+			}
+		});
+
+		// Listen for checkbox updates to update decorations
+		this.eventSystem.on('checkboxes:updated', () => {
+			if (this.isEnabled()) {
+				setTimeout(() => {
+					this.updateEditorDecorations();
+				}, 100);
 			}
 		});
 
 		// Listen for file changes to update decorations
 		this.eventSystem.on('file:modified', () => {
 			if (this.isEnabled()) {
-				this.updateEditorDecorations();
+				setTimeout(() => {
+					this.updateEditorDecorations();
+				}, 50);
 			}
 		});
 
 		// Listen for workspace changes to update decorations
 		this.app.workspace.on('active-leaf-change', () => {
-			if (this.isEnabled()) {
-				this.updateEditorDecorations();
-			}
-		});
-
-		// Listen for editor changes to update overlays
-		this.app.workspace.on('layout-change', () => {
-			if (this.isEnabled()) {
-				this.updateEditorDecorations();
-			}
+			setTimeout(() => {
+				if (this.isEnabled()) {
+					this.updateEditorDecorations();
+				}
+			}, 100);
 		});
 
 		this.isInitialized = true;
+
+		// Initial update to show top task if setting is enabled
+		if (this.isEnabled()) {
+			setTimeout(() => {
+				this.updateEditorDecorations();
+			}, 200);
+		}
 	}
 
 	async updateEditorDecorations(): Promise<void> {
-		// Clean up existing overlays
-		this.cleanup();
-
 		if (!this.isEnabled()) {
+			this.cleanup();
 			return;
 		}
 
@@ -76,14 +89,31 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 			);
 			
 			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
+			console.log('OnTask Editor: Found top task:', topTask?.lineContent);
+			
+			// Check if we need to update
+			const needsUpdate = !this.currentTopTask || 
+				this.currentTopTask.lineContent !== topTask?.lineContent || 
+				this.currentTopTask.file.path !== topTask?.file.path;
+			
+			if (!needsUpdate) {
+				console.log('OnTask Editor: No update needed');
+				return;
+			}
+			
 			this.currentTopTask = topTask;
 			
+			// Clean up existing overlays
+			this.cleanup();
+			
 			if (!topTask) {
+				console.log('OnTask Editor: No top task found');
 				return;
 			}
 
 			// Get all markdown views
 			const markdownViews = this.app.workspace.getLeavesOfType('markdown');
+			console.log('OnTask Editor: Found', markdownViews.length, 'markdown views');
 			
 			for (const leaf of markdownViews) {
 				if (leaf.view instanceof MarkdownView) {
@@ -108,6 +138,9 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		if (existingOverlay) {
 			return; // Don't create duplicate
 		}
+
+		// Wait a bit to ensure DOM is stable
+		await new Promise(resolve => setTimeout(resolve, 50));
 
 		// Create top task bar element
 		const topTaskBar = viewContainer.createEl('div', {

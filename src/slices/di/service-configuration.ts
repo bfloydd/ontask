@@ -63,7 +63,8 @@ export class ServiceConfiguration {
 				plugin,
 				settingsService,
 				checkboxFinderService,
-				streamsService
+				streamsService,
+				eventSystem
 			};
 
 			return new PluginOrchestrationServiceImpl(dependencies, eventSystem);

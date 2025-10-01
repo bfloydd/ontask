@@ -213,7 +213,8 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			leaf, 
 			this.dependencies.checkboxFinderService, 
 			settingsService.getSettings(), 
-			plugin
+			plugin,
+			this.dependencies.eventSystem
 		));
 
 		// Add ribbon icon

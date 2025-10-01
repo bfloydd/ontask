@@ -4,6 +4,7 @@ import { App, Plugin } from 'obsidian';
 import { SettingsService } from '../settings';
 import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
 import { StreamsService } from '../../services/streams';
+import { EventSystem } from '../events';
 
 export interface PluginOrchestrator {
 	// Lifecycle management
@@ -31,6 +32,7 @@ export interface PluginDependencies {
 	settingsService: SettingsService;
 	checkboxFinderService: CheckboxFinderService;
 	streamsService: StreamsService;
+	eventSystem: EventSystem;
 }
 
 export interface PluginLifecycleEvents {

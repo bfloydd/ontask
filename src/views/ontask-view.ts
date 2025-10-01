@@ -3,6 +3,7 @@ import { CheckboxItem } from '../services/checkbox-finder/interfaces';
 import { CheckboxFinderService } from '../services/checkbox-finder/checkbox-finder-service';
 import { OnTaskSettings } from '../types';
 import { Plugin } from 'obsidian';
+import { EventSystem } from '../slices/events/event-system-interface';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -30,17 +31,19 @@ export class OnTaskView extends ItemView {
 	private checkboxFinder: CheckboxFinderService;
 	private settings: OnTaskSettings;
 	private plugin: Plugin;
+	private eventSystem: EventSystem;
 	private checkboxes: CheckboxItem[] = [];
 	private itemsPerLoad: number = 20;
 	private hideCompleted: boolean = false;
 	private onlyShowToday: boolean = false;
 	private currentlyDisplayed: number = 0;
 
-	constructor(leaf: WorkspaceLeaf, checkboxFinder: CheckboxFinderService, settings: OnTaskSettings, plugin: Plugin) {
+	constructor(leaf: WorkspaceLeaf, checkboxFinder: CheckboxFinderService, settings: OnTaskSettings, plugin: Plugin, eventSystem: EventSystem) {
 		super(leaf);
 		this.checkboxFinder = checkboxFinder;
 		this.settings = settings;
 		this.plugin = plugin;
+		this.eventSystem = eventSystem;
 		this.hideCompleted = settings.hideCompletedTasks;
 		this.onlyShowToday = settings.onlyShowToday;
 	}
@@ -158,6 +161,13 @@ export class OnTaskView extends ItemView {
 			
 			this.checkboxes = await this.checkboxFinder.findAllCheckboxes(this.hideCompleted, this.onlyShowToday);
 			this.renderCheckboxes();
+			
+			// Emit checkboxes updated event
+			const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
+			this.eventSystem.emit('checkboxes:updated', {
+				count: this.checkboxes.length,
+				topTask: topTask
+			});
 			
 			// Update status bar with new top task
 			if (this.plugin && typeof (this.plugin as any).updateTopTaskStatusBar === 'function') {
