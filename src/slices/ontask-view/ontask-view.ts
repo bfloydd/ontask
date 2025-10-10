@@ -205,18 +205,18 @@ export class OnTaskView extends ItemView {
 			// Create top task content
 			const topTaskContent = topTaskDisplay.createDiv('ontask-top-task-content');
 			
-			// Top task checkbox
-			const topTaskCheckbox = document.createElement('input');
-			topTaskCheckbox.type = 'checkbox';
-			topTaskCheckbox.checked = topTask.isCompleted;
-			topTaskCheckbox.addClass('ontask-checkbox-input');
-			topTaskCheckbox.addEventListener('change', async () => {
-				await this.toggleCheckbox(topTask, topTaskCheckbox.checked);
+			// Top task status display
+			const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
+			const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
+			topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
+			topTaskStatusDisplay.textContent = `[${statusSymbol}]`;
+			topTaskStatusDisplay.style.cursor = 'pointer';
+			topTaskStatusDisplay.addEventListener('click', () => {
+				this.openFile(topTask.file?.path || '', topTask.lineNumber);
 			});
 			
 			// Top task text
 			const topTaskText = topTaskDisplay.createDiv('ontask-top-task-text');
-			const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 			topTaskText.textContent = remainingText || 'Top Task';
 			topTaskText.style.cursor = 'pointer';
 			topTaskText.addEventListener('click', () => {
@@ -230,7 +230,7 @@ export class OnTaskView extends ItemView {
 			topTaskSource.style.color = 'var(--text-muted)';
 			topTaskSource.style.marginTop = '4px';
 			
-			topTaskContent.appendChild(topTaskCheckbox);
+			topTaskContent.appendChild(topTaskStatusDisplay);
 			topTaskContent.appendChild(topTaskText);
 			topTaskContent.appendChild(topTaskSource);
 		}
@@ -293,22 +293,29 @@ export class OnTaskView extends ItemView {
 			checkboxEl.addClass('ontask-top-task');
 		}
 		
-		// Create checkbox
-		const checkboxInput = document.createElement('input');
-		checkboxInput.type = 'checkbox';
-		checkboxInput.checked = checkbox.isCompleted;
-		checkboxInput.addClass('ontask-checkbox-input');
+		// Create checkbox container
+		const checkboxContainer = document.createElement('div');
+		checkboxContainer.addClass('ontask-checkbox-label');
+		
+		// Create status display (like in context menu)
+		const statusDisplay = document.createElement('div');
+		statusDisplay.addClass('ontask-checkbox-display');
+		
+		// Extract status symbol from checkbox content
+		const { statusSymbol, remainingText } = this.parseCheckboxLine(checkbox.lineContent);
+		statusDisplay.setAttribute('data-status', statusSymbol);
+		statusDisplay.textContent = `[${statusSymbol}]`;
 		
 		// Create text content
 		const textEl = document.createElement('span');
-		const { remainingText } = this.parseCheckboxLine(checkbox.lineContent);
 		textEl.textContent = remainingText || 'Task';
 		textEl.addClass('ontask-checkbox-text');
 		
-		// Add click handler for checkbox
-		checkboxInput.addEventListener('change', async () => {
-			await this.toggleCheckbox(checkbox, checkboxInput.checked);
+		// Add click handler for status display (to open file)
+		statusDisplay.addEventListener('click', () => {
+			this.openFile(checkbox.file?.path || '', checkbox.lineNumber);
 		});
+		statusDisplay.style.cursor = 'pointer';
 		
 		// Add click handler for text (to open file)
 		textEl.addEventListener('click', () => {
@@ -316,8 +323,9 @@ export class OnTaskView extends ItemView {
 		});
 		textEl.style.cursor = 'pointer';
 		
-		checkboxEl.appendChild(checkboxInput);
-		checkboxEl.appendChild(textEl);
+		checkboxContainer.appendChild(statusDisplay);
+		checkboxContainer.appendChild(textEl);
+		checkboxEl.appendChild(checkboxContainer);
 		
 		return checkboxEl;
 	}
@@ -684,18 +692,19 @@ export class OnTaskView extends ItemView {
 		}
 	}
 
-	private parseCheckboxLine(line: string): { remainingText: string } {
+	private parseCheckboxLine(line: string): { statusSymbol: string; remainingText: string } {
 		const trimmedLine = line.trim();
 		
 		// Look for checkbox pattern: - [ANYTHING] at the beginning of the line
 		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]]*)\]\s*(.*)$/);
 		
 		if (checkboxMatch) {
+			const statusSymbol = checkboxMatch[1].trim() || ' ';
 			const remainingText = checkboxMatch[2].trim();
-			return { remainingText };
+			return { statusSymbol, remainingText };
 		}
 		
-		// If no match, return the original line
-		return { remainingText: trimmedLine };
+		// If no match, return default values
+		return { statusSymbol: ' ', remainingText: trimmedLine };
 	}
 }
