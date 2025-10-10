@@ -399,6 +399,54 @@ If your plugin does not need CSS, delete this file.
 	transform: translateY(1px);
 }
 
+/* Load More Button Styles */
+.ontask-load-more-section {
+	text-align: center;
+	padding: 20px;
+	border-top: 1px solid var(--background-modifier-border);
+	margin-top: 15px;
+	background: var(--background-primary);
+}
+
+.ontask-load-more-button {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 6px;
+	padding: 10px 20px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ontask-load-more-button:hover {
+	background: var(--interactive-accent-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ontask-load-more-button:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsive for Load More button */
+.is-mobile .ontask-load-more-section {
+	padding: 15px;
+}
+
+.is-mobile .ontask-load-more-button {
+	padding: 12px 24px;
+	font-size: 16px;
+}
+
+.is-phone .ontask-load-more-button {
+	padding: 10px 20px;
+	font-size: 15px;
+}
+
 /* Top Task Section Styles */
 .ontask-top-task-section {
 	margin-bottom: 25px;

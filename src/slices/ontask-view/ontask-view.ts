@@ -16,6 +16,8 @@ export class OnTaskView extends ItemView {
 	private onlyTodayButton: HTMLButtonElement;
 	private isRefreshing: boolean = false;
 	private isUpdatingStatus: boolean = false;
+	private displayedTasksCount: number = 20;
+	private loadMoreButton: HTMLButtonElement | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -114,6 +116,10 @@ export class OnTaskView extends ItemView {
 			// Clear existing content
 			console.log('OnTask View: Clearing content area');
 			contentArea.empty();
+			
+			// Reset pagination state
+			this.displayedTasksCount = 20;
+			this.loadMoreButton = null;
 			
 			// Verify content is cleared
 			console.log('OnTask View: Content area children after clearing:', contentArea.children.length);
@@ -239,29 +245,214 @@ export class OnTaskView extends ItemView {
 		// Group regular checkboxes by file
 		const checkboxesByFile = this.groupCheckboxesByFile(regularTasks);
 		
-		// Render each file's checkboxes
+		// Calculate how many tasks to show based on pagination
+		let tasksShown = 0;
+		const maxTasksToShow = this.displayedTasksCount;
+		
+		// Render each file's checkboxes with pagination
 		for (const [filePath, fileCheckboxes] of checkboxesByFile) {
+			if (tasksShown >= maxTasksToShow) {
+				break; // Stop rendering if we've reached the limit
+			}
+			
 			const fileSection = contentArea.createDiv('ontask-file-section');
+			fileSection.setAttribute('data-file-path', filePath);
 			
 			// File header
 			const fileHeader = fileSection.createDiv('ontask-file-header');
 			fileHeader.createEl('h3', { text: this.getFileName(filePath) });
+			
+			// Calculate how many tasks from this file we can show
+			const remainingSlots = maxTasksToShow - tasksShown;
+			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
+			
 			fileHeader.createEl('span', { 
-				text: `${fileCheckboxes.length} task${fileCheckboxes.length === 1 ? '' : 's'}`,
+				text: `${tasksToShowFromFile} of ${fileCheckboxes.length} task${fileCheckboxes.length === 1 ? '' : 's'}`,
 				cls: 'ontask-file-count'
 			});
 			
 			// Checkboxes list
 			const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
 			
-			for (const checkbox of fileCheckboxes) {
+			for (let i = 0; i < tasksToShowFromFile; i++) {
+				const checkbox = fileCheckboxes[i];
 				const checkboxEl = this.createCheckboxElement(checkbox);
 				checkboxesList.appendChild(checkboxEl);
+				tasksShown++;
 			}
+		}
+		
+		// Add Load More button if there are more tasks to show
+		const totalRegularTasks = regularTasks.length;
+		if (tasksShown < totalRegularTasks) {
+			this.addLoadMoreButton(contentArea);
 		}
 		
 		console.log('OnTask View: Finished renderCheckboxes');
 		console.log('OnTask View: Content area children after rendering:', contentArea.children.length);
+		console.log(`OnTask View: Showing ${tasksShown} of ${totalRegularTasks} regular tasks`);
+	}
+
+	private addLoadMoreButton(contentArea: HTMLElement): void {
+		// Remove existing load more button if it exists
+		if (this.loadMoreButton) {
+			this.loadMoreButton.remove();
+		}
+
+		const loadMoreSection = contentArea.createDiv('ontask-load-more-section');
+		loadMoreSection.addClass('ontask-file-section');
+		
+		// Calculate remaining tasks
+		const regularTasks = this.checkboxes.filter(checkbox => !checkbox.isTopTask);
+		const remainingTasks = regularTasks.length - this.displayedTasksCount;
+		
+		this.loadMoreButton = loadMoreSection.createEl('button', {
+			text: `Load More Tasks (${remainingTasks} remaining)`,
+			cls: 'ontask-load-more-button'
+		});
+		
+		this.loadMoreButton.addEventListener('click', () => {
+			this.loadMoreTasks();
+		});
+	}
+
+	private loadMoreTasks(): void {
+		console.log('OnTask View: Loading more tasks');
+		
+		// Find the content area
+		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
+		if (!contentArea) {
+			console.error('Content area not found');
+			return;
+		}
+		
+		// Remove the existing Load More button
+		if (this.loadMoreButton) {
+			this.loadMoreButton.remove();
+			this.loadMoreButton = null;
+		}
+		
+		// Get current settings to filter tasks
+		const settings = this.settingsService.getSettings();
+		const regularTasks = this.checkboxes.filter(checkbox => !checkbox.isTopTask);
+		
+		// Calculate how many tasks we've already shown
+		const currentShown = this.displayedTasksCount;
+		const newLimit = this.displayedTasksCount + 20;
+		
+		// Group tasks by file and get the additional tasks to show
+		const checkboxesByFile = this.groupCheckboxesByFile(regularTasks);
+		let tasksShown = 0;
+		let additionalTasksToRender: any[] = [];
+		
+		// Find additional tasks to render
+		for (const [filePath, fileCheckboxes] of checkboxesByFile) {
+			if (tasksShown >= newLimit) break;
+			
+			const remainingSlots = newLimit - tasksShown;
+			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
+			
+			// Only add tasks that haven't been shown yet
+			const startIndex = Math.max(0, currentShown - tasksShown);
+			const endIndex = Math.min(fileCheckboxes.length, startIndex + tasksToShowFromFile);
+			
+			for (let i = startIndex; i < endIndex; i++) {
+				additionalTasksToRender.push({
+					checkbox: fileCheckboxes[i],
+					filePath: filePath
+				});
+			}
+			
+			tasksShown += tasksToShowFromFile;
+		}
+		
+		// Render the additional tasks
+		this.renderAdditionalTasks(contentArea, additionalTasksToRender);
+		
+		// Update the displayed count
+		this.displayedTasksCount = newLimit;
+		
+		// Add Load More button if there are still more tasks
+		const totalRegularTasks = regularTasks.length;
+		if (this.displayedTasksCount < totalRegularTasks) {
+			this.addLoadMoreButton(contentArea);
+		}
+		
+		console.log(`OnTask View: Loaded ${additionalTasksToRender.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${totalRegularTasks}`);
+	}
+
+	private renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
+		console.log('OnTask View: Rendering additional tasks');
+		
+		// Group additional tasks by file
+		const tasksByFile = new Map<string, any[]>();
+		for (const task of additionalTasks) {
+			if (!tasksByFile.has(task.filePath)) {
+				tasksByFile.set(task.filePath, []);
+			}
+			tasksByFile.get(task.filePath)!.push(task.checkbox);
+		}
+		
+		// Render tasks for each file
+		for (const [filePath, fileTasks] of tasksByFile) {
+			// Check if this file section already exists
+			let existingFileSection = contentArea.querySelector(`[data-file-path="${filePath}"]`) as HTMLElement;
+			
+			if (existingFileSection) {
+				// Update existing file section
+				this.appendTasksToExistingFile(existingFileSection, fileTasks, filePath);
+			} else {
+				// Create new file section
+				this.createNewFileSection(contentArea, fileTasks, filePath);
+			}
+		}
+	}
+
+	private appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: any[], filePath: string): void {
+		// Find the checkboxes list in the existing file section
+		const checkboxesList = fileSection.querySelector('.ontask-checkboxes-list') as HTMLElement;
+		if (!checkboxesList) {
+			console.error('Checkboxes list not found in existing file section');
+			return;
+		}
+		
+		// Add the new tasks
+		for (const checkbox of fileTasks) {
+			const checkboxEl = this.createCheckboxElement(checkbox);
+			checkboxesList.appendChild(checkboxEl);
+		}
+		
+		// Update the task count in the header
+		const fileCount = fileSection.querySelector('.ontask-file-count') as HTMLElement;
+		if (fileCount) {
+			const currentCount = checkboxesList.children.length;
+			fileCount.textContent = `${currentCount} task${currentCount === 1 ? '' : 's'}`;
+		}
+		
+		console.log(`OnTask View: Appended ${fileTasks.length} tasks to existing file section: ${filePath}`);
+	}
+
+	private createNewFileSection(contentArea: HTMLElement, fileTasks: any[], filePath: string): void {
+		const fileSection = contentArea.createDiv('ontask-file-section');
+		fileSection.setAttribute('data-file-path', filePath);
+		
+		// File header
+		const fileHeader = fileSection.createDiv('ontask-file-header');
+		fileHeader.createEl('h3', { text: this.getFileName(filePath) });
+		fileHeader.createEl('span', { 
+			text: `${fileTasks.length} task${fileTasks.length === 1 ? '' : 's'}`,
+			cls: 'ontask-file-count'
+		});
+		
+		// Checkboxes list
+		const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
+		
+		for (const checkbox of fileTasks) {
+			const checkboxEl = this.createCheckboxElement(checkbox);
+			checkboxesList.appendChild(checkboxEl);
+		}
+		
+		console.log(`OnTask View: Created new file section with ${fileTasks.length} tasks: ${filePath}`);
 	}
 
 	private groupCheckboxesByFile(checkboxes: any[]): Map<string, any[]> {
