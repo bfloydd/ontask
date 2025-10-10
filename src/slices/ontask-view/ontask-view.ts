@@ -358,12 +358,15 @@ export class OnTaskView extends ItemView {
 		// Group regular checkboxes by file
 		const checkboxesByFile = this.groupCheckboxesByFile(regularTasks);
 		
+		// Sort files by modification date (latest first)
+		const sortedFiles = this.sortFilesByDate(checkboxesByFile);
+		
 		// Calculate how many tasks to show based on pagination
 		let tasksShown = 0;
 		const maxTasksToShow = this.displayedTasksCount;
 		
 		// Render each file's checkboxes with pagination
-		for (const [filePath, fileCheckboxes] of checkboxesByFile) {
+		for (const [filePath, fileCheckboxes] of sortedFiles) {
 			if (tasksShown >= maxTasksToShow) {
 				break; // Stop rendering if we've reached the limit
 			}
@@ -587,6 +590,62 @@ export class OnTaskView extends ItemView {
 		console.log(`OnTask View: File counts:`, Array.from(grouped.entries()).map(([file, checkboxes]) => `${file}: ${checkboxes.length}`));
 		
 		return grouped;
+	}
+
+	private sortFilesByDate(checkboxesByFile: Map<string, any[]>): Map<string, any[]> {
+		// Convert Map to array of entries for sorting
+		const fileEntries = Array.from(checkboxesByFile.entries());
+		
+		// Sort by date in filename (latest first)
+		fileEntries.sort((a, b) => {
+			try {
+				const fileNameA = this.getFileName(a[0]);
+				const fileNameB = this.getFileName(b[0]);
+				
+				// Extract date from filename (format: YYYY-MM-DD)
+				const dateMatchA = fileNameA.match(/(\d{4}-\d{2}-\d{2})/);
+				const dateMatchB = fileNameB.match(/(\d{4}-\d{2}-\d{2})/);
+				
+				if (!dateMatchA || !dateMatchB) {
+					// If no date found in filename, fall back to file modification date
+					const fileA = this.app.vault.getAbstractFileByPath(a[0]) as TFile;
+					const fileB = this.app.vault.getAbstractFileByPath(b[0]) as TFile;
+					
+					if (!fileA || !fileB) {
+						console.log('OnTask View: File not found, maintaining order');
+						return 0;
+					}
+					
+					const dateA = fileA.stat?.mtime || fileA.stat?.ctime || 0;
+					const dateB = fileB.stat?.mtime || fileB.stat?.ctime || 0;
+					
+					console.log(`OnTask View: No date in filename, using modification date for ${fileNameA} vs ${fileNameB}`);
+					return dateB - dateA;
+				}
+				
+				// Parse dates from filename
+				const dateA = new Date(dateMatchA[1]);
+				const dateB = new Date(dateMatchB[1]);
+				
+				console.log(`OnTask View: Sorting by filename date ${fileNameA} (${dateA.toISOString().split('T')[0]}) vs ${fileNameB} (${dateB.toISOString().split('T')[0]})`);
+				
+				// Sort latest first (descending order)
+				return dateB.getTime() - dateA.getTime();
+			} catch (error) {
+				console.error('OnTask View: Error sorting files by date:', error);
+				// If there's an error, maintain original order
+				return 0;
+			}
+		});
+		
+		// Convert back to Map
+		const sortedMap = new Map<string, any[]>();
+		for (const [filePath, checkboxes] of fileEntries) {
+			sortedMap.set(filePath, checkboxes);
+		}
+		
+		console.log(`OnTask View: Files sorted by filename date (latest first):`, Array.from(sortedMap.keys()).map(path => this.getFileName(path)));
+		return sortedMap;
 	}
 
 	private createCheckboxElement(checkbox: any): HTMLElement {
