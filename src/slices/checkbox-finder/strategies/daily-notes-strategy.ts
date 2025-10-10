@@ -166,16 +166,12 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 	private findCheckboxInLine(line: string): string | null {
 		const trimmedLine = line.trim();
 		
-		// Look for the pattern: - [ ]
-		const checkboxStart = trimmedLine.indexOf('- [');
-		if (checkboxStart === -1) return null;
+		// Look for the pattern: - [X] at the beginning of the line only, where X is a single character
+		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]])\]\s*(.*)$/);
+		if (!checkboxMatch) return null;
 		
-		// Find the closing bracket
-		const closingBracket = trimmedLine.indexOf(']', checkboxStart);
-		if (closingBracket === -1) return null;
-		
-		// Extract the checkbox content
-		const checkboxContent = trimmedLine.substring(checkboxStart + 3, closingBracket);
+		// Extract the checkbox content (single character)
+		const checkboxContent = checkboxMatch[1];
 		
 		// Return the full checkbox pattern
 		return `- [${checkboxContent}]`;
@@ -184,16 +180,12 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 	private isCheckboxCompleted(line: string): boolean {
 		const trimmedLine = line.trim();
 		
-		// Look for the pattern: - [x] or - [X] or - [checked]
-		const checkboxStart = trimmedLine.indexOf('- [');
-		if (checkboxStart === -1) return false;
+		// Look for the pattern: - [X] at the beginning of the line only, where X is a single character
+		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]])\]\s*(.*)$/);
+		if (!checkboxMatch) return false;
 		
-		// Find the closing bracket
-		const closingBracket = trimmedLine.indexOf(']', checkboxStart);
-		if (closingBracket === -1) return false;
-		
-		// Extract the checkbox content
-		const checkboxContent = trimmedLine.substring(checkboxStart + 3, closingBracket).trim().toLowerCase();
+		// Extract the checkbox content (single character)
+		const checkboxContent = checkboxMatch[1].trim().toLowerCase();
 		
 		// Check if it's completed (only 'x' and 'checked' are considered completed)
 		return checkboxContent === 'x' || checkboxContent === 'checked';

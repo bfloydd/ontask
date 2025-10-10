@@ -216,7 +216,8 @@ export class OnTaskView extends ItemView {
 			
 			// Top task text
 			const topTaskText = topTaskDisplay.createDiv('ontask-top-task-text');
-			topTaskText.textContent = topTask.lineContent;
+			const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
+			topTaskText.textContent = remainingText || 'Top Task';
 			topTaskText.style.cursor = 'pointer';
 			topTaskText.addEventListener('click', () => {
 				this.openFile(topTask.file?.path || '', topTask.lineNumber);
@@ -300,7 +301,8 @@ export class OnTaskView extends ItemView {
 		
 		// Create text content
 		const textEl = document.createElement('span');
-		textEl.textContent = checkbox.lineContent;
+		const { remainingText } = this.parseCheckboxLine(checkbox.lineContent);
+		textEl.textContent = remainingText || 'Task';
 		textEl.addClass('ontask-checkbox-text');
 		
 		// Add click handler for checkbox
@@ -680,5 +682,20 @@ export class OnTaskView extends ItemView {
 				this.onlyTodayButton.textContent = 'Show All';
 			}
 		}
+	}
+
+	private parseCheckboxLine(line: string): { remainingText: string } {
+		const trimmedLine = line.trim();
+		
+		// Look for checkbox pattern: - [ANYTHING] at the beginning of the line
+		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]]*)\]\s*(.*)$/);
+		
+		if (checkboxMatch) {
+			const remainingText = checkboxMatch[2].trim();
+			return { remainingText };
+		}
+		
+		// If no match, return the original line
+		return { remainingText: trimmedLine };
 	}
 }
