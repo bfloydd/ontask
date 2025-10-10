@@ -55,7 +55,8 @@ If your plugin does not need CSS, delete this file.
 
 .ontask-refresh-btn,
 .ontask-hide-completed-btn,
-.ontask-only-today-btn {
+.ontask-only-today-btn,
+.ontask-configure-button {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border: none;
@@ -68,13 +69,15 @@ If your plugin does not need CSS, delete this file.
 
 .ontask-refresh-btn:hover,
 .ontask-hide-completed-btn:hover,
-.ontask-only-today-btn:hover {
+.ontask-only-today-btn:hover,
+.ontask-configure-button:hover {
 	background: var(--interactive-accent-hover);
 }
 
 .ontask-refresh-btn:active,
 .ontask-hide-completed-btn:active,
-.ontask-only-today-btn:active {
+.ontask-only-today-btn:active,
+.ontask-configure-button:active {
 	transform: translateY(1px);
 }
 
@@ -643,8 +646,8 @@ If your plugin does not need CSS, delete this file.
 }
 
 .is-mobile .ontask-context-menu-item {
-	padding: 12px 16px;
-	min-height: 44px; /* iOS touch target minimum */
+	padding: 8px 12px;
+	min-height: 40px; /* Reduced from 44px */
 	/* Improve touch interaction */
 	-webkit-tap-highlight-color: transparent;
 	user-select: none;
@@ -667,7 +670,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .is-phone .ontask-context-menu-item {
-	padding: 10px 14px;
+	padding: 6px 10px;
 	font-size: 15px;
 }
 

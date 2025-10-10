@@ -70,6 +70,11 @@ export class OnTaskView extends ItemView {
 		this.onlyTodayButton.addClass('ontask-filter-button');
 		this.onlyTodayButton.addEventListener('click', () => this.toggleOnlyToday());
 		
+		// Create configure button
+		const configureButton = buttonsContainer.createEl('button', { text: 'Configure' });
+		configureButton.addClass('ontask-configure-button');
+		configureButton.addEventListener('click', () => this.openSettings());
+		
 		// Set initial button states
 		this.updateButtonStates();
 		
@@ -805,35 +810,36 @@ export class OnTaskView extends ItemView {
 		menu.style.border = '1px solid var(--background-modifier-border)';
 		menu.style.borderRadius = '6px';
 		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-		menu.style.padding = '4px';
+		menu.style.padding = '2px';
 		menu.style.minWidth = '200px';
 
 		// Define task statuses
 		const statuses = [
-			{ symbol: ' ', name: 'Incomplete', description: 'Not started' },
-			{ symbol: 'x', name: 'Complete', description: 'Finished' },
-			{ symbol: '!', name: 'Important', description: 'High priority' },
+			{ symbol: ' ', name: 'To-do', description: 'Not started' },
+			{ symbol: 'x', name: 'Done', description: 'Completed' },
+			{ symbol: '/', name: 'In Progress', description: 'Incomplete' },
+			{ symbol: '!', name: 'Important', description: 'Top task' },
 			{ symbol: '?', name: 'Question', description: 'Needs clarification' },
 			{ symbol: '*', name: 'Star', description: 'Marked' },
-			{ symbol: 'r', name: 'Review', description: 'Needs review' },
-			{ symbol: 'b', name: 'Blocked', description: 'Cannot proceed' },
-			{ symbol: '<', name: 'Scheduled', description: 'Planned for later' },
-			{ symbol: '>', name: 'In Progress', description: 'Currently working' },
-			{ symbol: '-', name: 'Cancelled', description: 'No longer needed' }
+			{ symbol: 'r', name: 'Review', description: 'In review' },
+			{ symbol: 'b', name: 'Blocked', description: 'Can\'t start' },
+			{ symbol: '<', name: 'Scheduled', description: 'On the calendar' },
+			{ symbol: '>', name: 'Forward', description: 'Another day' },
+			{ symbol: '-', name: 'Cancelled', description: 'Not doing' }
 		];
 
 		// Add menu items for each status
 		for (const status of statuses) {
 			const menuItem = document.createElement('div');
 			menuItem.className = 'ontask-context-menu-item';
-			menuItem.style.padding = '8px 12px';
+			menuItem.style.padding = '6px 10px';
 			menuItem.style.cursor = 'pointer';
 			menuItem.style.fontSize = '14px';
 			menuItem.style.color = 'var(--text-normal)';
 			menuItem.style.borderRadius = '4px';
 			menuItem.style.display = 'flex';
 			menuItem.style.alignItems = 'center';
-			menuItem.style.gap = '8px';
+			menuItem.style.gap = '6px';
 
 			// Create status display
 			const statusDisplay = document.createElement('div');
@@ -851,7 +857,7 @@ export class OnTaskView extends ItemView {
 			const textContent = document.createElement('div');
 			textContent.style.display = 'flex';
 			textContent.style.flexDirection = 'column';
-			textContent.style.gap = '2px';
+			textContent.style.gap = '1px';
 			
 			const nameEl = document.createElement('div');
 			nameEl.textContent = status.name;
