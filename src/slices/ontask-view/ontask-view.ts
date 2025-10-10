@@ -15,6 +15,7 @@ export class OnTaskView extends ItemView {
 	private hideCompletedButton: HTMLButtonElement;
 	private onlyTodayButton: HTMLButtonElement;
 	private isRefreshing: boolean = false;
+	private isUpdatingStatus: boolean = false;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -72,13 +73,6 @@ export class OnTaskView extends ItemView {
 		
 		// Create content area
 		const contentArea = this.contentEl.createDiv('ontask-content');
-		
-		// Add context menu event listener to the view
-		this.contentEl.addEventListener('contextmenu', (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			this.showContextMenu(e);
-		});
 		
 		// Load initial checkboxes
 		await this.refreshCheckboxes();
@@ -233,6 +227,13 @@ export class OnTaskView extends ItemView {
 			topTaskContent.appendChild(topTaskStatusDisplay);
 			topTaskContent.appendChild(topTaskText);
 			topTaskContent.appendChild(topTaskSource);
+			
+			// Add context menu event listener to the top task
+			topTaskDisplay.addEventListener('contextmenu', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				this.showContextMenu(e, topTask);
+			});
 		}
 
 		// Group regular checkboxes by file
@@ -322,6 +323,13 @@ export class OnTaskView extends ItemView {
 			this.openFile(checkbox.file?.path || '', checkbox.lineNumber);
 		});
 		textEl.style.cursor = 'pointer';
+		
+		// Add context menu event listener to the task row
+		checkboxEl.addEventListener('contextmenu', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			this.showContextMenu(e, checkbox);
+		});
 		
 		checkboxContainer.appendChild(statusDisplay);
 		checkboxContainer.appendChild(textEl);
@@ -430,6 +438,12 @@ export class OnTaskView extends ItemView {
 		
 		// Listen for file modifications
 		const fileModifyListener = (file: any) => {
+			// Skip refresh if we're currently updating a status ourselves
+			if (this.isUpdatingStatus) {
+				console.log('OnTask View: Skipping refresh - currently updating status');
+				return;
+			}
+			
 			// Check if any of our checkboxes are in this file
 			const isRelevantFile = this.checkboxes.some(checkbox => checkbox.file?.path === file.path);
 			if (isRelevantFile) {
@@ -455,8 +469,8 @@ export class OnTaskView extends ItemView {
 
 	private eventListeners: (() => void)[] = [];
 
-	private showContextMenu(event: MouseEvent): void {
-		console.log('OnTask View: Context menu triggered', event);
+	private showContextMenu(event: MouseEvent, checkbox: any): void {
+		console.log('OnTask View: Context menu triggered', event, checkbox);
 		
 		// Remove any existing context menu
 		const existingMenu = document.querySelector('.ontask-context-menu');
@@ -548,7 +562,7 @@ export class OnTaskView extends ItemView {
 
 			// Add click handler
 			menuItem.addEventListener('click', () => {
-				this.showStatusSelectionForCheckboxes(status.symbol);
+				this.updateCheckboxStatus(checkbox, status.symbol);
 				menu.remove();
 			});
 
@@ -573,6 +587,105 @@ export class OnTaskView extends ItemView {
 		});
 	}
 
+
+	private async updateCheckboxStatus(checkbox: any, newStatus: string): Promise<void> {
+		console.log('OnTask View: Updating checkbox status', checkbox, newStatus);
+		
+		// Set flag to prevent file modification listener from triggering refresh
+		this.isUpdatingStatus = true;
+		
+		try {
+			// Get the file
+			const file = checkbox.file;
+			if (!file) {
+				console.error('OnTask View: No file found for checkbox');
+				return;
+			}
+
+			// Read the file content
+			const content = await this.app.vault.read(file);
+			const lines = content.split('\n');
+
+			// Update the specific line (lineNumber is 1-based, so subtract 1 for array index)
+			const lineIndex = checkbox.lineNumber - 1;
+			if (lineIndex >= 0 && lineIndex < lines.length) {
+				const line = lines[lineIndex];
+				// Update the checkbox status using a flexible regex pattern
+				const updatedLine = line.replace(/^(\s*)- \[[^\]]*\]/, `$1- [${newStatus}]`);
+				
+				// Log for debugging if the line wasn't updated
+				if (updatedLine === line) {
+					console.log('OnTask View: Warning - line was not updated:', JSON.stringify(line));
+					console.log('OnTask View: Expected pattern: - [status] at start of line');
+				}
+				
+				lines[lineIndex] = updatedLine;
+
+				// Write back to file
+				await this.app.vault.modify(file, lines.join('\n'));
+				
+				// Update only the specific checkbox element in the DOM
+				this.updateCheckboxElement(checkbox, newStatus);
+			}
+		} catch (error) {
+			console.error('OnTask View: Error updating checkbox status:', error);
+		} finally {
+			// Clear the flag to allow future file modification listeners
+			this.isUpdatingStatus = false;
+		}
+	}
+
+	private updateCheckboxElement(checkbox: any, newStatus: string): void {
+		// Parse the checkbox line to get the text part
+		const { remainingText } = this.parseCheckboxLine(checkbox.lineContent);
+		
+		// Find the checkbox element in the DOM
+		const checkboxElements = this.contentEl.querySelectorAll('.ontask-checkbox-item');
+		let targetElement: HTMLElement | null = null;
+		
+		// Look for the specific checkbox by matching the text content
+		for (const element of Array.from(checkboxElements)) {
+			const textEl = element.querySelector('.ontask-checkbox-text');
+			if (textEl && textEl.textContent === remainingText) {
+				targetElement = element as HTMLElement;
+				break;
+			}
+		}
+		
+		// Also check the top task display
+		if (!targetElement) {
+			const topTaskElement = this.contentEl.querySelector('.ontask-top-task-item');
+			if (topTaskElement) {
+				const topTaskText = topTaskElement.querySelector('.ontask-top-task-text');
+				if (topTaskText && topTaskText.textContent === remainingText) {
+					targetElement = topTaskElement as HTMLElement;
+				}
+			}
+		}
+		
+		if (targetElement) {
+			// Update the status display
+			const statusDisplay = targetElement.querySelector('.ontask-checkbox-display');
+			if (statusDisplay) {
+				statusDisplay.setAttribute('data-status', newStatus);
+				statusDisplay.textContent = `[${newStatus}]`;
+			}
+			
+			// Update the checkbox data in our local array
+			const checkboxIndex = this.checkboxes.findIndex(cb => 
+				cb.file?.path === checkbox.file?.path && 
+				cb.lineNumber === checkbox.lineNumber
+			);
+			if (checkboxIndex !== -1) {
+				// Update the line content in our local data
+				const { remainingText } = this.parseCheckboxLine(checkbox.lineContent);
+				this.checkboxes[checkboxIndex].lineContent = `- [${newStatus}] ${remainingText}`;
+			}
+		} else {
+			// Fallback to full refresh if we can't find the specific element
+			this.refreshCheckboxes();
+		}
+	}
 
 	private showStatusSelectionForCheckboxes(selectedStatus: string): void {
 		console.log('OnTask View: Status selection for checkboxes', selectedStatus);
@@ -599,47 +712,6 @@ export class OnTaskView extends ItemView {
 		});
 	}
 
-	private async updateCheckboxStatus(checkbox: any, newStatus: string): Promise<void> {
-		try {
-			// Get the file
-			const file = checkbox.file;
-			if (!file) {
-				console.error('File not found in checkbox:', checkbox);
-				return;
-			}
-			
-			// Read file content
-			const content = await this.app.vault.read(file);
-			const lines = content.split('\n');
-			
-			// Update the specific line
-			const lineIndex = checkbox.lineNumber - 1;
-			if (lineIndex >= 0 && lineIndex < lines.length) {
-				const line = lines[lineIndex];
-				const updatedLine = line.replace(
-					/^(-\s*\[)([^\]]*)(\])/,
-					`$1${newStatus}$3`
-				);
-				lines[lineIndex] = updatedLine;
-				
-				// Write back to file
-				await this.app.vault.modify(file, lines.join('\n'));
-				
-				// Update local state
-				checkbox.isCompleted = newStatus === 'x';
-				
-				// Emit checkbox toggled event
-				this.eventSystem.emit('checkbox:toggled', {
-					filePath: file.path,
-					lineNumber: checkbox.lineNumber,
-					isCompleted: newStatus === 'x',
-					status: newStatus
-				});
-			}
-		} catch (error) {
-			console.error('Error updating checkbox status:', error);
-		}
-	}
 
 	private openSettings(): void {
 		// Open the plugin settings
