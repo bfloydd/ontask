@@ -795,17 +795,21 @@ export class OnTaskView extends ItemView {
 		this.positionContextMenu(menu, event);
 		console.log('OnTask View: Context menu added to DOM', menu);
 
-		// Close menu when clicking outside
+		// Close menu when clicking outside, scrolling, or right-clicking anywhere
 		const closeMenu = (e: MouseEvent) => {
 			if (!menu.contains(e.target as Node)) {
 				menu.remove();
 				document.removeEventListener('click', closeMenu);
+				document.removeEventListener('scroll', closeMenu);
+				document.removeEventListener('contextmenu', closeMenu);
 			}
 		};
 
 		// Use requestAnimationFrame to avoid immediate closure
 		requestAnimationFrame(() => {
 			document.addEventListener('click', closeMenu);
+			document.addEventListener('scroll', closeMenu, true); // Use capture phase for scroll events
+			document.addEventListener('contextmenu', closeMenu);
 		});
 	}
 
