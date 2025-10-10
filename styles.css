@@ -645,10 +645,19 @@ If your plugin does not need CSS, delete this file.
 .is-mobile .ontask-context-menu-item {
 	padding: 12px 16px;
 	min-height: 44px; /* iOS touch target minimum */
+	/* Improve touch interaction */
+	-webkit-tap-highlight-color: transparent;
+	user-select: none;
+	-webkit-user-select: none;
 }
 
 .is-mobile .ontask-context-menu-item:hover {
 	transform: none; /* Disable transform on mobile */
+}
+
+.is-mobile .ontask-context-menu-item:active {
+	background: var(--background-modifier-active);
+	transform: none;
 }
 
 /* Phone specific adjustments */

@@ -240,6 +240,21 @@ export class OnTaskView extends ItemView {
 				e.stopPropagation();
 				this.showContextMenu(e, topTask);
 			});
+
+			// Add touch support for mobile devices
+			topTaskDisplay.addEventListener('touchstart', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				// Convert touch event to mouse event for consistency
+				const touch = e.touches[0];
+				const mouseEvent = new MouseEvent('contextmenu', {
+					clientX: touch.clientX,
+					clientY: touch.clientY,
+					bubbles: true,
+					cancelable: true
+				});
+				this.showContextMenu(mouseEvent, topTask);
+			});
 		}
 
 		// Group regular checkboxes by file
@@ -521,6 +536,21 @@ export class OnTaskView extends ItemView {
 			e.stopPropagation();
 			this.showContextMenu(e, checkbox);
 		});
+
+		// Add touch support for mobile devices
+		checkboxEl.addEventListener('touchstart', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			// Convert touch event to mouse event for consistency
+			const touch = e.touches[0];
+			const mouseEvent = new MouseEvent('contextmenu', {
+				clientX: touch.clientX,
+				clientY: touch.clientY,
+				bubbles: true,
+				cancelable: true
+			});
+			this.showContextMenu(mouseEvent, checkbox);
+		});
 		
 		checkboxContainer.appendChild(statusDisplay);
 		checkboxContainer.appendChild(textEl);
@@ -673,8 +703,6 @@ export class OnTaskView extends ItemView {
 		const menu = document.createElement('div');
 		menu.className = 'ontask-context-menu';
 		menu.style.position = 'fixed';
-		menu.style.left = `${event.clientX}px`;
-		menu.style.top = `${event.clientY}px`;
 		menu.style.zIndex = '1000';
 		menu.style.background = 'var(--background-primary)';
 		menu.style.border = '1px solid var(--background-modifier-border)';
@@ -760,8 +788,11 @@ export class OnTaskView extends ItemView {
 			menu.appendChild(menuItem);
 		}
 
-		// Add to document
+		// Add to document first to get dimensions
 		document.body.appendChild(menu);
+
+		// Smart positioning to prevent off-screen display
+		this.positionContextMenu(menu, event);
 		console.log('OnTask View: Context menu added to DOM', menu);
 
 		// Close menu when clicking outside
@@ -776,6 +807,60 @@ export class OnTaskView extends ItemView {
 		requestAnimationFrame(() => {
 			document.addEventListener('click', closeMenu);
 		});
+	}
+
+	private positionContextMenu(menu: HTMLElement, event: MouseEvent): void {
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+		const menuRect = menu.getBoundingClientRect();
+		const menuWidth = menuRect.width;
+		const menuHeight = menuRect.height;
+		
+		// Get initial position from event
+		let left = event.clientX;
+		let top = event.clientY;
+		
+		// Mobile-specific adjustments
+		const isMobile = window.innerWidth <= 768;
+		const margin = isMobile ? 5 : 10; // Smaller margin on mobile
+		
+		// Check if menu would go off the right edge
+		if (left + menuWidth > viewportWidth - margin) {
+			left = viewportWidth - menuWidth - margin;
+		}
+		
+		// Check if menu would go off the left edge
+		if (left < margin) {
+			left = margin;
+		}
+		
+		// Check if menu would go off the bottom edge
+		if (top + menuHeight > viewportHeight - margin) {
+			top = viewportHeight - menuHeight - margin;
+		}
+		
+		// Check if menu would go off the top edge
+		if (top < margin) {
+			top = margin;
+		}
+		
+		// Apply the calculated position
+		menu.style.left = `${left}px`;
+		menu.style.top = `${top}px`;
+		
+		// On mobile, ensure the menu is fully visible by adjusting if needed
+		if (isMobile) {
+			// Double-check positioning after setting styles
+			requestAnimationFrame(() => {
+				const finalRect = menu.getBoundingClientRect();
+				if (finalRect.right > viewportWidth) {
+					menu.style.left = `${viewportWidth - finalRect.width - margin}px`;
+				}
+				if (finalRect.bottom > viewportHeight) {
+					menu.style.top = `${viewportHeight - finalRect.height - margin}px`;
+				}
+			});
+		}
 	}
 
 
