@@ -175,6 +175,111 @@ export class OnTaskView extends ItemView {
 		}
 	}
 
+	private updateTopTaskSection(): void {
+		console.log('OnTask View: Updating top task section immediately');
+		
+		// Find the content area
+		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
+		if (!contentArea) {
+			console.error('Content area not found for top task update');
+			return;
+		}
+		
+		// Find the existing top task section
+		const existingTopTaskSection = contentArea.querySelector('.ontask-top-task-section');
+		
+		// Find the current top task
+		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
+		
+		if (topTask) {
+			if (existingTopTaskSection) {
+				// Update existing top task section
+				const topTaskStatusDisplay = existingTopTaskSection.querySelector('.ontask-checkbox-display');
+				if (topTaskStatusDisplay) {
+					const { statusSymbol } = this.parseCheckboxLine(topTask.lineContent);
+					topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
+					topTaskStatusDisplay.textContent = `[${statusSymbol}]`;
+				}
+				
+				// Update the top task text
+				const topTaskText = existingTopTaskSection.querySelector('.ontask-top-task-text');
+				if (topTaskText) {
+					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
+					topTaskText.textContent = remainingText || 'Top Task';
+				}
+				
+				console.log('OnTask View: Top task section updated with new status');
+			} else {
+				// Create new top task section immediately
+				console.log('OnTask View: Creating new top task section immediately');
+				this.createTopTaskSection(contentArea, topTask);
+			}
+		} else {
+			// If no top task, remove the section if it exists
+			if (existingTopTaskSection) {
+				existingTopTaskSection.remove();
+				console.log('OnTask View: Top task section removed - no top task found');
+			}
+		}
+	}
+
+	private createTopTaskSection(contentArea: HTMLElement, topTask: any): void {
+		const topTaskSection = contentArea.createDiv('ontask-top-task-section');
+		topTaskSection.addClass('ontask-file-section');
+		
+		// Top task header
+		const topTaskHeader = topTaskSection.createDiv('ontask-file-header');
+		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
+		
+		// Top task display
+		const topTaskDisplay = topTaskSection.createDiv('ontask-top-task-display');
+		topTaskDisplay.addClass('ontask-top-task-item');
+		
+		// Create top task content
+		const topTaskContent = topTaskDisplay.createDiv('ontask-top-task-content');
+		
+		// Top task status display
+		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
+		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
+		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
+		topTaskStatusDisplay.textContent = `[${statusSymbol}]`;
+		topTaskStatusDisplay.style.cursor = 'pointer';
+		topTaskStatusDisplay.addEventListener('click', () => {
+			this.openFile(topTask.file?.path || '', topTask.lineNumber);
+		});
+		
+		// Top task text
+		const topTaskText = topTaskDisplay.createDiv('ontask-top-task-text');
+		topTaskText.textContent = remainingText || 'Top Task';
+		topTaskText.style.cursor = 'pointer';
+		topTaskText.addEventListener('click', () => {
+			this.openFile(topTask.file?.path || '', topTask.lineNumber);
+		});
+		
+		// Top task source
+		const topTaskSource = topTaskDisplay.createDiv('ontask-top-task-source');
+		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
+		topTaskSource.style.fontSize = '12px';
+		topTaskSource.style.color = 'var(--text-muted)';
+		topTaskSource.style.marginTop = '4px';
+		
+		topTaskContent.appendChild(topTaskStatusDisplay);
+		topTaskContent.appendChild(topTaskText);
+		topTaskContent.appendChild(topTaskSource);
+		
+		// Add context menu event listener to the top task
+		topTaskDisplay.addEventListener('contextmenu', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			this.showContextMenu(e, topTask);
+		});
+		
+		// Insert at the beginning of content area
+		contentArea.insertBefore(topTaskSection, contentArea.firstChild);
+		
+		console.log('OnTask View: Top task section created and inserted');
+	}
+
 	private renderCheckboxes(contentArea: HTMLElement): void {
 		console.log('OnTask View: Starting renderCheckboxes');
 		console.log('OnTask View: Content area children before rendering:', contentArea.children.length);
@@ -595,6 +700,12 @@ export class OnTaskView extends ItemView {
 					isCompleted
 				});
 				
+				// Trigger immediate status bar update
+				this.eventSystem.emit('checkboxes:updated', { 
+					count: this.checkboxes.length,
+					topTask: this.checkboxes.find(cb => cb.isTopTask)
+				});
+				
 				// Refresh the view after a short delay
 				this.scheduleRefresh();
 			}
@@ -657,6 +768,15 @@ export class OnTaskView extends ItemView {
 			}
 		});
 		
+		// Listen for checkbox updates to update top task section immediately
+		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
+			console.log('OnTask View: Checkboxes updated event received, updating top task section');
+			// Refresh checkboxes first to get updated data, then update top task section
+			this.refreshCheckboxes().then(() => {
+				this.updateTopTaskSection();
+			});
+		});
+		
 		// Listen for file modifications
 		const fileModifyListener = (file: any) => {
 			// Skip refresh if we're currently updating a status ourselves
@@ -677,6 +797,7 @@ export class OnTaskView extends ItemView {
 		// Store cleanup functions
 		this.eventListeners = [
 			() => settingsSubscription.unsubscribe(),
+			() => checkboxUpdateSubscription.unsubscribe(),
 			() => this.app.vault.off('modify', fileModifyListener)
 		];
 	}
@@ -906,6 +1027,12 @@ export class OnTaskView extends ItemView {
 				
 				// Update only the specific checkbox element in the DOM
 				this.updateCheckboxElement(checkbox, newStatus);
+				
+				// Trigger immediate status bar update
+				this.eventSystem.emit('checkboxes:updated', { 
+					count: this.checkboxes.length,
+					topTask: this.checkboxes.find(cb => cb.isTopTask)
+				});
 			}
 		} catch (error) {
 			console.error('OnTask View: Error updating checkbox status:', error);

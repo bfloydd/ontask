@@ -146,12 +146,11 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 					console.log('OnTask: Status bar displayed');
 				}
 			} else {
-				console.log('OnTask: No top task found, showing placeholder');
+				console.log('OnTask: No top task found, hiding status bar');
 				if (this.topTaskStatusBarItem) {
-					this.topTaskStatusBarItem.setText('🔥 No top task');
-					this.topTaskStatusBarItem.style.display = 'block';
+					this.topTaskStatusBarItem.style.display = 'none';
 				}
-				this.eventSystem.emit('ui:status-bar-updated', { visible: true, text: '🔥 No top task' });
+				this.eventSystem.emit('ui:status-bar-updated', { visible: false });
 			}
 		} catch (error) {
 			console.error('Error updating top task status bar:', error);
@@ -200,6 +199,13 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			this.refreshOnTaskViews();
 		});
 		this.eventListeners.push(() => streamsSubscription.unsubscribe());
+
+		// Listen for checkbox updates to trigger immediate status bar update
+		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', () => {
+			console.log('OnTask: Checkboxes updated event received, updating status bar immediately');
+			this.updateTopTaskStatusBar();
+		});
+		this.eventListeners.push(() => checkboxUpdateSubscription.unsubscribe());
 
 		// Emit plugin initialized event
 		this.eventSystem.emit('plugin:initialized', {});
