@@ -1,5 +1,5 @@
 import { ItemView, WorkspaceLeaf, TFile, MarkdownView } from 'obsidian';
-import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
+import { CheckboxFinderService } from '../checkbox-finder';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
 

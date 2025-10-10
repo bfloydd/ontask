@@ -4,8 +4,8 @@ import { PluginOrchestrator } from './src/slices/plugin';
 import { EventSystem } from './src/slices/events';
 import { EditorIntegrationService } from './src/slices/editor';
 import { DIContainer, DIContainerImpl, ServiceConfiguration, SERVICE_IDS } from './src/slices/di';
-import { StreamsService } from './src/services/streams';
-import { CheckboxFinderService } from './src/services/checkbox-finder/checkbox-finder-service';
+import { StreamsService } from './src/slices/streams';
+import { CheckboxFinderService } from './src/slices/checkbox-finder';
 import { OnTaskView, ONTASK_VIEW_TYPE } from './src/slices/ontask-view';
 
 // On Task Plugin - Task management for Obsidian

@@ -2,7 +2,7 @@
 import { App, MarkdownView, WorkspaceLeaf, Editor, TFile } from 'obsidian';
 import { EditorIntegrationService } from './editor-integration-interface';
 import { SettingsService } from '../settings/settings-interface';
-import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
+import { CheckboxFinderService } from '../checkbox-finder';
 import { EventSystem } from '../events/event-system-interface';
 
 export class EditorIntegrationServiceImpl implements EditorIntegrationService {

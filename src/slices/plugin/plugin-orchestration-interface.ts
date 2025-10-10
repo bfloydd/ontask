@@ -2,8 +2,8 @@
 
 import { App, Plugin } from 'obsidian';
 import { SettingsService } from '../settings';
-import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
-import { StreamsService } from '../../services/streams';
+import { CheckboxFinderService } from '../checkbox-finder';
+import { StreamsService } from '../streams';
 import { EventSystem } from '../events';
 
 export interface PluginOrchestrator {

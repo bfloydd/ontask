@@ -2,8 +2,8 @@
 import { DIContainer, SERVICE_IDS } from './di-container-interface';
 import { EventSystem, EventSystemServiceImpl } from '../events';
 import { SettingsService, SettingsServiceImpl } from '../settings';
-import { StreamsService } from '../../services/streams';
-import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
+import { StreamsService, StreamsServiceImpl } from '../streams';
+import { CheckboxFinderService } from '../checkbox-finder';
 import { PluginOrchestrator, PluginOrchestrationServiceImpl, PluginDependencies } from '../plugin';
 import { EditorIntegrationService, EditorIntegrationServiceImpl } from '../editor';
 import { App, Plugin } from 'obsidian';
@@ -30,7 +30,7 @@ export class ServiceConfiguration {
 		// Register streams service
 		container.registerSingleton(SERVICE_IDS.STREAMS_SERVICE, (container) => {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
-			return new StreamsService(app);
+			return new StreamsServiceImpl(app);
 		});
 
 		// Register checkbox finder service

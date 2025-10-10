@@ -1,24 +1,13 @@
-// Streams Service - Handles stream data management
+// Streams slice - Service implementation
 import { App, Plugin } from 'obsidian';
-
-// Import the Stream type from the streams plugin
-// Note: This assumes the streams plugin exports its types
-// If the import path is different, adjust accordingly
-export interface Stream {
-	id: string; // Unique identifier (UUID)
-	name: string; // Display name (e.g., "Daily Notes")
-	folder: string; // Folder path (e.g., "Assets/Streams/Per")
-	icon: string; // Icon name (e.g., "calendar")
-	showTodayInRibbon: boolean; // Whether to show in ribbon
-	addCommand: boolean; // Whether to add to command palette
-}
+import { StreamsService, Stream } from './streams-interface';
 
 // Type for the streams plugin
 interface StreamsPlugin extends Plugin {
 	getStreams(): Stream[];
 }
 
-export class StreamsService {
+export class StreamsServiceImpl implements StreamsService {
 	private app: App;
 	private streamsPlugin: StreamsPlugin | null = null;
 
@@ -153,5 +142,4 @@ export class StreamsService {
 		const streams = this.getAllStreams();
 		return streams.find(stream => stream.id === id);
 	}
-
 }

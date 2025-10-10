@@ -31,7 +31,6 @@ src/
 │       ├── ontask-view-interface.ts
 │       ├── ontask-view.ts
 │       └── index.ts
-├── services/
 │   ├── checkbox-finder/    # Checkbox finding slice
 │   │   ├── interfaces.ts
 │   │   ├── checkbox-finder-service.ts
@@ -41,7 +40,10 @@ src/
 │   │   │   ├── daily-notes-strategy.ts
 │   │   │   └── folder-strategy.ts
 │   │   └── index.ts
-│   └── streams.ts          # Streams service
+│   └── streams/            # Streams slice
+│       ├── streams-interface.ts
+│       ├── streams-service.ts
+│       └── index.ts
 ```
 
 ## 🎯 Slice Responsibilities
@@ -81,6 +83,18 @@ src/
 - **Responsibilities**: View rendering, user interactions, checkbox toggling
 - **Dependencies**: CheckboxFinderService, SettingsService, EventSystem
 - **Exports**: OnTaskView, OnTaskViewInterface
+
+### **Checkbox Finder Slice**
+- **Purpose**: Find checkboxes from various sources using strategy pattern
+- **Responsibilities**: Strategy pattern implementation, checkbox parsing, multiple finding strategies
+- **Dependencies**: StreamsService, EventSystem
+- **Exports**: CheckboxFinderService, CheckboxFinderFactory, strategies
+
+### **Streams Slice**
+- **Purpose**: Manage stream data from the Streams plugin
+- **Responsibilities**: Stream retrieval, filtering, plugin integration
+- **Dependencies**: None (pure utility)
+- **Exports**: StreamsService, Stream interface
 
 ## 🔄 Communication Patterns
 
@@ -168,8 +182,8 @@ container.registerSingleton(SERVICE_IDS.NEW_SERVICE, (container) => {
 
 ## 📊 Architecture Metrics
 
-- **Slices**: 6 (Settings, Plugin, Events, DI, Checkbox-Finder, OnTask-View)
-- **Services**: 6 (EventSystem, SettingsService, StreamsService, CheckboxFinderService, PluginOrchestrator, DIContainer)
+- **Slices**: 8 (Settings, Plugin, Events, DI, Checkbox-Finder, OnTask-View, Streams, Editor)
+- **Services**: 8 (EventSystem, SettingsService, StreamsService, CheckboxFinderService, PluginOrchestrator, DIContainer, EditorIntegration, OnTaskView)
 - **Strategies**: 3 (Streams, Daily Notes, Folder)
 - **Event Types**: 12+ (Settings, UI, Plugin, File, Checkbox events)
 - **main.ts Lines**: 135 (down from 463+)

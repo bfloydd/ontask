@@ -2,8 +2,8 @@
 import { App, Plugin, WorkspaceLeaf } from 'obsidian';
 import { PluginOrchestrator, PluginDependencies } from './plugin-orchestration-interface';
 import { SettingsService } from '../settings';
-import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
-import { StreamsService } from '../../services/streams';
+import { CheckboxFinderService } from '../checkbox-finder';
+import { StreamsService } from '../streams';
 import { OnTaskView, ONTASK_VIEW_TYPE } from '../ontask-view';
 import { EventSystem } from '../events';
 
