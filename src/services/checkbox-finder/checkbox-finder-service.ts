@@ -79,6 +79,7 @@ export class CheckboxFinderService {
 		const allCheckboxes: CheckboxItem[] = [];
 
 		// Use all active strategies
+		console.log(`OnTask: Using active strategies: ${this.activeStrategies.join(', ')}`);
 		for (const strategyName of this.activeStrategies) {
 			const strategy = this.factory.createStrategy(strategyName);
 			if (strategy && strategy.isAvailable()) {
@@ -93,10 +94,15 @@ export class CheckboxFinderService {
 				console.log(`OnTask: Strategy ${strategyName} is not available`);
 			}
 		}
+		
+		console.log(`OnTask: Total checkboxes before deduplication: ${allCheckboxes.length}`);
 
 		// Remove duplicates and sort by file modification time
 		const uniqueCheckboxes = this.removeDuplicateCheckboxes(allCheckboxes);
-		return this.sortCheckboxes(uniqueCheckboxes);
+		const sortedCheckboxes = this.sortCheckboxes(uniqueCheckboxes);
+		
+		console.log(`OnTask: Final unique checkboxes after deduplication: ${sortedCheckboxes.length}`);
+		return sortedCheckboxes;
 	}
 
 	/**
@@ -151,18 +157,29 @@ export class CheckboxFinderService {
 	}
 
 	/**
-	 * Remove duplicate checkboxes (same file and line number)
+	 * Remove duplicate checkboxes (same file, line number, and content)
 	 */
 	private removeDuplicateCheckboxes(checkboxes: CheckboxItem[]): CheckboxItem[] {
 		const seen = new Set<string>();
-		return checkboxes.filter(checkbox => {
-			const key = `${checkbox.file.path}-${checkbox.lineNumber}`;
+		const duplicates: CheckboxItem[] = [];
+		
+		const uniqueCheckboxes = checkboxes.filter(checkbox => {
+			// Create a more specific key that includes content to avoid false positives
+			const key = `${checkbox.file.path}-${checkbox.lineNumber}-${checkbox.lineContent.trim()}`;
 			if (seen.has(key)) {
+				duplicates.push(checkbox);
+				console.log(`OnTask: Duplicate checkbox found: ${checkbox.file.path}:${checkbox.lineNumber} - "${checkbox.lineContent.trim()}"`);
 				return false;
 			}
 			seen.add(key);
 			return true;
 		});
+		
+		if (duplicates.length > 0) {
+			console.log(`OnTask: Removed ${duplicates.length} duplicate checkboxes`);
+		}
+		
+		return uniqueCheckboxes;
 	}
 
 	/**

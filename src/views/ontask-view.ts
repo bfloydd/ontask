@@ -1,27 +1,31 @@
 import { ItemView, WorkspaceLeaf, TFile, MarkdownView } from 'obsidian';
 import { CheckboxFinderService } from '../services/checkbox-finder/checkbox-finder-service';
 import { EventSystem } from '../slices/events';
+import { SettingsService } from '../slices/settings';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
 export class OnTaskView extends ItemView {
 	private checkboxFinderService: CheckboxFinderService;
-	private settings: any;
+	private settingsService: SettingsService;
 	private plugin: any;
 	private eventSystem: EventSystem;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
+	private hideCompletedButton: HTMLButtonElement;
+	private onlyTodayButton: HTMLButtonElement;
+	private isRefreshing: boolean = false;
 
 	constructor(
 		leaf: WorkspaceLeaf,
 		checkboxFinderService: CheckboxFinderService,
-		settings: any,
+		settingsService: SettingsService,
 		plugin: any,
 		eventSystem: EventSystem
 	) {
 		super(leaf);
 		this.checkboxFinderService = checkboxFinderService;
-		this.settings = settings;
+		this.settingsService = settingsService;
 		this.plugin = plugin;
 		this.eventSystem = eventSystem;
 	}
@@ -55,13 +59,16 @@ export class OnTaskView extends ItemView {
 		refreshButton.addEventListener('click', () => this.refreshCheckboxes());
 		
 		// Create filter buttons
-		const hideCompletedButton = buttonsContainer.createEl('button', { text: 'Hide Completed' });
-		hideCompletedButton.addClass('ontask-filter-button');
-		hideCompletedButton.addEventListener('click', () => this.toggleHideCompleted());
+		this.hideCompletedButton = buttonsContainer.createEl('button', { text: 'Hide Completed' });
+		this.hideCompletedButton.addClass('ontask-filter-button');
+		this.hideCompletedButton.addEventListener('click', () => this.toggleHideCompleted());
 		
-		const onlyTodayButton = buttonsContainer.createEl('button', { text: 'Only Today' });
-		onlyTodayButton.addClass('ontask-filter-button');
-		onlyTodayButton.addEventListener('click', () => this.toggleOnlyToday());
+		this.onlyTodayButton = buttonsContainer.createEl('button', { text: 'Show All' });
+		this.onlyTodayButton.addClass('ontask-filter-button');
+		this.onlyTodayButton.addEventListener('click', () => this.toggleOnlyToday());
+		
+		// Set initial button states
+		this.updateButtonStates();
 		
 		// Create content area
 		const contentArea = this.contentEl.createDiv('ontask-content');
@@ -92,7 +99,17 @@ export class OnTaskView extends ItemView {
 	}
 
 	async refreshCheckboxes(): Promise<void> {
+		// Prevent multiple simultaneous refreshes
+		if (this.isRefreshing) {
+			console.log('OnTask View: Refresh already in progress, skipping');
+			return;
+		}
+		
+		this.isRefreshing = true;
+		
 		try {
+			console.log('OnTask View: Starting refreshCheckboxes');
+			
 			// Find the content area
 			const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
 			if (!contentArea) {
@@ -101,23 +118,42 @@ export class OnTaskView extends ItemView {
 			}
 			
 			// Clear existing content
+			console.log('OnTask View: Clearing content area');
 			contentArea.empty();
+			
+			// Verify content is cleared
+			console.log('OnTask View: Content area children after clearing:', contentArea.children.length);
 			
 			// Show loading state
 			const loadingEl = contentArea.createDiv('ontask-loading');
 			loadingEl.textContent = 'Loading checkboxes...';
 			
+			// Get current settings
+			const settings = this.settingsService.getSettings();
+			
 			// Find checkboxes
 			this.checkboxes = await this.checkboxFinderService.findAllCheckboxes(
-				this.settings.hideCompletedTasks,
-				this.settings.onlyShowToday
+				settings.hideCompletedTasks,
+				settings.onlyShowToday
 			);
 			
 			// Clear loading state
 			loadingEl.remove();
 			
-			// Render checkboxes
-			this.renderCheckboxes(contentArea);
+		// Debug logging
+		console.log(`OnTask View: Rendering ${this.checkboxes.length} checkboxes`);
+		console.log('OnTask View: Checkboxes data:', this.checkboxes.map(cb => ({
+			file: cb.file?.path,
+			lineNumber: cb.lineNumber,
+			content: cb.lineContent?.trim(),
+			sourceName: cb.sourceName
+		})));
+		
+		// Render checkboxes
+		this.renderCheckboxes(contentArea);
+		
+		// Update button states
+		this.updateButtonStates();
 			
 			// Emit refresh event
 			this.eventSystem.emit('view:refreshed', { 
@@ -133,10 +169,16 @@ export class OnTaskView extends ItemView {
 				const errorEl = contentArea.createDiv('ontask-error');
 				errorEl.textContent = 'Error loading checkboxes. Please try again.';
 			}
+		} finally {
+			this.isRefreshing = false;
+			console.log('OnTask View: Finished refreshCheckboxes');
 		}
 	}
 
 	private renderCheckboxes(contentArea: HTMLElement): void {
+		console.log('OnTask View: Starting renderCheckboxes');
+		console.log('OnTask View: Content area children before rendering:', contentArea.children.length);
+		
 		if (this.checkboxes.length === 0) {
 			const emptyEl = contentArea.createDiv('ontask-empty');
 			emptyEl.textContent = 'No checkboxes found.';
@@ -215,18 +257,28 @@ export class OnTaskView extends ItemView {
 				checkboxesList.appendChild(checkboxEl);
 			}
 		}
+		
+		console.log('OnTask View: Finished renderCheckboxes');
+		console.log('OnTask View: Content area children after rendering:', contentArea.children.length);
 	}
 
 	private groupCheckboxesByFile(checkboxes: any[]): Map<string, any[]> {
 		const grouped = new Map<string, any[]>();
 		
+		console.log(`OnTask View: Grouping ${checkboxes.length} checkboxes by file`);
+		
 		for (const checkbox of checkboxes) {
 			const filePath = checkbox.file?.path || 'Unknown';
 			if (!grouped.has(filePath)) {
 				grouped.set(filePath, []);
+				console.log(`OnTask View: Creating new group for file: ${filePath}`);
 			}
 			grouped.get(filePath)!.push(checkbox);
+			console.log(`OnTask View: Added checkbox to ${filePath}: "${checkbox.lineContent?.trim()}"`);
 		}
+		
+		console.log(`OnTask View: Final grouped files:`, Array.from(grouped.keys()));
+		console.log(`OnTask View: File counts:`, Array.from(grouped.entries()).map(([file, checkboxes]) => `${file}: ${checkboxes.length}`));
 		
 		return grouped;
 	}
@@ -352,9 +404,16 @@ export class OnTaskView extends ItemView {
 	}
 
 	private setupEventListeners(): void {
+		console.log('OnTask View: Setting up event listeners');
+		
+		// Clean up any existing listeners first
+		this.cleanupEventListeners();
+		
 		// Listen for settings changes
 		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
+			console.log('OnTask View: Settings changed event received:', event.data.key);
 			if (event.data.key === 'hideCompletedTasks' || event.data.key === 'onlyShowToday') {
+				console.log('OnTask View: Triggering refresh due to settings change');
 				this.refreshCheckboxes();
 			}
 		});
@@ -578,30 +637,48 @@ export class OnTaskView extends ItemView {
 		(this.app as any).setting.openTabById(this.plugin.manifest.id);
 	}
 
-	private toggleHideCompleted(): void {
-		const settings = this.settings;
+	private async toggleHideCompleted(): Promise<void> {
+		const settings = this.settingsService.getSettings();
 		const newValue = !settings.hideCompletedTasks;
-		// Update settings through event system
-		this.eventSystem.emit('settings:changed', { 
-			key: 'hideCompletedTasks', 
-			value: newValue 
-		});
+		// Update settings through settings service
+		await this.settingsService.updateSetting('hideCompletedTasks', newValue);
+		this.updateButtonStates();
 		this.refreshCheckboxes();
 	}
 
-	private toggleOnlyToday(): void {
-		const settings = this.settings;
+	private async toggleOnlyToday(): Promise<void> {
+		const settings = this.settingsService.getSettings();
 		const newValue = !settings.onlyShowToday;
-		// Update settings through event system
-		this.eventSystem.emit('settings:changed', { 
-			key: 'onlyShowToday', 
-			value: newValue 
-		});
+		// Update settings through settings service
+		await this.settingsService.updateSetting('onlyShowToday', newValue);
+		this.updateButtonStates();
 		this.refreshCheckboxes();
 	}
 
 	private toggleTopTaskVisibility(): void {
 		// Emit event to toggle top task visibility
 		this.eventSystem.emit('ui:toggle-top-task-visibility', {});
+	}
+
+	private updateButtonStates(): void {
+		const settings = this.settingsService.getSettings();
+		
+		// Update Hide Completed button state
+		if (this.hideCompletedButton) {
+			if (settings.hideCompletedTasks) {
+				this.hideCompletedButton.textContent = 'Hide Completed';
+			} else {
+				this.hideCompletedButton.textContent = 'Show Completed';
+			}
+		}
+		
+		// Update Only Today button state
+		if (this.onlyTodayButton) {
+			if (settings.onlyShowToday) {
+				this.onlyTodayButton.textContent = 'Show Today';
+			} else {
+				this.onlyTodayButton.textContent = 'Show All';
+			}
+		}
 	}
 }

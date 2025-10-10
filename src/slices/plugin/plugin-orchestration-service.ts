@@ -218,7 +218,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		plugin.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(
 			leaf, 
 			this.dependencies.checkboxFinderService, 
-			settingsService.getSettings(), 
+			settingsService, 
 			plugin,
 			this.dependencies.eventSystem
 		));
