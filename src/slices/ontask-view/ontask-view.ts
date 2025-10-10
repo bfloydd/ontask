@@ -752,10 +752,8 @@ export class OnTaskView extends ItemView {
 		// Listen for checkbox updates to update top task section immediately
 		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
 			console.log('OnTask View: Checkboxes updated event received, updating top task section');
-			// Refresh checkboxes first to get updated data, then update top task section
-			this.refreshCheckboxes().then(() => {
-				this.updateTopTaskSection();
-			});
+			// Only update the top task section without full refresh
+			this.updateTopTaskSection();
 		});
 		
 		// Listen for file modifications
@@ -1069,6 +1067,27 @@ export class OnTaskView extends ItemView {
 				// Update the line content in our local data
 				const { remainingText } = this.parseCheckboxLine(checkbox.lineContent);
 				this.checkboxes[checkboxIndex].lineContent = `- [${newStatus}] ${remainingText}`;
+				
+				// Update the isTopTask status if this was the top task
+				if (this.checkboxes[checkboxIndex].isTopTask) {
+					// If the status changed from '!' (top task) to something else, 
+					// we need to find a new top task or clear the current one
+					if (newStatus !== '!') {
+						this.checkboxes[checkboxIndex].isTopTask = false;
+						// Find a new top task if any exist
+						const newTopTask = this.checkboxes.find(cb => cb.lineContent.includes('[!]'));
+						if (newTopTask) {
+							newTopTask.isTopTask = true;
+						}
+					}
+				} else if (newStatus === '!') {
+					// If this became a top task, clear any existing top task
+					const currentTopTask = this.checkboxes.find(cb => cb.isTopTask);
+					if (currentTopTask) {
+						currentTopTask.isTopTask = false;
+					}
+					this.checkboxes[checkboxIndex].isTopTask = true;
+				}
 			}
 		} else {
 			// Fallback to full refresh if we can't find the specific element
