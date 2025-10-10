@@ -6,7 +6,7 @@ import { EditorIntegrationService } from './src/slices/editor';
 import { DIContainer, DIContainerImpl, ServiceConfiguration, SERVICE_IDS } from './src/slices/di';
 import { StreamsService } from './src/services/streams';
 import { CheckboxFinderService } from './src/services/checkbox-finder/checkbox-finder-service';
-import { OnTaskView, ONTASK_VIEW_TYPE } from './src/views/ontask-view';
+import { OnTaskView, ONTASK_VIEW_TYPE } from './src/slices/ontask-view';
 
 // On Task Plugin - Task management for Obsidian
 

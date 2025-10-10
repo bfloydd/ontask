@@ -22,10 +22,14 @@ src/
 │   │   ├── event-system-interface.ts
 │   │   ├── event-system-service.ts
 │   │   └── index.ts
-│   └── di/                 # Dependency injection slice
-│       ├── di-container-interface.ts
-│       ├── di-container-service.ts
-│       ├── service-configuration.ts
+│   ├── di/                 # Dependency injection slice
+│   │   ├── di-container-interface.ts
+│   │   ├── di-container-service.ts
+│   │   ├── service-configuration.ts
+│   │   └── index.ts
+│   └── ontask-view/        # UI view slice
+│       ├── ontask-view-interface.ts
+│       ├── ontask-view.ts
 │       └── index.ts
 ├── services/
 │   ├── checkbox-finder/    # Checkbox finding slice
@@ -38,8 +42,6 @@ src/
 │   │   │   └── folder-strategy.ts
 │   │   └── index.ts
 │   └── streams.ts          # Streams service
-└── views/
-    └── ontask-view.ts      # UI view
 ```
 
 ## 🎯 Slice Responsibilities
@@ -73,6 +75,12 @@ src/
 - **Responsibilities**: Strategy pattern implementation, checkbox parsing
 - **Dependencies**: Streams service, event system
 - **Exports**: CheckboxFinderService, strategies
+
+### **OnTask View Slice**
+- **Purpose**: Provide the main UI view for task management
+- **Responsibilities**: View rendering, user interactions, checkbox toggling
+- **Dependencies**: CheckboxFinderService, SettingsService, EventSystem
+- **Exports**: OnTaskView, OnTaskViewInterface
 
 ## 🔄 Communication Patterns
 
@@ -160,7 +168,7 @@ container.registerSingleton(SERVICE_IDS.NEW_SERVICE, (container) => {
 
 ## 📊 Architecture Metrics
 
-- **Slices**: 5 (Settings, Plugin, Events, DI, Checkbox-Finder)
+- **Slices**: 6 (Settings, Plugin, Events, DI, Checkbox-Finder, OnTask-View)
 - **Services**: 6 (EventSystem, SettingsService, StreamsService, CheckboxFinderService, PluginOrchestrator, DIContainer)
 - **Strategies**: 3 (Streams, Daily Notes, Folder)
 - **Event Types**: 12+ (Settings, UI, Plugin, File, Checkbox events)

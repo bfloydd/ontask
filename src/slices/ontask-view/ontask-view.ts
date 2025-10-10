@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, TFile, MarkdownView } from 'obsidian';
-import { CheckboxFinderService } from '../services/checkbox-finder/checkbox-finder-service';
-import { EventSystem } from '../slices/events';
-import { SettingsService } from '../slices/settings';
+import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
+import { EventSystem } from '../events';
+import { SettingsService } from '../settings';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 

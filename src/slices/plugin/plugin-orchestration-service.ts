@@ -4,7 +4,7 @@ import { PluginOrchestrator, PluginDependencies } from './plugin-orchestration-i
 import { SettingsService } from '../settings';
 import { CheckboxFinderService } from '../../services/checkbox-finder/checkbox-finder-service';
 import { StreamsService } from '../../services/streams';
-import { OnTaskView, ONTASK_VIEW_TYPE } from '../../views/ontask-view';
+import { OnTaskView, ONTASK_VIEW_TYPE } from '../ontask-view';
 import { EventSystem } from '../events';
 
 export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
