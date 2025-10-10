@@ -42,6 +42,18 @@ export default class OnTask extends Plugin {
 		// Add settings tab
 		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService));
 
+		// Add test command for debugging
+		this.addCommand({
+			id: 'test-editor-overlay',
+			name: 'Test Editor Overlay (Debug)',
+			callback: () => {
+				console.log('OnTask: Test command triggered');
+				if (this.editorIntegrationService) {
+					(this.editorIntegrationService as any).testOverlayCreation();
+				}
+			}
+		});
+
 	}
 
 	async onunload() {

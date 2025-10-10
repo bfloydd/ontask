@@ -116,11 +116,13 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			});
 			
 			if (topTask) {
+				console.log('OnTask: Top task found, updating status bar', topTask);
 				if (this.isTopTaskVisible) {
 					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 					const displayText = remainingText || 'Top Task';
 					if (this.topTaskStatusBarItem) {
 						this.topTaskStatusBarItem.setText(`🔥 ${displayText}`);
+						console.log('OnTask: Status bar text set to:', `🔥 ${displayText}`);
 					}
 					this.eventSystem.emit('ui:status-bar-updated', { 
 						visible: true, 
@@ -129,6 +131,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 				} else {
 					if (this.topTaskStatusBarItem) {
 						this.topTaskStatusBarItem.setText('👁️');
+						console.log('OnTask: Status bar text set to: 👁️');
 					}
 					this.eventSystem.emit('ui:status-bar-updated', { 
 						visible: true, 
@@ -140,12 +143,15 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 				this.applyTopTaskColor(settings);
 				if (this.topTaskStatusBarItem) {
 					this.topTaskStatusBarItem.style.display = 'block';
+					console.log('OnTask: Status bar displayed');
 				}
 			} else {
+				console.log('OnTask: No top task found, showing placeholder');
 				if (this.topTaskStatusBarItem) {
-					this.topTaskStatusBarItem.style.display = 'none';
+					this.topTaskStatusBarItem.setText('🔥 No top task');
+					this.topTaskStatusBarItem.style.display = 'block';
 				}
-				this.eventSystem.emit('ui:status-bar-updated', { visible: false });
+				this.eventSystem.emit('ui:status-bar-updated', { visible: true, text: '🔥 No top task' });
 			}
 		} catch (error) {
 			console.error('Error updating top task status bar:', error);
@@ -225,11 +231,40 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 
 		// Add top task status bar item
 		this.topTaskStatusBarItem = plugin.addStatusBarItem();
+		console.log('OnTask: Status bar item created', this.topTaskStatusBarItem);
 		this.topTaskStatusBarItem.addClass('ontask-top-task-status');
 		this.topTaskStatusBarItem.style.cursor = 'pointer';
 		this.topTaskStatusBarItem.style.opacity = '0.7';
-		this.topTaskStatusBarItem.addEventListener('click', () => this.toggleTopTaskVisibility());
-		this.topTaskStatusBarItem.addEventListener('contextmenu', (e) => this.showColorMenu(e, settingsService));
+		this.topTaskStatusBarItem.style.pointerEvents = 'auto';
+		this.topTaskStatusBarItem.style.zIndex = '1000';
+		
+		// Add event listeners
+		this.topTaskStatusBarItem.addEventListener('click', () => {
+			console.log('OnTask: Status bar clicked');
+			this.toggleTopTaskVisibility();
+		});
+		
+		this.topTaskStatusBarItem.addEventListener('contextmenu', (e) => {
+			console.log('OnTask: contextmenu event triggered', e);
+			e.preventDefault();
+			e.stopPropagation();
+			this.showColorMenu(e, settingsService);
+		});
+		
+		// Also add mousedown event as backup for right-click
+		this.topTaskStatusBarItem.addEventListener('mousedown', (e) => {
+			if (e.button === 2) { // Right mouse button
+				console.log('OnTask: Right mouse button pressed');
+				e.preventDefault();
+				e.stopPropagation();
+				this.showColorMenu(e, settingsService);
+			}
+		});
+		
+		// Add mouseover event for testing
+		this.topTaskStatusBarItem.addEventListener('mouseover', () => {
+			console.log('OnTask: Status bar mouseover');
+		});
 
 		// Add commands
 		this.addCommands(plugin);
@@ -289,6 +324,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 	}
 
 	private showColorMenu(event: MouseEvent, settingsService: SettingsService): void {
+		console.log('OnTask: showColorMenu called', event);
 		event.preventDefault();
 		
 		// Remove any existing color menu
@@ -296,6 +332,26 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		if (existingMenu) {
 			existingMenu.remove();
 		}
+
+		// Create a simple test menu first
+		const testMenu = document.createElement('div');
+		testMenu.textContent = 'TEST MENU - Right click working!';
+		testMenu.style.position = 'fixed';
+		testMenu.style.left = `${event.clientX}px`;
+		testMenu.style.top = `${event.clientY}px`;
+		testMenu.style.zIndex = '9999';
+		testMenu.style.background = 'red';
+		testMenu.style.color = 'white';
+		testMenu.style.padding = '10px';
+		testMenu.style.border = '2px solid black';
+		document.body.appendChild(testMenu);
+		
+		// Remove test menu after 2 seconds
+		setTimeout(() => {
+			if (testMenu.parentNode) {
+				testMenu.parentNode.removeChild(testMenu);
+			}
+		}, 2000);
 
 		// Create color menu
 		const menu = document.createElement('div');
@@ -387,6 +443,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 
 		// Add to document
 		document.body.appendChild(menu);
+		console.log('OnTask: Color menu added to DOM', menu);
 
 		// Close menu when clicking outside
 		const closeMenu = (e: MouseEvent) => {
@@ -396,10 +453,11 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			}
 		};
 
-		// Use setTimeout to avoid immediate closure
-		setTimeout(() => {
+		// Use requestAnimationFrame to avoid immediate closure
+		requestAnimationFrame(() => {
 			document.addEventListener('click', closeMenu);
-		}, 0);
+			console.log('OnTask: Color menu should now be visible');
+		});
 	}
 
 	private applyTopTaskColor(settings: any): void {
