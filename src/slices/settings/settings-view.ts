@@ -2,6 +2,7 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import { SettingsService } from './settings-interface';
 import { SettingsServiceImpl } from './settings-service';
+import { StatusConfigView } from './status-config-view';
 
 export class OnTaskSettingsTab extends PluginSettingTab {
 	private settingsService: SettingsService;
@@ -23,6 +24,12 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 
 		// Checkbox source settings
 		this.renderCheckboxSourceSettings(containerEl);
+
+		// Add separator
+		containerEl.createEl('hr');
+
+		// Status configuration settings
+		this.renderStatusConfiguration(containerEl);
 	}
 
 	private renderBasicSettings(containerEl: HTMLElement): void {
@@ -142,5 +149,14 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 						});
 					}));
 		}
+	}
+
+	private renderStatusConfiguration(containerEl: HTMLElement): void {
+		// Create a container for the status configuration
+		const statusConfigContainer = containerEl.createEl('div', { cls: 'status-config-container' });
+		
+		// Initialize and render the status configuration view
+		const statusConfigView = new StatusConfigView(statusConfigContainer, this.settingsService, this.app);
+		statusConfigView.render();
 	}
 }

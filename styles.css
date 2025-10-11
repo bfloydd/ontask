@@ -770,3 +770,264 @@ If your plugin does not need CSS, delete this file.
 .is-phone .ontask-top-task-source {
 	font-size: 9px;
 }
+
+/* Status Configuration UI Styles */
+.status-config-header {
+	margin-bottom: 20px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.status-config-header h3 {
+	margin: 0 0 8px 0;
+	color: var(--text-normal);
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.status-config-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 20px;
+}
+
+.status-config-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	transition: all 0.2s ease;
+	cursor: move;
+}
+
+.status-config-item:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-config-item.dragging {
+	opacity: 0.5;
+	transform: rotate(2deg);
+}
+
+.status-config-drag-handle {
+	color: var(--text-muted);
+	cursor: grab;
+	font-size: 14px;
+	padding: 4px;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.status-config-drag-handle:active {
+	cursor: grabbing;
+}
+
+.status-config-preview {
+	display: flex;
+	align-items: center;
+	min-width: 40px;
+}
+
+.status-config-symbol {
+	font-family: var(--font-monospace);
+	font-size: 14px;
+	font-weight: bold;
+	padding: 4px 8px;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	min-width: 24px;
+	text-align: center;
+}
+
+.status-config-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.status-config-name {
+	font-weight: 600;
+	color: var(--text-normal);
+	font-size: 14px;
+}
+
+.status-config-description {
+	color: var(--text-muted);
+	font-size: 12px;
+	font-style: italic;
+}
+
+.status-config-edit-btn,
+.status-config-delete-btn {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 4px;
+	padding: 6px 12px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+}
+
+.status-config-edit-btn:hover {
+	background: var(--interactive-accent-hover);
+	transform: translateY(-1px);
+}
+
+.status-config-delete-btn {
+	background: var(--text-error);
+	color: var(--text-on-accent);
+}
+
+.status-config-delete-btn:hover {
+	background: var(--text-error-hover);
+	transform: translateY(-1px);
+}
+
+.status-config-add-btn {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 6px;
+	padding: 10px 16px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	width: 100%;
+}
+
+.status-config-add-btn:hover {
+	background: var(--interactive-accent-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.status-config-modal-preview {
+	margin-top: 15px;
+	padding: 15px;
+	background: var(--background-secondary);
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+}
+
+.status-config-modal-preview h4 {
+	margin: 0 0 10px 0;
+	color: var(--text-normal);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.status-config-modal-symbol {
+	font-family: var(--font-monospace);
+	font-size: 16px;
+	font-weight: bold;
+	padding: 6px 12px;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	display: inline-block;
+}
+
+.status-config-modal-buttons {
+	display: flex;
+	gap: 10px;
+	justify-content: flex-end;
+	margin-top: 20px;
+	padding-top: 15px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.status-config-modal-buttons button {
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+}
+
+.status-config-modal-buttons button:not(.mod-cta) {
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.status-config-modal-buttons button:not(.mod-cta):hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border-hover);
+}
+
+/* Mobile responsive for status configuration */
+.is-mobile .status-config-item {
+	padding: 10px;
+	gap: 10px;
+}
+
+.is-mobile .status-config-drag-handle {
+	font-size: 16px;
+	padding: 6px;
+}
+
+.is-mobile .status-config-symbol {
+	font-size: 16px;
+	padding: 6px 10px;
+	min-width: 28px;
+}
+
+.is-mobile .status-config-name {
+	font-size: 15px;
+}
+
+.is-mobile .status-config-description {
+	font-size: 13px;
+}
+
+.is-mobile .status-config-edit-btn,
+.is-mobile .status-config-delete-btn {
+	padding: 8px 14px;
+	font-size: 14px;
+}
+
+.is-mobile .status-config-add-btn {
+	padding: 12px 20px;
+	font-size: 16px;
+}
+
+.is-phone .status-config-item {
+	padding: 8px;
+	gap: 8px;
+}
+
+.is-phone .status-config-symbol {
+	font-size: 14px;
+	padding: 4px 8px;
+	min-width: 24px;
+}
+
+.is-phone .status-config-name {
+	font-size: 14px;
+}
+
+.is-phone .status-config-description {
+	font-size: 12px;
+}
+
+.is-phone .status-config-edit-btn,
+.is-phone .status-config-delete-btn {
+	padding: 6px 12px;
+	font-size: 13px;
+}
+
+.is-phone .status-config-add-btn {
+	padding: 10px 18px;
+	font-size: 15px;
+}

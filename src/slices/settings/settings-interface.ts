@@ -71,4 +71,12 @@ export interface SettingsService {
 	
 	// Check if Daily Notes is available
 	isDailyNotesAvailable(): boolean;
+	
+	// Status configuration methods
+	getStatusConfigs(): StatusConfig[];
+	getStatusConfig(symbol: string): StatusConfig | undefined;
+	updateStatusConfig(symbol: string, config: StatusConfig): Promise<void>;
+	addStatusConfig(config: StatusConfig): Promise<void>;
+	removeStatusConfig(symbol: string): Promise<void>;
+	reorderStatusConfigs(configs: StatusConfig[]): Promise<void>;
 }

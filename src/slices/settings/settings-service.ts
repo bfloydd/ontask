@@ -1,6 +1,6 @@
 // Settings slice - Service implementation
 import { App, Plugin } from 'obsidian';
-import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './settings-interface';
+import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService, StatusConfig } from './settings-interface';
 import { EventSystem } from '../events';
 
 export class SettingsServiceImpl implements SettingsService {
@@ -110,6 +110,78 @@ export class SettingsServiceImpl implements SettingsService {
 			key: event.key,
 			value: event.value,
 			oldValue: event.oldValue
+		});
+	}
+
+	// Status configuration methods
+	getStatusConfigs(): StatusConfig[] {
+		return [...this.settings.statusConfigs];
+	}
+
+	getStatusConfig(symbol: string): StatusConfig | undefined {
+		return this.settings.statusConfigs.find(config => config.symbol === symbol);
+	}
+
+	async updateStatusConfig(symbol: string, config: StatusConfig): Promise<void> {
+		const index = this.settings.statusConfigs.findIndex(c => c.symbol === symbol);
+		if (index !== -1) {
+			const oldValue = [...this.settings.statusConfigs];
+			this.settings.statusConfigs[index] = { ...config };
+			
+			// Save to plugin data
+			await this.plugin.saveData(this.settings);
+			
+			// Notify listeners
+			this.notifyChange({ 
+				key: 'statusConfigs', 
+				value: [...this.settings.statusConfigs], 
+				oldValue 
+			});
+		}
+	}
+
+	async addStatusConfig(config: StatusConfig): Promise<void> {
+		const oldValue = [...this.settings.statusConfigs];
+		this.settings.statusConfigs.push({ ...config });
+		
+		// Save to plugin data
+		await this.plugin.saveData(this.settings);
+		
+		// Notify listeners
+		this.notifyChange({ 
+			key: 'statusConfigs', 
+			value: [...this.settings.statusConfigs], 
+			oldValue 
+		});
+	}
+
+	async removeStatusConfig(symbol: string): Promise<void> {
+		const oldValue = [...this.settings.statusConfigs];
+		this.settings.statusConfigs = this.settings.statusConfigs.filter(c => c.symbol !== symbol);
+		
+		// Save to plugin data
+		await this.plugin.saveData(this.settings);
+		
+		// Notify listeners
+		this.notifyChange({ 
+			key: 'statusConfigs', 
+			value: [...this.settings.statusConfigs], 
+			oldValue 
+		});
+	}
+
+	async reorderStatusConfigs(configs: StatusConfig[]): Promise<void> {
+		const oldValue = [...this.settings.statusConfigs];
+		this.settings.statusConfigs = [...configs];
+		
+		// Save to plugin data
+		await this.plugin.saveData(this.settings);
+		
+		// Notify listeners
+		this.notifyChange({ 
+			key: 'statusConfigs', 
+			value: [...this.settings.statusConfigs], 
+			oldValue 
 		});
 	}
 }
