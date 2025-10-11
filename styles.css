@@ -217,7 +217,7 @@ If your plugin does not need CSS, delete this file.
 	font-family: var(--font-monospace);
 	font-size: 13px;
 	cursor: pointer;
-	padding: 2px 4px;
+	padding: 2px 8px;
 	border-radius: 3px;
 	transition: all 0.2s ease;
 	min-width: 20px;
