@@ -738,7 +738,7 @@ export class OnTaskView extends ItemView {
 	 * @returns The display text for the status symbol
 	 */
 	private getStatusDisplayText(statusSymbol: string): string {
-		return statusSymbol === ' ' ? '.' : statusSymbol;
+		return statusSymbol;
 	}
 
 	private createCheckboxElement(checkbox: any): HTMLElement {
@@ -1334,13 +1334,23 @@ export class OnTaskView extends ItemView {
 		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]]*)\]\s*(.*)$/);
 		
 		if (checkboxMatch) {
-			const statusSymbol = checkboxMatch[1].trim() || ' ';
+			const statusSymbol = checkboxMatch[1].trim() || this.getToDoSymbol();
 			const remainingText = checkboxMatch[2].trim();
 			return { statusSymbol, remainingText };
 		}
 		
 		// If no match, return default values
-		return { statusSymbol: ' ', remainingText: trimmedLine };
+		return { statusSymbol: this.getToDoSymbol(), remainingText: trimmedLine };
+	}
+
+	/**
+	 * Get the to-do symbol from the status configuration
+	 * @returns The to-do symbol from data.json, or ' ' as fallback
+	 */
+	private getToDoSymbol(): string {
+		const statusConfigs = this.statusConfigService.getStatusConfigs();
+		const toDoConfig = statusConfigs.find(config => config.name === 'To-do');
+		return toDoConfig?.symbol || ' ';
 	}
 
 	/**
