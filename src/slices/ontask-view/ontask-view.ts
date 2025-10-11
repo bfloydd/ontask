@@ -2,13 +2,14 @@ import { ItemView, WorkspaceLeaf, TFile, MarkdownView } from 'obsidian';
 import { CheckboxFinderService } from '../checkbox-finder';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
-import { STATUS_CONFIGS, getStatusColor, getStatusBackgroundColor } from '../settings/status-config';
+import { StatusConfigService } from '../settings/status-config';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
 export class OnTaskView extends ItemView {
 	private checkboxFinderService: CheckboxFinderService;
 	private settingsService: SettingsService;
+	private statusConfigService: StatusConfigService;
 	private plugin: any;
 	private eventSystem: EventSystem;
 	private checkboxes: any[] = [];
@@ -31,6 +32,7 @@ export class OnTaskView extends ItemView {
 		super(leaf);
 		this.checkboxFinderService = checkboxFinderService;
 		this.settingsService = settingsService;
+		this.statusConfigService = new StatusConfigService(settingsService);
 		this.plugin = plugin;
 		this.eventSystem = eventSystem;
 	}
@@ -327,8 +329,8 @@ export class OnTaskView extends ItemView {
 			topTaskStatusDisplay.style.cursor = 'pointer';
 			
 			// Apply colors from status configuration
-			const statusColor = getStatusColor(statusSymbol);
-			const statusBackgroundColor = getStatusBackgroundColor(statusSymbol);
+			const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
+			const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
 			topTaskStatusDisplay.style.color = statusColor;
 			topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
 			topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
@@ -681,8 +683,8 @@ export class OnTaskView extends ItemView {
 		statusDisplay.textContent = `[${statusSymbol}]`;
 		
 		// Apply colors from status configuration
-		const statusColor = getStatusColor(statusSymbol);
-		const statusBackgroundColor = getStatusBackgroundColor(statusSymbol);
+		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
+		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
 		statusDisplay.style.color = statusColor;
 		statusDisplay.style.backgroundColor = statusBackgroundColor;
 		statusDisplay.style.border = `1px solid ${statusColor}`;
@@ -965,7 +967,7 @@ export class OnTaskView extends ItemView {
 		menu.style.minWidth = '200px';
 
 		// Use centralized status configuration
-		const statuses = STATUS_CONFIGS;
+		const statuses = this.statusConfigService.getStatusConfigs();
 
 		// Add menu items for each status
 		for (const status of statuses) {
