@@ -468,11 +468,6 @@ export class OnTaskView extends ItemView {
 			const remainingSlots = maxTasksToShow - tasksShown;
 			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
 			
-			fileHeader.createEl('span', { 
-				text: `${tasksToShowFromFile} of ${fileCheckboxes.length} task${fileCheckboxes.length === 1 ? '' : 's'}`,
-				cls: 'ontask-file-count'
-			});
-			
 			// Checkboxes list
 			const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
 			
