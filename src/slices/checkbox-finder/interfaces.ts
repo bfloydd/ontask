@@ -8,6 +8,7 @@ export interface CheckboxItem {
 	sourceName: string;
 	sourcePath: string;
 	isTopTask?: boolean;
+	isTopTaskContender?: boolean;
 }
 
 export interface CheckboxFinderContext {

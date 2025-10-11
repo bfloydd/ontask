@@ -226,47 +226,77 @@ export class FolderCheckboxStrategy implements CheckboxFinderStrategy {
 	}
 
 	private processTopTasks(checkboxes: CheckboxItem[]): CheckboxItem[] {
-		// First, identify all top tasks
-		const topTasks: CheckboxItem[] = [];
+		// First, identify all top task contenders
+		const slashTasks: CheckboxItem[] = [];
+		const exclamationTasks: CheckboxItem[] = [];
 		const regularTasks: CheckboxItem[] = [];
 
 		for (const checkbox of checkboxes) {
-			if (this.isTopTask(checkbox)) {
-				checkbox.isTopTask = true;
-				topTasks.push(checkbox);
+			if (this.isSlashTopTask(checkbox)) {
+				checkbox.isTopTaskContender = true;
+				checkbox.isTopTask = false; // Will be set to true only for the winner
+				slashTasks.push(checkbox);
+			} else if (this.isExclamationTopTask(checkbox)) {
+				checkbox.isTopTaskContender = true;
+				checkbox.isTopTask = false; // Will be set to true only for the winner
+				exclamationTasks.push(checkbox);
 			} else {
+				checkbox.isTopTaskContender = false;
 				checkbox.isTopTask = false;
 				regularTasks.push(checkbox);
 			}
 		}
 
-		// If there are multiple top tasks, only keep the most recent one
+		// Determine the final top task with priority: '/' tasks first, then '!' tasks
 		let finalTopTask: CheckboxItem | null = null;
-		if (topTasks.length > 0) {
+		let allTopTaskContenders: CheckboxItem[] = [];
+
+		if (slashTasks.length > 0) {
 			// Sort by file modification time (most recent first)
-			topTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
-			finalTopTask = topTasks[0];
-			
-			// Mark all other top tasks as regular tasks
-			for (let i = 1; i < topTasks.length; i++) {
-				topTasks[i].isTopTask = false;
-				regularTasks.push(topTasks[i]);
-			}
+			slashTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+			finalTopTask = slashTasks[0];
+			finalTopTask.isTopTask = true; // Mark the winner as the actual top task
+			allTopTaskContenders = [...slashTasks, ...exclamationTasks]; // Include both slash and exclamation tasks
+		} else if (exclamationTasks.length > 0) {
+			// Sort by file modification time (most recent first)
+			exclamationTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+			finalTopTask = exclamationTasks[0];
+			finalTopTask.isTopTask = true; // Mark the winner as the actual top task
+			allTopTaskContenders = exclamationTasks;
 		}
 
-		// Return top task first, then regular tasks
+		// All contenders (including the winner) should be in the regular tasks list
+		// The winner will be moved to the top section by the view logic
+		regularTasks.push(...allTopTaskContenders);
+
+		// Return all tasks (the view will handle the top task display)
 		const result: CheckboxItem[] = [];
-		if (finalTopTask) {
-			result.push(finalTopTask);
-		}
 		result.push(...regularTasks);
 
-		console.log(`OnTask: Found ${topTasks.length} top tasks in folder, using most recent: ${finalTopTask ? finalTopTask.file.name : 'none'}`);
+		console.log(`OnTask: Found ${slashTasks.length} '/' tasks and ${exclamationTasks.length} '!' tasks in folder, using: ${finalTopTask ? finalTopTask.file.name : 'none'}`);
 		
 		return result;
 	}
 
 	private isTopTask(checkbox: CheckboxItem): boolean {
+		const line = checkbox.lineContent;
+		
+		// Look for the pattern: - [/] or - [/x] or - [/ ] etc.
+		const checkboxMatch = line.match(/^-\s*\[\/([^\]]*)\]/);
+		
+		return checkboxMatch !== null;
+	}
+
+	private isSlashTopTask(checkbox: CheckboxItem): boolean {
+		const line = checkbox.lineContent;
+		
+		// Look for the pattern: - [/] or - [/x] or - [/ ] etc.
+		const checkboxMatch = line.match(/^-\s*\[\/([^\]]*)\]/);
+		
+		return checkboxMatch !== null;
+	}
+
+	private isExclamationTopTask(checkbox: CheckboxItem): boolean {
 		const line = checkbox.lineContent;
 		
 		// Look for the pattern: - [!] or - [!x] or - [! ] etc.

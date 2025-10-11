@@ -2,6 +2,7 @@ import { ItemView, WorkspaceLeaf, TFile, MarkdownView } from 'obsidian';
 import { CheckboxFinderService } from '../checkbox-finder';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
+import { STATUS_CONFIGS, getStatusColor, getStatusBackgroundColor } from '../settings/status-config';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -16,7 +17,7 @@ export class OnTaskView extends ItemView {
 	private onlyTodayButton: HTMLButtonElement;
 	private isRefreshing: boolean = false;
 	private isUpdatingStatus: boolean = false;
-	private displayedTasksCount: number = 20;
+	private displayedTasksCount: number = 10;
 	private loadMoreButton: HTMLButtonElement | null = null;
 
 	constructor(
@@ -123,7 +124,7 @@ export class OnTaskView extends ItemView {
 			contentArea.empty();
 			
 			// Reset pagination state
-			this.displayedTasksCount = 20;
+			this.displayedTasksCount = 10;
 			this.loadMoreButton = null;
 			
 			// Verify content is cleared
@@ -295,9 +296,8 @@ export class OnTaskView extends ItemView {
 			return;
 		}
 
-		// Find the top task
+		// Find the top task (the winner)
 		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
-		const regularTasks = this.checkboxes.filter(checkbox => !checkbox.isTopTask);
 
 		// Render top task prominently at the top if it exists
 		if (topTask) {
@@ -315,12 +315,20 @@ export class OnTaskView extends ItemView {
 			// Create top task content
 			const topTaskContent = topTaskDisplay.createDiv('ontask-top-task-content');
 			
-			// Top task status display
+			// Top task status display with colors
 			const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
 			const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
 			topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
 			topTaskStatusDisplay.textContent = `[${statusSymbol}]`;
 			topTaskStatusDisplay.style.cursor = 'pointer';
+			
+			// Apply colors from status configuration
+			const statusColor = getStatusColor(statusSymbol);
+			const statusBackgroundColor = getStatusBackgroundColor(statusSymbol);
+			topTaskStatusDisplay.style.color = statusColor;
+			topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
+			topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
+			
 			topTaskStatusDisplay.addEventListener('click', () => {
 				this.openFile(topTask.file?.path || '', topTask.lineNumber);
 			});
@@ -355,8 +363,8 @@ export class OnTaskView extends ItemView {
 			this.addMobileTouchHandlers(topTaskDisplay, topTask);
 		}
 
-		// Group regular checkboxes by file
-		const checkboxesByFile = this.groupCheckboxesByFile(regularTasks);
+		// Group all checkboxes by file (including the top task)
+		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
 		
 		// Sort files by modification date (latest first)
 		const sortedFiles = this.sortFilesByDate(checkboxesByFile);
@@ -399,14 +407,14 @@ export class OnTaskView extends ItemView {
 		}
 		
 		// Add Load More button if there are more tasks to show
-		const totalRegularTasks = regularTasks.length;
-		if (tasksShown < totalRegularTasks) {
+		const totalTasks = this.checkboxes.length;
+		if (tasksShown < totalTasks) {
 			this.addLoadMoreButton(contentArea);
 		}
 		
 		console.log('OnTask View: Finished renderCheckboxes');
 		console.log('OnTask View: Content area children after rendering:', contentArea.children.length);
-		console.log(`OnTask View: Showing ${tasksShown} of ${totalRegularTasks} regular tasks`);
+		console.log(`OnTask View: Showing ${tasksShown} of ${totalTasks} total tasks`);
 	}
 
 	private addLoadMoreButton(contentArea: HTMLElement): void {
@@ -419,8 +427,7 @@ export class OnTaskView extends ItemView {
 		loadMoreSection.addClass('ontask-file-section');
 		
 		// Calculate remaining tasks
-		const regularTasks = this.checkboxes.filter(checkbox => !checkbox.isTopTask);
-		const remainingTasks = regularTasks.length - this.displayedTasksCount;
+		const remainingTasks = this.checkboxes.length - this.displayedTasksCount;
 		
 		this.loadMoreButton = loadMoreSection.createEl('button', {
 			text: `Load More Tasks (${remainingTasks} remaining)`,
@@ -450,14 +457,13 @@ export class OnTaskView extends ItemView {
 		
 		// Get current settings to filter tasks
 		const settings = this.settingsService.getSettings();
-		const regularTasks = this.checkboxes.filter(checkbox => !checkbox.isTopTask);
 		
 		// Calculate how many tasks we've already shown
 		const currentShown = this.displayedTasksCount;
-		const newLimit = this.displayedTasksCount + 20;
+		const newLimit = this.displayedTasksCount + 10;
 		
 		// Group tasks by file and get the additional tasks to show
-		const checkboxesByFile = this.groupCheckboxesByFile(regularTasks);
+		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
 		let tasksShown = 0;
 		let additionalTasksToRender: any[] = [];
 		
@@ -489,12 +495,12 @@ export class OnTaskView extends ItemView {
 		this.displayedTasksCount = newLimit;
 		
 		// Add Load More button if there are still more tasks
-		const totalRegularTasks = regularTasks.length;
-		if (this.displayedTasksCount < totalRegularTasks) {
+		const totalTasks = this.checkboxes.length;
+		if (this.displayedTasksCount < totalTasks) {
 			this.addLoadMoreButton(contentArea);
 		}
 		
-		console.log(`OnTask View: Loaded ${additionalTasksToRender.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${totalRegularTasks}`);
+		console.log(`OnTask View: Loaded ${additionalTasksToRender.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${totalTasks}`);
 	}
 
 	private renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
@@ -661,7 +667,7 @@ export class OnTaskView extends ItemView {
 		const checkboxContainer = document.createElement('div');
 		checkboxContainer.addClass('ontask-checkbox-label');
 		
-		// Create status display (like in context menu)
+		// Create status display with colors from configuration
 		const statusDisplay = document.createElement('div');
 		statusDisplay.addClass('ontask-checkbox-display');
 		
@@ -669,6 +675,13 @@ export class OnTaskView extends ItemView {
 		const { statusSymbol, remainingText } = this.parseCheckboxLine(checkbox.lineContent);
 		statusDisplay.setAttribute('data-status', statusSymbol);
 		statusDisplay.textContent = `[${statusSymbol}]`;
+		
+		// Apply colors from status configuration
+		const statusColor = getStatusColor(statusSymbol);
+		const statusBackgroundColor = getStatusBackgroundColor(statusSymbol);
+		statusDisplay.style.color = statusColor;
+		statusDisplay.style.backgroundColor = statusBackgroundColor;
+		statusDisplay.style.border = `1px solid ${statusColor}`;
 		
 		// Create text content
 		const textEl = document.createElement('span');
@@ -870,20 +883,8 @@ export class OnTaskView extends ItemView {
 		menu.style.padding = '2px';
 		menu.style.minWidth = '200px';
 
-		// Define task statuses
-		const statuses = [
-			{ symbol: ' ', name: 'To-do', description: 'Not started' },
-			{ symbol: 'x', name: 'Done', description: 'Completed' },
-			{ symbol: '/', name: 'In Progress', description: 'Incomplete' },
-			{ symbol: '!', name: 'Important', description: 'Top task' },
-			{ symbol: '?', name: 'Question', description: 'Needs clarification' },
-			{ symbol: '*', name: 'Star', description: 'Marked' },
-			{ symbol: 'r', name: 'Review', description: 'In review' },
-			{ symbol: 'b', name: 'Blocked', description: 'Can\'t start' },
-			{ symbol: '<', name: 'Scheduled', description: 'On the calendar' },
-			{ symbol: '>', name: 'Forward', description: 'Another day' },
-			{ symbol: '-', name: 'Cancelled', description: 'Not doing' }
-		];
+		// Use centralized status configuration
+		const statuses = STATUS_CONFIGS;
 
 		// Add menu items for each status
 		for (const status of statuses) {
@@ -898,7 +899,7 @@ export class OnTaskView extends ItemView {
 			menuItem.style.alignItems = 'center';
 			menuItem.style.gap = '6px';
 
-			// Create status display
+			// Create status display with colors from configuration
 			const statusDisplay = document.createElement('div');
 			statusDisplay.className = 'ontask-checkbox-display';
 			statusDisplay.setAttribute('data-status', status.symbol);
@@ -909,6 +910,10 @@ export class OnTaskView extends ItemView {
 			statusDisplay.style.display = 'flex';
 			statusDisplay.style.alignItems = 'center';
 			statusDisplay.style.justifyContent = 'center';
+			statusDisplay.style.color = status.color;
+			statusDisplay.style.backgroundColor = status.backgroundColor || 'transparent';
+			statusDisplay.style.border = `1px solid ${status.color}`;
+			statusDisplay.style.borderRadius = '3px';
 
 			// Create text content
 			const textContent = document.createElement('div');
@@ -1064,14 +1069,9 @@ export class OnTaskView extends ItemView {
 				// Write back to file
 				await this.app.vault.modify(file, lines.join('\n'));
 				
-				// Update only the specific checkbox element in the DOM
-				this.updateCheckboxElement(checkbox, newStatus);
-				
-				// Trigger immediate status bar update
-				this.eventSystem.emit('checkboxes:updated', { 
-					count: this.checkboxes.length,
-					topTask: this.checkboxes.find(cb => cb.isTopTask)
-				});
+				// Refresh the entire view to ensure UI consistency
+				// This is simpler and more reliable than trying to update individual elements
+				this.refreshCheckboxes();
 			}
 		} catch (error) {
 			console.error('OnTask View: Error updating checkbox status:', error);
@@ -1081,78 +1081,7 @@ export class OnTaskView extends ItemView {
 		}
 	}
 
-	private updateCheckboxElement(checkbox: any, newStatus: string): void {
-		// Parse the checkbox line to get the text part
-		const { remainingText } = this.parseCheckboxLine(checkbox.lineContent);
-		
-		// Find the checkbox element in the DOM
-		const checkboxElements = this.contentEl.querySelectorAll('.ontask-checkbox-item');
-		let targetElement: HTMLElement | null = null;
-		
-		// Look for the specific checkbox by matching the text content
-		for (const element of Array.from(checkboxElements)) {
-			const textEl = element.querySelector('.ontask-checkbox-text');
-			if (textEl && textEl.textContent === remainingText) {
-				targetElement = element as HTMLElement;
-				break;
-			}
-		}
-		
-		// Also check the top task display
-		if (!targetElement) {
-			const topTaskElement = this.contentEl.querySelector('.ontask-top-task-item');
-			if (topTaskElement) {
-				const topTaskText = topTaskElement.querySelector('.ontask-top-task-text');
-				if (topTaskText && topTaskText.textContent === remainingText) {
-					targetElement = topTaskElement as HTMLElement;
-				}
-			}
-		}
-		
-		if (targetElement) {
-			// Update the status display
-			const statusDisplay = targetElement.querySelector('.ontask-checkbox-display');
-			if (statusDisplay) {
-				statusDisplay.setAttribute('data-status', newStatus);
-				statusDisplay.textContent = `[${newStatus}]`;
-			}
-			
-			// Update the checkbox data in our local array
-			const checkboxIndex = this.checkboxes.findIndex(cb => 
-				cb.file?.path === checkbox.file?.path && 
-				cb.lineNumber === checkbox.lineNumber
-			);
-			if (checkboxIndex !== -1) {
-				// Update the line content in our local data
-				const { remainingText } = this.parseCheckboxLine(checkbox.lineContent);
-				this.checkboxes[checkboxIndex].lineContent = `- [${newStatus}] ${remainingText}`;
-				
-				// Update the isTopTask status if this was the top task
-				if (this.checkboxes[checkboxIndex].isTopTask) {
-					// If the status changed from '!' (top task) to something else, 
-					// we need to find a new top task or clear the current one
-					if (newStatus !== '!') {
-						this.checkboxes[checkboxIndex].isTopTask = false;
-						// Find a new top task if any exist
-						const newTopTask = this.checkboxes.find(cb => cb.lineContent.includes('[!]'));
-						if (newTopTask) {
-							newTopTask.isTopTask = true;
-						}
-					}
-				} else if (newStatus === '!') {
-					// If this became a top task, clear any existing top task
-					const currentTopTask = this.checkboxes.find(cb => cb.isTopTask);
-					if (currentTopTask) {
-						currentTopTask.isTopTask = false;
-					}
-					this.checkboxes[checkboxIndex].isTopTask = true;
-				}
-			}
-		} else {
-			// Fallback to full refresh if we can't find the specific element
-			this.refreshCheckboxes();
-		}
-	}
+
 
 	private showStatusSelectionForCheckboxes(selectedStatus: string): void {
 		console.log('OnTask View: Status selection for checkboxes', selectedStatus);
