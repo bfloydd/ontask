@@ -3,7 +3,7 @@
 	"name": "On Task",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Bullet journal style task manager with a focus on top-task productivity.",
+	"description": "Bullet journal style task manager with a focus on top-task productivity, twisted for Obsidian.",
 	"author": "On Task",
 	"authorUrl": "https://github.com/ontask/obsidian-ontask",
 	"fundingUrl": "https://github.com/ontask/obsidian-ontask",
