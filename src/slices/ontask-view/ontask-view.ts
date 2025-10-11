@@ -848,7 +848,9 @@ export class OnTaskView extends ItemView {
 
 	private getFileName(filePath: string): string {
 		const parts = filePath.split('/');
-		return parts[parts.length - 1] || filePath;
+		const fileName = parts[parts.length - 1] || filePath;
+		// Remove .md extension for display
+		return fileName.replace(/\.md$/i, '');
 	}
 
 	/**
