@@ -20,17 +20,33 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 	}
 
 	async findCheckboxes(context: CheckboxFinderContext): Promise<CheckboxItem[]> {
-		const allStreams = this.streamsService.getAllStreams();
-		// Filter out streams with empty folder paths to prevent processing all files
-		const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');
 		const allCheckboxes: CheckboxItem[] = [];
+		
+		// If specific files are provided, scan only those files for performance
+		if (context.filePaths && context.filePaths.length > 0) {
+			for (const filePath of context.filePaths) {
+				const file = this.app.vault.getAbstractFileByPath(filePath);
+				if (file && file instanceof TFile) {
+					const fileCheckboxes = await this.findCheckboxesInFile(file, { name: 'stream', folder: '' }, context);
+					allCheckboxes.push(...fileCheckboxes);
+				}
+			}
+		} else {
+			// Fallback to original behavior if no specific files provided
+			const allStreams = this.streamsService.getAllStreams();
+			const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');
+			const limit = context.limit;
 
-
-		for (const stream of streams) {
-			const streamCheckboxes = await this.findCheckboxesInStream(stream, context);
-			allCheckboxes.push(...streamCheckboxes);
+			for (const stream of streams) {
+				const streamCheckboxes = await this.findCheckboxesInStream(stream, context);
+				allCheckboxes.push(...streamCheckboxes);
+				
+				// Early termination if limit is reached
+				if (limit && allCheckboxes.length >= limit) {
+					break;
+				}
+			}
 		}
-
 
 		// Process and prioritize top tasks
 		return this.processTopTasks(allCheckboxes);

@@ -38,30 +38,48 @@ export class FolderCheckboxStrategy implements CheckboxFinderStrategy {
 		const checkboxes: CheckboxItem[] = [];
 		
 		try {
-			const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
-			if (!folder) {
-				return checkboxes;
-			}
+			// If specific files are provided, scan only those files for performance
+			if (context.filePaths && context.filePaths.length > 0) {
+				for (const filePath of context.filePaths) {
+					const file = this.app.vault.getAbstractFileByPath(filePath);
+					if (file && file instanceof TFile) {
+						const fileCheckboxes = await this.findCheckboxesInFile(file, context);
+						checkboxes.push(...fileCheckboxes);
+					}
+				}
+			} else {
+				// Fallback to original behavior if no specific files provided
+				const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
+				if (!folder) {
+					return checkboxes;
+				}
 
-			// Get all markdown files in the folder
-			const files = this.getFilesInFolder(folder);
-			
-			// Performance optimization: Filter files by today before reading their content
-			let filesToProcess = files;
-			if (context.onlyShowToday) {
-				filesToProcess = files.filter(file => this.isTodayFile(file));
-			}
-			
-			// Process files sequentially for now to avoid complexity
-			for (const file of filesToProcess) {
-				const fileCheckboxes = await this.findCheckboxesInFile(file, context);
-				checkboxes.push(...fileCheckboxes);
+				// Get all markdown files in the folder
+				const files = this.getFilesInFolder(folder);
+				
+				// Performance optimization: Filter files by today before reading their content
+				let filesToProcess = files;
+				if (context.onlyShowToday) {
+					filesToProcess = files.filter(file => this.isTodayFile(file));
+				}
+				
+				// Process files sequentially with early termination for performance
+				for (const file of filesToProcess) {
+					const fileCheckboxes = await this.findCheckboxesInFile(file, context);
+					checkboxes.push(...fileCheckboxes);
+					
+					// Early termination if limit is reached
+					if (context.limit && checkboxes.length >= context.limit) {
+						break;
+					}
+				}
 			}
 
 		} catch (error) {
 			console.error(`Error finding checkboxes in folder ${this.config.folderPath}:`, error);
 		}
 
+		// Process and prioritize top tasks
 		return this.processTopTasks(checkboxes);
 	}
 

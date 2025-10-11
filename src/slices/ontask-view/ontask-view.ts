@@ -129,6 +129,9 @@ export class OnTaskView extends ItemView {
 			this.displayedTasksCount = settings.initialLoadLimit;
 			this.loadMoreButton = null;
 			
+			// Reset file tracking for fresh start
+			this.checkboxFinderService.resetFileTracking();
+			
 			// Verify content is cleared
 			
 			// Show loading state with progress indication
@@ -137,12 +140,22 @@ export class OnTaskView extends ItemView {
 			
 			// Remove unnecessary requestAnimationFrame delay
 			
-			// Find checkboxes with performance timing and lazy loading
+			// Try file tracking first, fallback to original method if it fails
 			this.checkboxes = await this.checkboxFinderService.findAllCheckboxes(
 				settings.hideCompletedTasks,
 				settings.onlyShowToday,
 				settings.initialLoadLimit
 			);
+			
+			// If no checkboxes found with file tracking, try fallback
+			if (this.checkboxes.length === 0) {
+				console.log('OnTask: File tracking found no checkboxes, trying fallback');
+				this.checkboxes = await this.checkboxFinderService.findAllCheckboxesFallback(
+					settings.hideCompletedTasks,
+					settings.onlyShowToday,
+					settings.initialLoadLimit
+				);
+			}
 			
 			// Clear loading state
 			loadingEl.remove();
@@ -326,12 +339,9 @@ export class OnTaskView extends ItemView {
 		// Append all file sections to fragment
 		fileSections.forEach(section => fragment.appendChild(section));
 		
-		// Add Load More button if there are more tasks to show
-		const totalTasks = this.checkboxes.length;
-		if (tasksShown < totalTasks) {
-			const loadMoreSection = this.createLoadMoreButtonElement();
-			fragment.appendChild(loadMoreSection);
-		}
+		// Always show Load More button - it will find more tasks if available
+		const loadMoreSection = this.createLoadMoreButtonElement();
+		fragment.appendChild(loadMoreSection);
 		
 		// Append fragment to content area in one operation
 		contentArea.appendChild(fragment);
@@ -450,11 +460,8 @@ export class OnTaskView extends ItemView {
 			}
 		}
 		
-		// Add Load More button if there are more tasks to show
-		const totalTasks = this.checkboxes.length;
-		if (tasksShown < totalTasks) {
-			this.addLoadMoreButton(contentArea);
-		}
+		// Always show Load More button - it will find more tasks if available
+		this.addLoadMoreButton(contentArea);
 	}
 
 	private addLoadMoreButton(contentArea: HTMLElement): void {
@@ -463,14 +470,15 @@ export class OnTaskView extends ItemView {
 			this.loadMoreButton.remove();
 		}
 
+		// Remove any existing load more sections to prevent duplicates
+		const existingSections = contentArea.querySelectorAll('.ontask-load-more-section');
+		existingSections.forEach(section => section.remove());
+
 		const loadMoreSection = contentArea.createDiv('ontask-load-more-section');
 		loadMoreSection.addClass('ontask-file-section');
 		
-		// Calculate remaining tasks
-		const remainingTasks = this.checkboxes.length - this.displayedTasksCount;
-		
 		this.loadMoreButton = loadMoreSection.createEl('button', {
-			text: `Load More Tasks (${remainingTasks} remaining)`,
+			text: 'Load More',
 			cls: 'ontask-load-more-button'
 		});
 		
@@ -551,13 +559,10 @@ export class OnTaskView extends ItemView {
 		// Update the displayed count
 		this.displayedTasksCount = newLimit;
 		
-		// Add Load More button if there are still more tasks
-		const totalTasks = this.checkboxes.length;
-		if (this.displayedTasksCount < totalTasks) {
-			this.addLoadMoreButton(contentArea);
-		}
+		// Always add Load More button - it will find more tasks if available
+		this.addLoadMoreButton(contentArea);
 		
-		console.log(`OnTask View: Loaded ${additionalTasksToRender.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${totalTasks}`);
+		console.log(`OnTask View: Loaded ${additionalTasksToRender.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${this.checkboxes.length}`);
 	}
 
 	private renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
@@ -618,10 +623,6 @@ export class OnTaskView extends ItemView {
 		// File header
 		const fileHeader = fileSection.createDiv('ontask-file-header');
 		fileHeader.createEl('h3', { text: this.getFileName(filePath) });
-		fileHeader.createEl('span', { 
-			text: `${fileTasks.length} task${fileTasks.length === 1 ? '' : 's'}`,
-			cls: 'ontask-file-count'
-		});
 		
 		// Checkboxes list
 		const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
@@ -1521,10 +1522,6 @@ export class OnTaskView extends ItemView {
 		const remainingSlots = maxTasksToShow - tasksShown;
 		const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
 		
-		fileHeader.createEl('span', { 
-			text: `${tasksToShowFromFile} of ${fileCheckboxes.length} task${fileCheckboxes.length === 1 ? '' : 's'}`,
-			cls: 'ontask-file-count'
-		});
 		
 		// Checkboxes list
 		const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
@@ -1545,13 +1542,11 @@ export class OnTaskView extends ItemView {
 		const loadMoreSection = document.createElement('div');
 		loadMoreSection.className = 'ontask-load-more-section ontask-file-section';
 		
-		// Calculate remaining tasks
-		const remainingTasks = this.checkboxes.length - this.displayedTasksCount;
-		
-		this.loadMoreButton = loadMoreSection.createEl('button', {
-			text: `Load More Tasks (${remainingTasks} remaining)`,
-			cls: 'ontask-load-more-button'
-		});
+		// Create button using vanilla DOM methods instead of createEl
+		this.loadMoreButton = document.createElement('button');
+		this.loadMoreButton.textContent = 'Load More';
+		this.loadMoreButton.className = 'ontask-load-more-button';
+		loadMoreSection.appendChild(this.loadMoreButton);
 		
 		this.loadMoreButton.addEventListener('click', async () => {
 			await this.loadMoreTasks();

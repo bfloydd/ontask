@@ -37,41 +37,59 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 		const checkboxes: CheckboxItem[] = [];
 		
 		try {
-			// Get Daily Notes configuration from core plugin
-			const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
-			if (!dailyNotesCore || !dailyNotesCore.enabled) {
-				return checkboxes;
-			}
+			// If specific files are provided, scan only those files for performance
+			if (context.filePaths && context.filePaths.length > 0) {
+				for (const filePath of context.filePaths) {
+					const file = this.app.vault.getAbstractFileByPath(filePath);
+					if (file && file instanceof TFile) {
+						const fileCheckboxes = await this.findCheckboxesInFile(file, context);
+						checkboxes.push(...fileCheckboxes);
+					}
+				}
+			} else {
+				// Fallback to original behavior if no specific files provided
+				// Get Daily Notes configuration from core plugin
+				const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
+				if (!dailyNotesCore || !dailyNotesCore.enabled) {
+					return checkboxes;
+				}
 
-			// Get Daily Notes folder path from settings
-			const dailyNotesFolder = dailyNotesCore.instance?.options?.folder || '';
+				// Get Daily Notes folder path from settings
+				const dailyNotesFolder = dailyNotesCore.instance?.options?.folder || '';
 
-			if (!dailyNotesFolder) {
-				return checkboxes;
-			}
+				if (!dailyNotesFolder) {
+					return checkboxes;
+				}
 
-			// Get all markdown files in the Daily Notes folder
-			const allFiles = this.app.vault.getMarkdownFiles();
-			const dailyNotesFiles = allFiles.filter(file => 
-				file.path.startsWith(dailyNotesFolder)
-			);
+				// Get all markdown files in the Daily Notes folder
+				const allFiles = this.app.vault.getMarkdownFiles();
+				const dailyNotesFiles = allFiles.filter(file => 
+					file.path.startsWith(dailyNotesFolder)
+				);
 
-			// Filter files by today if onlyShowToday is enabled
-			let filesToProcess = dailyNotesFiles;
-			if (context.onlyShowToday) {
-				filesToProcess = dailyNotesFiles.filter(file => this.isTodayFile(file));
-			}
+				// Filter files by today before reading their content
+				let filesToProcess = dailyNotesFiles;
+				if (context.onlyShowToday) {
+					filesToProcess = dailyNotesFiles.filter(file => this.isTodayFile(file));
+				}
 
-			// Process each Daily Notes file
-			for (const file of filesToProcess) {
-				const fileCheckboxes = await this.findCheckboxesInFile(file, context);
-				checkboxes.push(...fileCheckboxes);
+				// Process each Daily Notes file with early termination for performance
+				for (const file of filesToProcess) {
+					const fileCheckboxes = await this.findCheckboxesInFile(file, context);
+					checkboxes.push(...fileCheckboxes);
+					
+					// Early termination if limit is reached
+					if (context.limit && checkboxes.length >= context.limit) {
+						break;
+					}
+				}
 			}
 
 		} catch (error) {
 			console.error('Error finding checkboxes in daily notes:', error);
 		}
 
+		// Process and prioritize top tasks
 		return this.processTopTasks(checkboxes);
 	}
 

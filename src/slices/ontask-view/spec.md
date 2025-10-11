@@ -1,0 +1,12 @@
+- Initial load will get a full list of files from strategy method returned file, sort them Z-A by filename (not path), scan through them until 10 tasks are found. Keep going through the files until 10 tasks are found, either hitting the end or continuing.
+- Stop scanning when 10 are found. We do this for performance.
+- Performance is #1, because its very slow on mobile if we just keep scanning files. 
+- We don't need a full up-front count of tasks because it is too costly on performance.
+- When Load More button is pressed, it loads 10 more, looking at the last file used for more in that file, then continuing down the list futher in Z-A order, looking for more tasks to add from those files. Each Load More should keep going through the files until 10 tasks are found, either hitting the end or continuing.
+- Load More logic should track what file we're looking at.
+- No task counts anywhere.
+- In the button, don't bother with the ongoing count total shown.
+- Rendering html of items in Load More should be the same as initial load.
+- If "Checkbox Source" is streams in settings, then we need to check all files in streams, using that strategy.
+- Use the strategy interface. 
+- Streams Strategy should get all files from all streams.
