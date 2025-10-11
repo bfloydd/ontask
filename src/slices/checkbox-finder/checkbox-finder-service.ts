@@ -10,6 +10,9 @@ export class CheckboxFinderService {
 	private app: App;
 	private factory: CheckboxFinderFactoryImpl;
 	private activeStrategies: string[] = ['streams']; // Default to streams strategy
+	private fileContentCache: Map<string, { content: string; mtime: number }> = new Map();
+	private lastRefreshTime: number = 0;
+	private readonly CACHE_TTL = 30000; // 30 seconds cache TTL
 
 	constructor(app: App, streamsService: StreamsService) {
 		this.app = app;
@@ -76,6 +79,9 @@ export class CheckboxFinderService {
 			onlyShowToday
 		};
 
+		// Temporarily disable caching to avoid performance issues
+		// TODO: Implement proper caching later
+
 		const allCheckboxes: CheckboxItem[] = [];
 
 		// Use all active strategies
@@ -100,6 +106,9 @@ export class CheckboxFinderService {
 		// Remove duplicates and sort by file modification time
 		const uniqueCheckboxes = this.removeDuplicateCheckboxes(allCheckboxes);
 		const sortedCheckboxes = this.sortCheckboxes(uniqueCheckboxes);
+		
+		// Update cache timestamp
+		this.lastRefreshTime = Date.now();
 		
 		console.log(`OnTask: Final unique checkboxes after deduplication: ${sortedCheckboxes.length}`);
 		return sortedCheckboxes;
@@ -194,5 +203,56 @@ export class CheckboxFinderService {
 	 */
 	public get streamsService(): StreamsService {
 		return (this.factory as any).streamsService;
+	}
+
+	/**
+	 * Get cached file content if available and fresh
+	 */
+	private async getCachedFileContent(file: any): Promise<string | null> {
+		const filePath = file.path;
+		const cached = this.fileContentCache.get(filePath);
+		
+		if (cached && cached.mtime === file.stat.mtime) {
+			return cached.content;
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Cache file content for future use
+	 */
+	private cacheFileContent(file: any, content: string): void {
+		this.fileContentCache.set(file.path, {
+			content,
+			mtime: file.stat.mtime
+		});
+	}
+
+	/**
+	 * Get cached checkboxes (simplified version for cache hits)
+	 */
+	private getCachedCheckboxes(context: CheckboxFinderContext): CheckboxItem[] {
+		// For now, disable caching to avoid complexity and potential issues
+		// The cache implementation needs more work to be truly effective
+		return [];
+	}
+
+	/**
+	 * Clear the file content cache
+	 */
+	public clearCache(): void {
+		this.fileContentCache.clear();
+		this.lastRefreshTime = 0;
+	}
+
+	/**
+	 * Get cache statistics
+	 */
+	public getCacheStats(): { size: number; lastRefresh: number } {
+		return {
+			size: this.fileContentCache.size,
+			lastRefresh: this.lastRefreshTime
+		};
 	}
 }

@@ -64,10 +64,11 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 					console.log(`OnTask: Filtered ${originalCount} files to ${files.length} today's files for performance`);
 				}
 				
-				for (const file of files) {
-					const fileCheckboxes = await this.findCheckboxesInFile(file, stream, context);
-					checkboxes.push(...fileCheckboxes);
-				}
+			// Process files sequentially for now to avoid complexity
+			for (const file of files) {
+				const fileCheckboxes = await this.findCheckboxesInFile(file, stream, context);
+				checkboxes.push(...fileCheckboxes);
+			}
 			} else {
 				// If it's a single file, check if it's from today before processing
 				if (context.onlyShowToday && !this.isTodayFile(streamFolder)) {

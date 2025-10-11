@@ -55,6 +55,7 @@ export class FolderCheckboxStrategy implements CheckboxFinderStrategy {
 				console.log(`OnTask: Filtered ${originalCount} files to ${filesToProcess.length} today's files for performance`);
 			}
 			
+			// Process files sequentially for now to avoid complexity
 			for (const file of filesToProcess) {
 				const fileCheckboxes = await this.findCheckboxesInFile(file, context);
 				checkboxes.push(...fileCheckboxes);

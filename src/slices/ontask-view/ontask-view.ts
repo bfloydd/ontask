@@ -133,39 +133,44 @@ export class OnTaskView extends ItemView {
 			// Verify content is cleared
 			console.log('OnTask View: Content area children after clearing:', contentArea.children.length);
 			
-			// Show loading state
+			// Show loading state with progress indication
 			const loadingEl = contentArea.createDiv('ontask-loading');
 			loadingEl.textContent = 'Loading checkboxes...';
 			
 			// Get current settings
 			const settings = this.settingsService.getSettings();
 			
-			// Find checkboxes
+			// Remove unnecessary requestAnimationFrame delay
+			
+			// Find checkboxes with performance timing
+			const startTime = performance.now();
 			this.checkboxes = await this.checkboxFinderService.findAllCheckboxes(
 				settings.hideCompletedTasks,
 				settings.onlyShowToday
 			);
+			const endTime = performance.now();
+			console.log(`OnTask View: Checkbox loading took ${(endTime - startTime).toFixed(2)}ms`);
 			
 			// Clear loading state
 			loadingEl.remove();
 			
-		// Debug logging
-		console.log(`OnTask View: Rendering ${this.checkboxes.length} checkboxes`);
-		console.log('OnTask View: Checkboxes data:', this.checkboxes.map(cb => ({
-			file: cb.file?.path,
-			lineNumber: cb.lineNumber,
-			content: cb.lineContent?.trim(),
-			sourceName: cb.sourceName
-		})));
-		
-		// Render checkboxes
-		this.renderCheckboxes(contentArea);
-		
-		// Update button states
-		this.updateButtonStates();
-		
-		// Initialize checkbox content tracking for change detection
-		this.initializeCheckboxContentTracking();
+			// Debug logging
+			console.log(`OnTask View: Rendering ${this.checkboxes.length} checkboxes`);
+			console.log('OnTask View: Checkboxes data:', this.checkboxes.map(cb => ({
+				file: cb.file?.path,
+				lineNumber: cb.lineNumber,
+				content: cb.lineContent?.trim(),
+				sourceName: cb.sourceName
+			})));
+			
+			// Render checkboxes using the original method for now
+			this.renderCheckboxes(contentArea);
+			
+			// Update button states
+			this.updateButtonStates();
+			
+			// Initialize checkbox content tracking for change detection
+			this.initializeCheckboxContentTracking();
 			
 			// Emit refresh event
 			this.eventSystem.emit('view:refreshed', { 
@@ -290,6 +295,73 @@ export class OnTaskView extends ItemView {
 		contentArea.insertBefore(topTaskSection, contentArea.firstChild);
 		
 		console.log('OnTask View: Top task section created and inserted');
+	}
+
+	private async renderCheckboxesOptimized(contentArea: HTMLElement): Promise<void> {
+		console.log('OnTask View: Starting optimized renderCheckboxes');
+		console.log('OnTask View: Content area children before rendering:', contentArea.children.length);
+		
+		if (this.checkboxes.length === 0) {
+			const emptyEl = contentArea.createDiv('ontask-empty');
+			emptyEl.textContent = 'No checkboxes found.';
+			return;
+		}
+
+		// Use DocumentFragment for better performance
+		const fragment = document.createDocumentFragment();
+		
+		// Find the top task (the winner)
+		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
+
+		// Render top task prominently at the top if it exists
+		if (topTask) {
+			const topTaskSection = this.createTopTaskSectionElement(topTask);
+			fragment.appendChild(topTaskSection);
+		}
+
+		// Group all checkboxes by file (including the top task)
+		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
+		
+		// Sort files by modification date (latest first)
+		const sortedFiles = this.sortFilesByDate(checkboxesByFile);
+		
+		// Calculate how many tasks to show based on pagination
+		let tasksShown = 0;
+		const maxTasksToShow = this.displayedTasksCount;
+		
+		// Render each file's checkboxes with pagination using batch processing
+		const fileSections: HTMLElement[] = [];
+		
+		for (const [filePath, fileCheckboxes] of sortedFiles) {
+			if (tasksShown >= maxTasksToShow) {
+				break; // Stop rendering if we've reached the limit
+			}
+			
+			const fileSection = this.createFileSectionElement(filePath, fileCheckboxes, maxTasksToShow, tasksShown);
+			fileSections.push(fileSection);
+			
+			// Update tasks shown count
+			const remainingSlots = maxTasksToShow - tasksShown;
+			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
+			tasksShown += tasksToShowFromFile;
+		}
+		
+		// Append all file sections to fragment
+		fileSections.forEach(section => fragment.appendChild(section));
+		
+		// Add Load More button if there are more tasks to show
+		const totalTasks = this.checkboxes.length;
+		if (tasksShown < totalTasks) {
+			const loadMoreSection = this.createLoadMoreButtonElement();
+			fragment.appendChild(loadMoreSection);
+		}
+		
+		// Append fragment to content area in one operation
+		contentArea.appendChild(fragment);
+		
+		console.log('OnTask View: Finished optimized renderCheckboxes');
+		console.log('OnTask View: Content area children after rendering:', contentArea.children.length);
+		console.log(`OnTask View: Showing ${tasksShown} of ${totalTasks} total tasks`);
 	}
 
 	private renderCheckboxes(contentArea: HTMLElement): void {
@@ -806,9 +878,12 @@ export class OnTaskView extends ItemView {
 			clearTimeout(this.refreshTimeout);
 		}
 		
-		// Schedule refresh after 500ms
+		// Schedule refresh after 500ms with debouncing
 		this.refreshTimeout = window.setTimeout(() => {
-			this.refreshCheckboxes();
+			// Only refresh if we're not already refreshing
+			if (!this.isRefreshing) {
+				this.refreshCheckboxes();
+			}
 		}, 500);
 	}
 
@@ -1328,5 +1403,128 @@ export class OnTaskView extends ItemView {
 				longPressTimer = null;
 			}
 		});
+	}
+
+	/**
+	 * Create top task section element for optimized rendering
+	 */
+	private createTopTaskSectionElement(topTask: any): HTMLElement {
+		const topTaskSection = document.createElement('div');
+		topTaskSection.className = 'ontask-top-task-section ontask-file-section';
+		
+		// Top task header
+		const topTaskHeader = topTaskSection.createDiv('ontask-file-header');
+		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
+		
+		// Top task display
+		const topTaskDisplay = topTaskSection.createDiv('ontask-top-task-display');
+		topTaskDisplay.addClass('ontask-top-task-item');
+		
+		// Create top task content
+		const topTaskContent = topTaskDisplay.createDiv('ontask-top-task-content');
+		
+		// Top task status display with colors
+		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
+		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
+		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
+		topTaskStatusDisplay.textContent = `[${statusSymbol}]`;
+		topTaskStatusDisplay.style.cursor = 'pointer';
+		
+		// Apply colors from status configuration
+		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
+		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
+		topTaskStatusDisplay.style.color = statusColor;
+		topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
+		topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
+		
+		topTaskStatusDisplay.addEventListener('click', () => {
+			this.openFile(topTask.file?.path || '', topTask.lineNumber);
+		});
+		
+		// Top task text
+		const topTaskText = topTaskDisplay.createDiv('ontask-top-task-text');
+		topTaskText.textContent = remainingText || 'Top Task';
+		topTaskText.style.cursor = 'pointer';
+		topTaskText.addEventListener('click', () => {
+			this.openFile(topTask.file?.path || '', topTask.lineNumber);
+		});
+		
+		// Top task source
+		const topTaskSource = topTaskDisplay.createDiv('ontask-top-task-source');
+		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
+		topTaskSource.style.fontSize = '12px';
+		topTaskSource.style.color = 'var(--text-muted)';
+		topTaskSource.style.marginTop = '4px';
+		
+		topTaskContent.appendChild(topTaskStatusDisplay);
+		topTaskContent.appendChild(topTaskText);
+		topTaskContent.appendChild(topTaskSource);
+		
+		// Add context menu event listener to the top task
+		topTaskDisplay.addEventListener('contextmenu', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			this.showContextMenu(e, topTask);
+		});
+
+		// Add touch support for mobile devices with long-press detection
+		this.addMobileTouchHandlers(topTaskDisplay, topTask);
+		
+		return topTaskSection;
+	}
+
+	/**
+	 * Create file section element for optimized rendering
+	 */
+	private createFileSectionElement(filePath: string, fileCheckboxes: any[], maxTasksToShow: number, tasksShown: number): HTMLElement {
+		const fileSection = document.createElement('div');
+		fileSection.className = 'ontask-file-section';
+		fileSection.setAttribute('data-file-path', filePath);
+		
+		// File header
+		const fileHeader = fileSection.createDiv('ontask-file-header');
+		fileHeader.createEl('h3', { text: this.getFileName(filePath) });
+		
+		// Calculate how many tasks from this file we can show
+		const remainingSlots = maxTasksToShow - tasksShown;
+		const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
+		
+		fileHeader.createEl('span', { 
+			text: `${tasksToShowFromFile} of ${fileCheckboxes.length} task${fileCheckboxes.length === 1 ? '' : 's'}`,
+			cls: 'ontask-file-count'
+		});
+		
+		// Checkboxes list
+		const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
+		
+		for (let i = 0; i < tasksToShowFromFile; i++) {
+			const checkbox = fileCheckboxes[i];
+			const checkboxEl = this.createCheckboxElement(checkbox);
+			checkboxesList.appendChild(checkboxEl);
+		}
+		
+		return fileSection;
+	}
+
+	/**
+	 * Create load more button element for optimized rendering
+	 */
+	private createLoadMoreButtonElement(): HTMLElement {
+		const loadMoreSection = document.createElement('div');
+		loadMoreSection.className = 'ontask-load-more-section ontask-file-section';
+		
+		// Calculate remaining tasks
+		const remainingTasks = this.checkboxes.length - this.displayedTasksCount;
+		
+		this.loadMoreButton = loadMoreSection.createEl('button', {
+			text: `Load More Tasks (${remainingTasks} remaining)`,
+			cls: 'ontask-load-more-button'
+		});
+		
+		this.loadMoreButton.addEventListener('click', () => {
+			this.loadMoreTasks();
+		});
+		
+		return loadMoreSection;
 	}
 }
