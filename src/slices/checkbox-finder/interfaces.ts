@@ -14,6 +14,7 @@ export interface CheckboxItem {
 export interface CheckboxFinderContext {
 	hideCompleted: boolean;
 	onlyShowToday: boolean;
+	limit?: number; // Optional limit for lazy loading
 }
 
 export interface CheckboxFinderStrategy {

@@ -18,7 +18,7 @@ export class OnTaskView extends ItemView {
 	private onlyTodayButton: HTMLButtonElement;
 	private isRefreshing: boolean = false;
 	private isUpdatingStatus: boolean = false;
-	private displayedTasksCount: number = 10;
+	private displayedTasksCount: number = 10; // Will be updated from settings
 	private loadMoreButton: HTMLButtonElement | null = null;
 	private lastCheckboxContent: Map<string, string> = new Map(); // Track checkbox content to detect actual changes
 
@@ -126,8 +126,11 @@ export class OnTaskView extends ItemView {
 			console.log('OnTask View: Clearing content area');
 			contentArea.empty();
 			
-			// Reset pagination state
-			this.displayedTasksCount = 10;
+			// Get current settings first
+			const settings = this.settingsService.getSettings();
+			
+			// Reset pagination state using settings
+			this.displayedTasksCount = settings.initialLoadLimit;
 			this.loadMoreButton = null;
 			
 			// Verify content is cleared
@@ -137,19 +140,17 @@ export class OnTaskView extends ItemView {
 			const loadingEl = contentArea.createDiv('ontask-loading');
 			loadingEl.textContent = 'Loading checkboxes...';
 			
-			// Get current settings
-			const settings = this.settingsService.getSettings();
-			
 			// Remove unnecessary requestAnimationFrame delay
 			
-			// Find checkboxes with performance timing
+			// Find checkboxes with performance timing and lazy loading
 			const startTime = performance.now();
 			this.checkboxes = await this.checkboxFinderService.findAllCheckboxes(
 				settings.hideCompletedTasks,
-				settings.onlyShowToday
+				settings.onlyShowToday,
+				settings.initialLoadLimit
 			);
 			const endTime = performance.now();
-			console.log(`OnTask View: Checkbox loading took ${(endTime - startTime).toFixed(2)}ms`);
+			console.log(`OnTask View: Checkbox loading took ${(endTime - startTime).toFixed(2)}ms (limited to ${settings.initialLoadLimit} tasks)`);
 			
 			// Clear loading state
 			loadingEl.remove();
@@ -507,12 +508,12 @@ export class OnTaskView extends ItemView {
 			cls: 'ontask-load-more-button'
 		});
 		
-		this.loadMoreButton.addEventListener('click', () => {
-			this.loadMoreTasks();
+		this.loadMoreButton.addEventListener('click', async () => {
+			await this.loadMoreTasks();
 		});
 	}
 
-	private loadMoreTasks(): void {
+	private async loadMoreTasks(): Promise<void> {
 		console.log('OnTask View: Loading more tasks');
 		
 		// Find the content area
@@ -530,6 +531,27 @@ export class OnTaskView extends ItemView {
 		
 		// Get current settings to filter tasks
 		const settings = this.settingsService.getSettings();
+		
+		// Load more checkboxes if we don't have enough
+		const totalAvailable = this.checkboxes.length;
+		const needed = this.displayedTasksCount + 10;
+		
+		if (totalAvailable < needed) {
+			console.log(`OnTask View: Loading more checkboxes (need ${needed}, have ${totalAvailable})`);
+			const additionalCheckboxes = await this.checkboxFinderService.findMoreCheckboxes(
+				settings.hideCompletedTasks,
+				settings.onlyShowToday
+			);
+			
+			// Merge with existing checkboxes, avoiding duplicates
+			const existingPaths = new Set(this.checkboxes.map(cb => `${cb.file?.path}:${cb.lineNumber}`));
+			const newCheckboxes = additionalCheckboxes.filter(cb => 
+				!existingPaths.has(`${cb.file?.path}:${cb.lineNumber}`)
+			);
+			
+			this.checkboxes.push(...newCheckboxes);
+			console.log(`OnTask View: Added ${newCheckboxes.length} new checkboxes`);
+		}
 		
 		// Calculate how many tasks we've already shown
 		const currentShown = this.displayedTasksCount;
@@ -1535,8 +1557,8 @@ export class OnTaskView extends ItemView {
 			cls: 'ontask-load-more-button'
 		});
 		
-		this.loadMoreButton.addEventListener('click', () => {
-			this.loadMoreTasks();
+		this.loadMoreButton.addEventListener('click', async () => {
+			await this.loadMoreTasks();
 		});
 		
 		return loadMoreSection;

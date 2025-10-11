@@ -80,6 +80,17 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 						value 
 					});
 				}));
+
+		new Setting(containerEl)
+			.setName('Initial load limit')
+			.setDesc('Number of tasks to load initially for better performance. Load More will fetch additional tasks as needed.')
+			.addText(text => text
+				.setValue(settings.initialLoadLimit.toString())
+				.setPlaceholder('10')
+				.onChange(async (value) => {
+					const numValue = parseInt(value) || 10;
+					await this.settingsService.updateSetting('initialLoadLimit', numValue);
+				}));
 	}
 
 	private renderCheckboxSourceSettings(containerEl: HTMLElement): void {

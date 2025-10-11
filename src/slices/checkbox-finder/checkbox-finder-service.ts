@@ -73,10 +73,11 @@ export class CheckboxFinderService {
 	/**
 	 * Find all checkboxes using the active strategies
 	 */
-	public async findAllCheckboxes(hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+	public async findAllCheckboxes(hideCompleted: boolean = false, onlyShowToday: boolean = false, limit?: number): Promise<CheckboxItem[]> {
 		const context: CheckboxFinderContext = {
 			hideCompleted,
-			onlyShowToday
+			onlyShowToday,
+			limit
 		};
 
 		// Temporarily disable caching to avoid performance issues
@@ -112,6 +113,14 @@ export class CheckboxFinderService {
 		
 		console.log(`OnTask: Final unique checkboxes after deduplication: ${sortedCheckboxes.length}`);
 		return sortedCheckboxes;
+	}
+
+	/**
+	 * Find more checkboxes for Load More functionality
+	 * This method loads additional checkboxes without the initial limit
+	 */
+	public async findMoreCheckboxes(hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+		return this.findAllCheckboxes(hideCompleted, onlyShowToday); // No limit for Load More
 	}
 
 	/**
