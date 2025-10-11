@@ -518,7 +518,7 @@ If your plugin does not need CSS, delete this file.
 	font-size: 14px;
 	font-weight: bold;
 	min-width: 24px;
-	padding: 4px 6px;
+	padding: 2px 8px;
 	border: 2px solid var(--text-error);
 	background: var(--text-error);
 	color: var(--text-on-accent);

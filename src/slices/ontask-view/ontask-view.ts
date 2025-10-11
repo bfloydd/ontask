@@ -215,7 +215,7 @@ export class OnTaskView extends ItemView {
 				if (topTaskStatusDisplay) {
 					const { statusSymbol } = this.parseCheckboxLine(topTask.lineContent);
 					topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
-					topTaskStatusDisplay.textContent = `[${statusSymbol}]`;
+					topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 				}
 				
 				// Update the top task text
@@ -259,7 +259,7 @@ export class OnTaskView extends ItemView {
 		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
 		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
-		topTaskStatusDisplay.textContent = `[${statusSymbol}]`;
+		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 		topTaskStatusDisplay.style.cursor = 'pointer';
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.openFile(topTask.file?.path || '', topTask.lineNumber);
@@ -397,7 +397,7 @@ export class OnTaskView extends ItemView {
 			const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
 			const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
 			topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
-			topTaskStatusDisplay.textContent = statusSymbol === ' ' ? '.' : statusSymbol;
+			topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 			topTaskStatusDisplay.style.cursor = 'pointer';
 			
 			// Apply colors from status configuration
@@ -732,6 +732,15 @@ export class OnTaskView extends ItemView {
 		return sortedMap;
 	}
 
+	/**
+	 * Centralized method for displaying status symbols consistently across the plugin
+	 * @param statusSymbol The raw status symbol from the checkbox
+	 * @returns The display text for the status symbol
+	 */
+	private getStatusDisplayText(statusSymbol: string): string {
+		return statusSymbol === ' ' ? '.' : statusSymbol;
+	}
+
 	private createCheckboxElement(checkbox: any): HTMLElement {
 		const checkboxEl = document.createElement('div');
 		checkboxEl.addClass('ontask-checkbox-item');
@@ -752,7 +761,7 @@ export class OnTaskView extends ItemView {
 		// Extract status symbol from checkbox content
 		const { statusSymbol, remainingText } = this.parseCheckboxLine(checkbox.lineContent);
 		statusDisplay.setAttribute('data-status', statusSymbol);
-		statusDisplay.textContent = statusSymbol === ' ' ? '.' : statusSymbol;
+		statusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 		
 		// Apply colors from status configuration
 		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
@@ -1061,7 +1070,7 @@ export class OnTaskView extends ItemView {
 			const statusDisplay = document.createElement('div');
 			statusDisplay.className = 'ontask-checkbox-display';
 			statusDisplay.setAttribute('data-status', status.symbol);
-			statusDisplay.textContent = status.symbol === ' ' ? '.' : status.symbol;
+			statusDisplay.textContent = this.getStatusDisplayText(status.symbol);
 			statusDisplay.style.fontSize = '12px';
 			statusDisplay.style.minWidth = '24px';
 			statusDisplay.style.height = '20px';
@@ -1427,7 +1436,7 @@ export class OnTaskView extends ItemView {
 		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
 		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
-		topTaskStatusDisplay.textContent = `[${statusSymbol}]`;
+		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 		topTaskStatusDisplay.style.cursor = 'pointer';
 		
 		// Apply colors from status configuration
