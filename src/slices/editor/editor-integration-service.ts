@@ -15,8 +15,6 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 	private currentTopTask: any = null;
 	private pendingDecorationUpdate: boolean = false;
 	private updateRequestId: number | null = null;
-	private lastUpdateTime: number = 0;
-	private updateDebounceMs: number = 500; // Debounce updates by 500ms
 
 	constructor(
 		app: App,
@@ -116,14 +114,6 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 	 * This prevents multiple rapid updates and batches them into a single update
 	 */
 	private scheduleDecorationUpdate(): void {
-		const now = Date.now();
-		
-		// Debounce rapid-fire updates
-		if (now - this.lastUpdateTime < this.updateDebounceMs) {
-			console.log('OnTask Editor: Update debounced, skipping');
-			return;
-		}
-		
 		console.log('OnTask Editor: scheduleDecorationUpdate called, pending:', this.pendingDecorationUpdate);
 		
 		if (this.pendingDecorationUpdate) {
@@ -132,7 +122,6 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		}
 
 		this.pendingDecorationUpdate = true;
-		this.lastUpdateTime = now;
 		console.log('OnTask Editor: Scheduling decoration update');
 		
 		// Cancel any existing request

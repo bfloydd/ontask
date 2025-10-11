@@ -20,7 +20,6 @@ export class OnTaskView extends ItemView {
 	private displayedTasksCount: number = 10;
 	private loadMoreButton: HTMLButtonElement | null = null;
 	private lastCheckboxContent: Map<string, string> = new Map(); // Track checkbox content to detect actual changes
-	private debounceTimeout: number | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -99,12 +98,6 @@ export class OnTaskView extends ItemView {
 		if (this.refreshTimeout) {
 			clearTimeout(this.refreshTimeout);
 			this.refreshTimeout = null;
-		}
-		
-		// Clear debounce timeout
-		if (this.debounceTimeout) {
-			clearTimeout(this.debounceTimeout);
-			this.debounceTimeout = null;
 		}
 	}
 
@@ -818,15 +811,8 @@ export class OnTaskView extends ItemView {
 	}
 
 	private scheduleDebouncedRefresh(file: any): void {
-		// Clear any existing debounce timeout
-		if (this.debounceTimeout) {
-			clearTimeout(this.debounceTimeout);
-		}
-		
-		// Debounce the refresh to avoid rapid-fire updates during typing
-		this.debounceTimeout = window.setTimeout(async () => {
-			await this.checkForCheckboxChanges(file);
-		}, 1000); // 1 second debounce
+		// Process immediately since we now only react to meaningful checkbox changes
+		this.checkForCheckboxChanges(file);
 	}
 
 	private async checkForCheckboxChanges(file: any): Promise<void> {
