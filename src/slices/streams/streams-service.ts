@@ -29,11 +29,6 @@ export class StreamsServiceImpl implements StreamsService {
 			const streamsPlugin = (this.app as any).plugins?.getPlugin('streams') as StreamsPlugin;
 			this.streamsPlugin = streamsPlugin;
 			
-			if (this.streamsPlugin) {
-				console.log('StreamsService: Streams plugin found and initialized');
-			} else {
-				console.log('StreamsService: Streams plugin not found or not loaded');
-			}
 		});
 	}
 
@@ -43,13 +38,11 @@ export class StreamsServiceImpl implements StreamsService {
 	public getAllStreams(): Stream[] {
 		// Check if the streams plugin is available
 		if (!this.streamsPlugin) {
-			console.log('StreamsService: Streams plugin not ready yet, returning empty array');
 			return [];
 		}
 
 		try {
 			const streams = this.streamsPlugin.getStreams();
-			console.log('StreamsService: Retrieved streams from plugin:', streams);
 			return streams;
 		} catch (error) {
 			console.error('StreamsService: Error getting streams from plugin:', error);
@@ -151,7 +144,6 @@ export class StreamsServiceImpl implements StreamsService {
 	 */
 	public isFileInStream(filePath: string): Stream | undefined {
 		if (!this.streamsPlugin) {
-			console.log('StreamsService: Streams plugin not available');
 			return undefined;
 		}
 
@@ -168,12 +160,10 @@ export class StreamsServiceImpl implements StreamsService {
 		const streams = this.getAllStreams();
 		for (const stream of streams) {
 			if (filePath.startsWith(stream.folder)) {
-				console.log(`StreamsService: File ${filePath} is in stream ${stream.name}`);
 				return stream;
 			}
 		}
 
-		console.log(`StreamsService: File ${filePath} is not in any stream`);
 		return undefined;
 	}
 
@@ -184,23 +174,20 @@ export class StreamsServiceImpl implements StreamsService {
 	 */
 	public async updateStreamBarFromFile(filePath: string): Promise<boolean> {
 		if (!this.streamsPlugin) {
-			console.log('StreamsService: Streams plugin not available');
 			return false;
 		}
 
 		// Use the new streams plugin API method
 		if (this.streamsPlugin.updateStreamBarFromFile) {
-			try {
-				const result = await this.streamsPlugin.updateStreamBarFromFile(filePath);
-				console.log(`StreamsService: Updated stream bar from file ${filePath} (result: ${result})`);
-				return result;
-			} catch (error) {
-				console.error('StreamsService: Error updating stream bar from file:', error);
-				return false;
-			}
+				try {
+					const result = await this.streamsPlugin.updateStreamBarFromFile(filePath);
+					return result;
+				} catch (error) {
+					console.error('StreamsService: Error updating stream bar from file:', error);
+					return false;
+				}
 		}
 
-		console.log('StreamsService: updateStreamBarFromFile method not available in streams plugin');
 		return false;
 	}
 }

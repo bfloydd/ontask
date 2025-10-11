@@ -106,15 +106,12 @@ export class OnTaskView extends ItemView {
 	async refreshCheckboxes(): Promise<void> {
 		// Prevent multiple simultaneous refreshes
 		if (this.isRefreshing) {
-			console.log('OnTask View: Refresh already in progress, skipping');
 			return;
 		}
 		
 		this.isRefreshing = true;
 		
 		try {
-			console.log('OnTask View: Starting refreshCheckboxes');
-			
 			// Find the content area
 			const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
 			if (!contentArea) {
@@ -123,7 +120,6 @@ export class OnTaskView extends ItemView {
 			}
 			
 			// Clear existing content
-			console.log('OnTask View: Clearing content area');
 			contentArea.empty();
 			
 			// Get current settings first
@@ -134,7 +130,6 @@ export class OnTaskView extends ItemView {
 			this.loadMoreButton = null;
 			
 			// Verify content is cleared
-			console.log('OnTask View: Content area children after clearing:', contentArea.children.length);
 			
 			// Show loading state with progress indication
 			const loadingEl = contentArea.createDiv('ontask-loading');
@@ -143,26 +138,14 @@ export class OnTaskView extends ItemView {
 			// Remove unnecessary requestAnimationFrame delay
 			
 			// Find checkboxes with performance timing and lazy loading
-			const startTime = performance.now();
 			this.checkboxes = await this.checkboxFinderService.findAllCheckboxes(
 				settings.hideCompletedTasks,
 				settings.onlyShowToday,
 				settings.initialLoadLimit
 			);
-			const endTime = performance.now();
-			console.log(`OnTask View: Checkbox loading took ${(endTime - startTime).toFixed(2)}ms (limited to ${settings.initialLoadLimit} tasks)`);
 			
 			// Clear loading state
 			loadingEl.remove();
-			
-			// Debug logging
-			console.log(`OnTask View: Rendering ${this.checkboxes.length} checkboxes`);
-			console.log('OnTask View: Checkboxes data:', this.checkboxes.map(cb => ({
-				file: cb.file?.path,
-				lineNumber: cb.lineNumber,
-				content: cb.lineContent?.trim(),
-				sourceName: cb.sourceName
-			})));
 			
 			// Render checkboxes using the original method for now
 			this.renderCheckboxes(contentArea);
@@ -194,8 +177,6 @@ export class OnTaskView extends ItemView {
 	}
 
 	private updateTopTaskSection(): void {
-		console.log('OnTask View: Updating top task section immediately');
-		
 		// Find the content area
 		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
 		if (!contentArea) {
@@ -226,17 +207,14 @@ export class OnTaskView extends ItemView {
 					topTaskText.textContent = remainingText || 'Top Task';
 				}
 				
-				console.log('OnTask View: Top task section updated with new status');
 			} else {
 				// Create new top task section immediately
-				console.log('OnTask View: Creating new top task section immediately');
 				this.createTopTaskSection(contentArea, topTask);
 			}
 		} else {
 			// If no top task, remove the section if it exists
 			if (existingTopTaskSection) {
 				existingTopTaskSection.remove();
-				console.log('OnTask View: Top task section removed - no top task found');
 			}
 		}
 	}
@@ -299,8 +277,6 @@ export class OnTaskView extends ItemView {
 	}
 
 	private async renderCheckboxesOptimized(contentArea: HTMLElement): Promise<void> {
-		console.log('OnTask View: Starting optimized renderCheckboxes');
-		console.log('OnTask View: Content area children before rendering:', contentArea.children.length);
 		
 		if (this.checkboxes.length === 0) {
 			const emptyEl = contentArea.createDiv('ontask-empty');
@@ -359,15 +335,9 @@ export class OnTaskView extends ItemView {
 		
 		// Append fragment to content area in one operation
 		contentArea.appendChild(fragment);
-		
-		console.log('OnTask View: Finished optimized renderCheckboxes');
-		console.log('OnTask View: Content area children after rendering:', contentArea.children.length);
-		console.log(`OnTask View: Showing ${tasksShown} of ${totalTasks} total tasks`);
 	}
 
 	private renderCheckboxes(contentArea: HTMLElement): void {
-		console.log('OnTask View: Starting renderCheckboxes');
-		console.log('OnTask View: Content area children before rendering:', contentArea.children.length);
 		
 		if (this.checkboxes.length === 0) {
 			const emptyEl = contentArea.createDiv('ontask-empty');
@@ -485,10 +455,6 @@ export class OnTaskView extends ItemView {
 		if (tasksShown < totalTasks) {
 			this.addLoadMoreButton(contentArea);
 		}
-		
-		console.log('OnTask View: Finished renderCheckboxes');
-		console.log('OnTask View: Content area children after rendering:', contentArea.children.length);
-		console.log(`OnTask View: Showing ${tasksShown} of ${totalTasks} total tasks`);
 	}
 
 	private addLoadMoreButton(contentArea: HTMLElement): void {
@@ -514,8 +480,6 @@ export class OnTaskView extends ItemView {
 	}
 
 	private async loadMoreTasks(): Promise<void> {
-		console.log('OnTask View: Loading more tasks');
-		
 		// Find the content area
 		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
 		if (!contentArea) {
@@ -537,7 +501,6 @@ export class OnTaskView extends ItemView {
 		const needed = this.displayedTasksCount + 10;
 		
 		if (totalAvailable < needed) {
-			console.log(`OnTask View: Loading more checkboxes (need ${needed}, have ${totalAvailable})`);
 			const additionalCheckboxes = await this.checkboxFinderService.findMoreCheckboxes(
 				settings.hideCompletedTasks,
 				settings.onlyShowToday
@@ -550,7 +513,6 @@ export class OnTaskView extends ItemView {
 			);
 			
 			this.checkboxes.push(...newCheckboxes);
-			console.log(`OnTask View: Added ${newCheckboxes.length} new checkboxes`);
 		}
 		
 		// Calculate how many tasks we've already shown
@@ -669,26 +631,18 @@ export class OnTaskView extends ItemView {
 			checkboxesList.appendChild(checkboxEl);
 		}
 		
-		console.log(`OnTask View: Created new file section with ${fileTasks.length} tasks: ${filePath}`);
 	}
 
 	private groupCheckboxesByFile(checkboxes: any[]): Map<string, any[]> {
 		const grouped = new Map<string, any[]>();
 		
-		console.log(`OnTask View: Grouping ${checkboxes.length} checkboxes by file`);
-		
 		for (const checkbox of checkboxes) {
 			const filePath = checkbox.file?.path || 'Unknown';
 			if (!grouped.has(filePath)) {
 				grouped.set(filePath, []);
-				console.log(`OnTask View: Creating new group for file: ${filePath}`);
 			}
 			grouped.get(filePath)!.push(checkbox);
-			console.log(`OnTask View: Added checkbox to ${filePath}: "${checkbox.lineContent?.trim()}"`);
 		}
-		
-		console.log(`OnTask View: Final grouped files:`, Array.from(grouped.keys()));
-		console.log(`OnTask View: File counts:`, Array.from(grouped.entries()).map(([file, checkboxes]) => `${file}: ${checkboxes.length}`));
 		
 		return grouped;
 	}
@@ -712,15 +666,13 @@ export class OnTaskView extends ItemView {
 					const fileA = this.app.vault.getAbstractFileByPath(a[0]) as TFile;
 					const fileB = this.app.vault.getAbstractFileByPath(b[0]) as TFile;
 					
-					if (!fileA || !fileB) {
-						console.log('OnTask View: File not found, maintaining order');
-						return 0;
-					}
+				if (!fileA || !fileB) {
+					return 0;
+				}
 					
 					const dateA = fileA.stat?.mtime || fileA.stat?.ctime || 0;
 					const dateB = fileB.stat?.mtime || fileB.stat?.ctime || 0;
 					
-					console.log(`OnTask View: No date in filename, using modification date for ${fileNameA} vs ${fileNameB}`);
 					return dateB - dateA;
 				}
 				
@@ -728,7 +680,6 @@ export class OnTaskView extends ItemView {
 				const dateA = new Date(dateMatchA[1]);
 				const dateB = new Date(dateMatchB[1]);
 				
-				console.log(`OnTask View: Sorting by filename date ${fileNameA} (${dateA.toISOString().split('T')[0]}) vs ${fileNameB} (${dateB.toISOString().split('T')[0]})`);
 				
 				// Sort latest first (descending order)
 				return dateB.getTime() - dateA.getTime();
@@ -745,7 +696,6 @@ export class OnTaskView extends ItemView {
 			sortedMap.set(filePath, checkboxes);
 		}
 		
-		console.log(`OnTask View: Files sorted by filename date (latest first):`, Array.from(sortedMap.keys()).map(path => this.getFileName(path)));
 		return sortedMap;
 	}
 

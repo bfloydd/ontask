@@ -138,51 +138,33 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 	}
 
 	async updateEditorDecorations(): Promise<void> {
-		console.log('OnTask Editor: updateEditorDecorations called');
-		
 		if (!this.isEnabled()) {
-			console.log('OnTask Editor: Editor integration disabled, cleaning up');
 			this.cleanup();
 			return;
 		}
 
-		console.log('OnTask Editor: Editor integration enabled, proceeding with update');
-		console.log('OnTask Editor: Current workspace state - layoutReady:', this.app.workspace.layoutReady);
-		console.log('OnTask Editor: Active leaf:', !!this.app.workspace.activeLeaf);
-		console.log('OnTask Editor: Active leaf view type:', this.app.workspace.activeLeaf?.view?.getViewType());
-
 		try {
 			const settings = this.settingsService.getSettings();
-			console.log('OnTask Editor: Settings:', { 
-				hideCompleted: settings.hideCompletedTasks, 
-				onlyShowToday: settings.onlyShowToday 
-			});
 			
 			const checkboxes = await this.checkboxFinderService.findAllCheckboxes(
 				settings.hideCompletedTasks,
 				settings.onlyShowToday
 			);
 			
-			console.log('OnTask Editor: Found', checkboxes.length, 'total checkboxes');
 			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
-			console.log('OnTask Editor: Found top task:', topTask?.lineContent, 'in file:', topTask?.file?.path);
 			
 			// Check if we need to update
 			const needsUpdate = !this.currentTopTask || 
 				this.currentTopTask.lineContent !== topTask?.lineContent || 
 				this.currentTopTask.file.path !== topTask?.file.path;
 			
-			console.log('OnTask Editor: Needs update:', needsUpdate, 'Current top task:', this.currentTopTask?.lineContent);
-			
 			if (!needsUpdate) {
-				console.log('OnTask Editor: No update needed, current top task unchanged');
 				return;
 			}
 			
 			this.currentTopTask = topTask;
 			
 			if (!topTask) {
-				console.log('OnTask Editor: No top task found, cleaning up overlays');
 				// Clean up existing overlays only when there's no top task
 				this.cleanup();
 				return;
@@ -208,10 +190,7 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 				
 				if (markdownLeaves.length > 0) {
 					const firstMarkdownLeaf = markdownLeaves[0];
-					console.log('OnTask Editor: Using first markdown leaf:', firstMarkdownLeaf.view?.getViewType(), 'File:', (firstMarkdownLeaf.view as any)?.file?.path);
 					await this.addTopTaskOverlay(firstMarkdownLeaf.view as MarkdownView, topTask);
-				} else {
-					console.log('OnTask Editor: No markdown leaves found, will retry when a markdown view opens');
 				}
 			}
 		} catch (error) {
@@ -220,19 +199,14 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 	}
 
 	private async addTopTaskOverlay(view: MarkdownView, topTask: any): Promise<void> {
-		console.log('OnTask Editor: addTopTaskOverlay called for file:', view.file?.path);
-		console.log('OnTask Editor: Top task data:', topTask);
-		
 		const editor = view.editor;
 		if (!editor) {
-			console.log('OnTask Editor: No editor found, returning');
 			return;
 		}
 
 		// Find the workspace root container
 		const workspaceRoot = document.querySelector('.workspace-split.mod-vertical.mod-root');
 		if (!workspaceRoot) {
-			console.log('OnTask Editor: No workspace root found, returning');
 			return;
 		}
 
@@ -243,11 +217,8 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		// Check if overlay already exists in the workspace root
 		const existingOverlay = workspaceRoot.querySelector('.ontask-top-task-overlay');
 		if (existingOverlay) {
-			console.log('OnTask Editor: Overlay already exists in workspace root, skipping');
 			return; // Don't create duplicate
 		}
-
-		console.log('OnTask Editor: Creating new overlay for top task:', topTask.lineContent);
 
 		// Create top task bar element
 		const topTaskBar = workspaceRoot.createEl('div', {
@@ -257,15 +228,9 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 			}
 		});
 
-		console.log('OnTask Editor: Created topTaskBar element:', topTaskBar);
-		console.log('OnTask Editor: topTaskBar classes:', topTaskBar.className);
-		console.log('OnTask Editor: topTaskBar parent:', topTaskBar.parentElement);
-
 		// Create the top task content
 		const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		const displayText = remainingText || 'Top Task';
-		
-		console.log('OnTask Editor: Parsed checkbox line - remainingText:', remainingText, 'displayText:', displayText);
 		
 		topTaskBar.innerHTML = `
 			<div class="ontask-top-task-content">
@@ -282,21 +247,14 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		workspaceRoot.appendChild(topTaskBar);
 
 		console.log('OnTask Editor: After insertion - topTaskBar parent:', topTaskBar.parentElement);
-		console.log('OnTask Editor: After insertion - topTaskBar is in DOM:', document.contains(topTaskBar));
-		console.log('OnTask Editor: After insertion - workspaceRoot children count:', workspaceRoot.children.length);
-
 		// Store overlay for cleanup using a fixed key since it's now global
 		const overlayKey = 'workspace-root-overlay';
 		this.topTaskOverlays.set(overlayKey, topTaskBar);
-		console.log('OnTask Editor: Stored overlay with key:', overlayKey);
 
 		// Add click handler to focus the editor
 		topTaskBar.addEventListener('click', () => {
-			console.log('OnTask Editor: Top task bar clicked, focusing editor');
 			editor.focus();
 		});
-
-		console.log('OnTask Editor: Overlay creation completed successfully');
 	}
 
 	private parseCheckboxLine(line: string): { remainingText: string } {
@@ -307,7 +265,6 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 	}
 
 	cleanup(): void {
-		console.log('OnTask Editor: cleanup called, removing', this.topTaskOverlays.size, 'stored overlays');
 		
 		// Cancel any pending animation frame
 		if (this.updateRequestId !== null) {
@@ -330,12 +287,9 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		if (workspaceRoot) {
 			const overlays = workspaceRoot.querySelectorAll('.ontask-top-task-overlay');
 			overlays.forEach((overlay: HTMLElement) => {
-				console.log('OnTask Editor: Removing orphaned overlay from workspace root');
 				overlay.remove();
 			});
 		}
-
-		console.log('OnTask Editor: Cleanup completed');
 	}
 
 	isEnabled(): boolean {
@@ -345,7 +299,6 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 
 	// Test method to manually trigger overlay creation
 	async testOverlayCreation(): Promise<void> {
-		console.log('OnTask Editor: TEST - Manual overlay creation triggered');
 		
 		// Create a test top task
 		const testTopTask = {

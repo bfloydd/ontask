@@ -40,7 +40,6 @@ export class FolderCheckboxStrategy implements CheckboxFinderStrategy {
 		try {
 			const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
 			if (!folder) {
-				console.log(`OnTask: Folder ${this.config.folderPath} not found`);
 				return checkboxes;
 			}
 
@@ -50,9 +49,7 @@ export class FolderCheckboxStrategy implements CheckboxFinderStrategy {
 			// Performance optimization: Filter files by today before reading their content
 			let filesToProcess = files;
 			if (context.onlyShowToday) {
-				const originalCount = files.length;
 				filesToProcess = files.filter(file => this.isTodayFile(file));
-				console.log(`OnTask: Filtered ${originalCount} files to ${filesToProcess.length} today's files for performance`);
 			}
 			
 			// Process files sequentially for now to avoid complexity
@@ -173,7 +170,6 @@ export class FolderCheckboxStrategy implements CheckboxFinderStrategy {
 		// Check both filename and full path for date patterns
 		for (const dateFormat of todayFormats) {
 			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
-				console.log(`OnTask: Found today's file: ${file.name} (matches date: ${dateFormat})`);
 				return true;
 			}
 		}
@@ -182,7 +178,6 @@ export class FolderCheckboxStrategy implements CheckboxFinderStrategy {
 		const datePatterns = this.getDatePatterns(today);
 		for (const pattern of datePatterns) {
 			if (pattern.test(fileName) || pattern.test(filePath)) {
-				console.log(`OnTask: Found today's file: ${file.name} (matches pattern: ${pattern})`);
 				return true;
 			}
 		}
@@ -274,7 +269,6 @@ export class FolderCheckboxStrategy implements CheckboxFinderStrategy {
 		const result: CheckboxItem[] = [];
 		result.push(...regularTasks);
 
-		console.log(`OnTask: Found ${slashTasks.length} '/' tasks and ${exclamationTasks.length} '!' tasks in folder, using: ${finalTopTask ? finalTopTask.file.name : 'none'}`);
 		
 		return result;
 	}

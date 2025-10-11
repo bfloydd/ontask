@@ -86,32 +86,24 @@ export class CheckboxFinderService {
 		const allCheckboxes: CheckboxItem[] = [];
 
 		// Use all active strategies
-		console.log(`OnTask: Using active strategies: ${this.activeStrategies.join(', ')}`);
 		for (const strategyName of this.activeStrategies) {
 			const strategy = this.factory.createStrategy(strategyName);
 			if (strategy && strategy.isAvailable()) {
 				try {
 					const strategyCheckboxes = await strategy.findCheckboxes(context);
 					allCheckboxes.push(...strategyCheckboxes);
-					console.log(`OnTask: Found ${strategyCheckboxes.length} checkboxes using ${strategyName} strategy`);
 				} catch (error) {
 					console.error(`Error using ${strategyName} strategy:`, error);
 				}
-			} else {
-				console.log(`OnTask: Strategy ${strategyName} is not available`);
 			}
 		}
 		
-		console.log(`OnTask: Total checkboxes before deduplication: ${allCheckboxes.length}`);
-
 		// Remove duplicates and sort by file modification time
 		const uniqueCheckboxes = this.removeDuplicateCheckboxes(allCheckboxes);
 		const sortedCheckboxes = this.sortCheckboxes(uniqueCheckboxes);
 		
 		// Update cache timestamp
 		this.lastRefreshTime = Date.now();
-		
-		console.log(`OnTask: Final unique checkboxes after deduplication: ${sortedCheckboxes.length}`);
 		return sortedCheckboxes;
 	}
 
@@ -186,16 +178,12 @@ export class CheckboxFinderService {
 			const key = `${checkbox.file.path}-${checkbox.lineNumber}-${checkbox.lineContent.trim()}`;
 			if (seen.has(key)) {
 				duplicates.push(checkbox);
-				console.log(`OnTask: Duplicate checkbox found: ${checkbox.file.path}:${checkbox.lineNumber} - "${checkbox.lineContent.trim()}"`);
 				return false;
 			}
 			seen.add(key);
 			return true;
 		});
 		
-		if (duplicates.length > 0) {
-			console.log(`OnTask: Removed ${duplicates.length} duplicate checkboxes`);
-		}
 		
 		return uniqueCheckboxes;
 	}

@@ -40,16 +40,13 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 			// Get Daily Notes configuration from core plugin
 			const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
 			if (!dailyNotesCore || !dailyNotesCore.enabled) {
-				console.log('OnTask: Daily Notes core plugin not available or disabled');
 				return checkboxes;
 			}
 
 			// Get Daily Notes folder path from settings
 			const dailyNotesFolder = dailyNotesCore.instance?.options?.folder || '';
-			console.log('OnTask: Daily Notes folder:', dailyNotesFolder);
 
 			if (!dailyNotesFolder) {
-				console.log('OnTask: Daily Notes folder not configured');
 				return checkboxes;
 			}
 
@@ -59,14 +56,10 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 				file.path.startsWith(dailyNotesFolder)
 			);
 
-			console.log('OnTask: Found Daily Notes files:', dailyNotesFiles.map(f => f.path));
-
 			// Filter files by today if onlyShowToday is enabled
 			let filesToProcess = dailyNotesFiles;
 			if (context.onlyShowToday) {
-				const originalCount = filesToProcess.length;
 				filesToProcess = dailyNotesFiles.filter(file => this.isTodayFile(file));
-				console.log(`OnTask: Filtered ${originalCount} Daily Notes files to ${filesToProcess.length} today's files`);
 			}
 
 			// Process each Daily Notes file
@@ -239,7 +232,6 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 		const result: CheckboxItem[] = [];
 		result.push(...regularTasks);
 
-		console.log(`OnTask: Found ${slashTasks.length} '/' tasks and ${exclamationTasks.length} '!' tasks in daily notes, using: ${finalTopTask ? finalTopTask.file.name : 'none'}`);
 		
 		return result;
 	}

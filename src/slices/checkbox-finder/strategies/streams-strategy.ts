@@ -25,20 +25,12 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 		const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');
 		const allCheckboxes: CheckboxItem[] = [];
 
-		if (context.onlyShowToday) {
-			const today = new Date();
-			const todayString = today.toISOString().split('T')[0];
-			console.log(`OnTask: Searching for files dated ${todayString} (Only Show Today enabled)`);
-		}
 
 		for (const stream of streams) {
 			const streamCheckboxes = await this.findCheckboxesInStream(stream, context);
 			allCheckboxes.push(...streamCheckboxes);
 		}
 
-		if (context.onlyShowToday) {
-			console.log(`OnTask: Found ${allCheckboxes.length} checkboxes from today's files`);
-		}
 
 		// Process and prioritize top tasks
 		return this.processTopTasks(allCheckboxes);
@@ -59,9 +51,7 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 				
 				// Performance optimization: Filter files by today before reading their content
 				if (context.onlyShowToday) {
-					const originalCount = files.length;
 					files = files.filter(file => this.isTodayFile(file));
-					console.log(`OnTask: Filtered ${originalCount} files to ${files.length} today's files for performance`);
 				}
 				
 			// Process files sequentially for now to avoid complexity
@@ -161,7 +151,6 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 		// Check both filename and full path for date patterns
 		for (const dateFormat of todayFormats) {
 			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
-				console.log(`OnTask: Found today's file: ${file.name} (matches date: ${dateFormat})`);
 				return true;
 			}
 		}
@@ -170,7 +159,6 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 		const datePatterns = this.getDatePatterns(today);
 		for (const pattern of datePatterns) {
 			if (pattern.test(fileName) || pattern.test(filePath)) {
-				console.log(`OnTask: Found today's file: ${file.name} (matches pattern: ${pattern})`);
 				return true;
 			}
 		}
@@ -262,7 +250,6 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 		const result: CheckboxItem[] = [];
 		result.push(...regularTasks);
 
-		console.log(`OnTask: Found ${slashTasks.length} '/' tasks and ${exclamationTasks.length} '!' tasks, using: ${finalTopTask ? finalTopTask.file.name : 'none'}`);
 		
 		return result;
 	}
