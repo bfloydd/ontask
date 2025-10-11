@@ -453,10 +453,10 @@ If your plugin does not need CSS, delete this file.
 /* Top Task Section Styles */
 .ontask-top-task-section {
 	margin-bottom: 25px;
-	border: 2px solid var(--text-error);
-	border-radius: 8px;
+	border: 8px solid var(--text-error);
+	border-radius: 10px;
 	background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
-	box-shadow: 0 4px 12px rgba(255, 0, 0, 0.1);
+	box-shadow: 0 6px 16px rgba(255, 0, 0, 0.15), 0 2px 4px rgba(255, 0, 0, 0.1);
 	overflow: hidden;
 	position: relative;
 }
@@ -496,7 +496,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .ontask-top-task-content {
-	padding: 15px;
+	padding: 17px;
 }
 
 .ontask-top-task-item {
