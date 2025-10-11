@@ -25,6 +25,10 @@ export interface StreamsService {
 	getCommandStreams(): Stream[];
 	getStreamsByFolderPrefix(prefix: string): Stream[];
 	
+	// File detection and stream updates
+	isFileInStream(filePath: string): Stream | undefined;
+	updateStreamBarFromFile(filePath: string): Promise<boolean>;
+	
 	// Plugin status
 	isStreamsPluginAvailable(): boolean;
 }

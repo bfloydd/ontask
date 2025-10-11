@@ -215,6 +215,13 @@ export class CheckboxFinderService {
 	}
 
 	/**
+	 * Get the streams service directly
+	 */
+	public getStreamsService(): StreamsService {
+		return (this.factory as any).streamsService;
+	}
+
+	/**
 	 * Get cached file content if available and fresh
 	 */
 	private async getCachedFileContent(file: any): Promise<string | null> {

@@ -5,6 +5,9 @@ import { StreamsService, Stream } from './streams-interface';
 // Type for the streams plugin
 interface StreamsPlugin extends Plugin {
 	getStreams(): Stream[];
+	// Additional methods that might be available in the streams plugin
+	updateStreamBarFromFile?: (filePath: string) => Promise<boolean>;
+	isFileInStream?: (filePath: string) => Stream | undefined;
 }
 
 export class StreamsServiceImpl implements StreamsService {
@@ -141,5 +144,63 @@ export class StreamsServiceImpl implements StreamsService {
 	public getStreamById(id: string): Stream | undefined {
 		const streams = this.getAllStreams();
 		return streams.find(stream => stream.id === id);
+	}
+
+	/**
+	 * Check if a file belongs to any stream
+	 */
+	public isFileInStream(filePath: string): Stream | undefined {
+		if (!this.streamsPlugin) {
+			console.log('StreamsService: Streams plugin not available');
+			return undefined;
+		}
+
+		// First, try to use the plugin's built-in method if available
+		if (this.streamsPlugin.isFileInStream) {
+			try {
+				return this.streamsPlugin.isFileInStream(filePath);
+			} catch (error) {
+				console.error('StreamsService: Error using plugin isFileInStream method:', error);
+			}
+		}
+
+		// Fallback: Check if the file path matches any stream folder
+		const streams = this.getAllStreams();
+		for (const stream of streams) {
+			if (filePath.startsWith(stream.folder)) {
+				console.log(`StreamsService: File ${filePath} is in stream ${stream.name}`);
+				return stream;
+			}
+		}
+
+		console.log(`StreamsService: File ${filePath} is not in any stream`);
+		return undefined;
+	}
+
+
+	/**
+	 * Update the stream bar from a file
+	 * This method uses the new streams plugin API
+	 */
+	public async updateStreamBarFromFile(filePath: string): Promise<boolean> {
+		if (!this.streamsPlugin) {
+			console.log('StreamsService: Streams plugin not available');
+			return false;
+		}
+
+		// Use the new streams plugin API method
+		if (this.streamsPlugin.updateStreamBarFromFile) {
+			try {
+				const result = await this.streamsPlugin.updateStreamBarFromFile(filePath);
+				console.log(`StreamsService: Updated stream bar from file ${filePath} (result: ${result})`);
+				return result;
+			} catch (error) {
+				console.error('StreamsService: Error updating stream bar from file:', error);
+				return false;
+			}
+		}
+
+		console.log('StreamsService: updateStreamBarFromFile method not available in streams plugin');
+		return false;
 	}
 }

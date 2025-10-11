@@ -871,9 +871,12 @@ export class OnTaskView extends ItemView {
 		}
 	}
 
-	private openFile(filePath: string, lineNumber: number): void {
+	private async openFile(filePath: string, lineNumber: number): Promise<void> {
 		const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
 		if (file) {
+			// Check if the file is in a stream and update stream date if needed
+			await this.handleStreamUpdate(filePath);
+			
 			// Open the file
 			this.app.workspace.openLinkText(filePath, '');
 			
@@ -896,6 +899,47 @@ export class OnTaskView extends ItemView {
 	private getFileName(filePath: string): string {
 		const parts = filePath.split('/');
 		return parts[parts.length - 1] || filePath;
+	}
+
+	/**
+	 * Handle stream update when a file is opened
+	 */
+	private async handleStreamUpdate(filePath: string): Promise<void> {
+		try {
+			// Check if streams is the active checkbox source
+			const settings = this.settingsService.getSettings();
+			if (settings.checkboxSource !== 'streams') {
+				console.log(`OnTask: Streams not active checkbox source (current: ${settings.checkboxSource}), skipping stream detection`);
+				return;
+			}
+
+			// Get the streams service from the plugin orchestration
+			const streamsService = this.checkboxFinderService.getStreamsService();
+			
+			if (!streamsService || !streamsService.isStreamsPluginAvailable()) {
+				console.log('OnTask: Streams plugin not available, skipping stream detection');
+				return;
+			}
+
+			// Check if the file is in a stream
+			const stream = streamsService.isFileInStream(filePath);
+			if (stream) {
+				console.log(`OnTask: File ${filePath} is in stream "${stream.name}"`);
+				
+				// Update the stream bar from this file
+				const success = await streamsService.updateStreamBarFromFile(filePath);
+				
+				if (success) {
+					console.log(`OnTask: Successfully updated stream bar from file ${filePath}`);
+				} else {
+					console.log(`OnTask: Failed to update stream bar from file ${filePath}`);
+				}
+			} else {
+				console.log(`OnTask: File ${filePath} is not in any stream`);
+			}
+		} catch (error) {
+			console.error('OnTask: Error handling stream detection:', error);
+		}
 	}
 
 	private scheduleRefresh(): void {
