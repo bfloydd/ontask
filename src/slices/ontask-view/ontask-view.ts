@@ -19,6 +19,8 @@ export class OnTaskView extends ItemView {
 	private isUpdatingStatus: boolean = false;
 	private displayedTasksCount: number = 10;
 	private loadMoreButton: HTMLButtonElement | null = null;
+	private lastCheckboxContent: Map<string, string> = new Map(); // Track checkbox content to detect actual changes
+	private debounceTimeout: number | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -98,6 +100,12 @@ export class OnTaskView extends ItemView {
 			clearTimeout(this.refreshTimeout);
 			this.refreshTimeout = null;
 		}
+		
+		// Clear debounce timeout
+		if (this.debounceTimeout) {
+			clearTimeout(this.debounceTimeout);
+			this.debounceTimeout = null;
+		}
 	}
 
 	async refreshCheckboxes(): Promise<void> {
@@ -160,6 +168,9 @@ export class OnTaskView extends ItemView {
 		
 		// Update button states
 		this.updateButtonStates();
+		
+		// Initialize checkbox content tracking for change detection
+		this.initializeCheckboxContentTracking();
 			
 			// Emit refresh event
 			this.eventSystem.emit('view:refreshed', { 
@@ -806,6 +817,84 @@ export class OnTaskView extends ItemView {
 		}, 500);
 	}
 
+	private scheduleDebouncedRefresh(file: any): void {
+		// Clear any existing debounce timeout
+		if (this.debounceTimeout) {
+			clearTimeout(this.debounceTimeout);
+		}
+		
+		// Debounce the refresh to avoid rapid-fire updates during typing
+		this.debounceTimeout = window.setTimeout(async () => {
+			await this.checkForCheckboxChanges(file);
+		}, 1000); // 1 second debounce
+	}
+
+	private async checkForCheckboxChanges(file: any): Promise<void> {
+		try {
+			// Quick check: if we don't have any checkboxes in this file, skip processing entirely
+			const fileCheckboxes = this.checkboxes.filter(checkbox => checkbox.file?.path === file.path);
+			if (fileCheckboxes.length === 0) {
+				return; // No checkboxes in this file, no need to process
+			}
+			
+			// Read the current file content
+			const content = await this.app.vault.read(file);
+			const lines = content.split('\n');
+			
+			let hasCheckboxChanges = false;
+			
+			// Check if any checkbox content has actually changed
+			for (const checkbox of fileCheckboxes) {
+				const lineIndex = checkbox.lineNumber - 1;
+				if (lineIndex >= 0 && lineIndex < lines.length) {
+					const currentLine = lines[lineIndex].trim();
+					const checkboxKey = `${file.path}:${checkbox.lineNumber}`;
+					const lastContent = this.lastCheckboxContent.get(checkboxKey);
+					
+					// Check if this line contains a checkbox and if it has changed
+					if (currentLine.match(/^\s*-\s*\[[^\]]*\]/)) {
+						if (lastContent !== currentLine) {
+							hasCheckboxChanges = true;
+							console.log('OnTask View: Checkbox content changed:', {
+								file: file.path,
+								line: checkbox.lineNumber,
+								old: lastContent,
+								new: currentLine
+							});
+						}
+						// Update the stored content
+						this.lastCheckboxContent.set(checkboxKey, currentLine);
+					}
+				}
+			}
+			
+			if (hasCheckboxChanges) {
+				console.log('OnTask View: Checkbox changes detected, refreshing view');
+				// Emit file:modified event for editor integration
+				this.eventSystem.emit('file:modified', { path: file.path });
+				this.refreshCheckboxes();
+			}
+			// Removed the "no checkbox modifications detected" message to reduce console noise
+		} catch (error) {
+			console.error('OnTask View: Error checking for checkbox changes:', error);
+			// Fallback to refresh if there's an error
+			this.refreshCheckboxes();
+		}
+	}
+
+	private initializeCheckboxContentTracking(): void {
+		// Clear existing tracking
+		this.lastCheckboxContent.clear();
+		
+		// Initialize content tracking for all current checkboxes
+		for (const checkbox of this.checkboxes) {
+			const checkboxKey = `${checkbox.file.path}:${checkbox.lineNumber}`;
+			this.lastCheckboxContent.set(checkboxKey, checkbox.lineContent?.trim() || '');
+		}
+		
+		console.log(`OnTask View: Initialized content tracking for ${this.checkboxes.length} checkboxes`);
+	}
+
 	private setupEventListeners(): void {
 		console.log('OnTask View: Setting up event listeners');
 		
@@ -836,10 +925,16 @@ export class OnTaskView extends ItemView {
 				return;
 			}
 			
+			// Only process markdown files
+			if (!file.path.endsWith('.md')) {
+				return;
+			}
+			
 			// Check if any of our checkboxes are in this file
 			const isRelevantFile = this.checkboxes.some(checkbox => checkbox.file?.path === file.path);
 			if (isRelevantFile) {
-				this.scheduleRefresh();
+				// Only process if we have checkboxes in this file
+				this.scheduleDebouncedRefresh(file);
 			}
 		};
 		

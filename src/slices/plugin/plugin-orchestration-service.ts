@@ -186,13 +186,8 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		});
 		this.eventListeners.push(() => settingsSubscription.unsubscribe());
 
-		// Listen for file modifications
-		const fileModifyListener = (file: any) => {
-			this.eventSystem.emit('file:modified', { path: file.path });
-			this.updateTopTaskStatusBar();
-		};
-		app.vault.on('modify', fileModifyListener);
-		this.eventListeners.push(() => app.vault.off('modify', fileModifyListener));
+		// Note: File modification events are handled by OnTaskView directly
+		// to avoid unnecessary event cascades and improve performance
 
 		// Listen for streams ready
 		const streamsSubscription = this.eventSystem.on('streams:ready', () => {

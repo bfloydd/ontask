@@ -15,6 +15,8 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 	private currentTopTask: any = null;
 	private pendingDecorationUpdate: boolean = false;
 	private updateRequestId: number | null = null;
+	private lastUpdateTime: number = 0;
+	private updateDebounceMs: number = 500; // Debounce updates by 500ms
 
 	constructor(
 		app: App,
@@ -54,41 +56,24 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		// Listen for file changes to update decorations
 		this.eventSystem.on('file:modified', (event) => {
 			console.log('OnTask Editor: File modified event:', event.data.path);
-			if (this.isEnabled()) {
+			// Skip processing for Streams files to avoid unnecessary updates
+			if (event.data.path.includes('/Streams/') || event.data.path.includes('\\Streams\\')) {
+				console.log('OnTask Editor: Skipping Streams file modification');
+				return;
+			}
+			if (this.isEnabled() && event.data.path.endsWith('.md')) {
 				console.log('OnTask Editor: Editor enabled, scheduling update');
 				this.scheduleDecorationUpdate();
 			} else {
-				console.log('OnTask Editor: Editor disabled, skipping update');
+				console.log('OnTask Editor: Editor disabled or non-markdown file, skipping update');
 			}
 		});
 
-		// Listen for workspace changes to update decorations
-		this.app.workspace.on('active-leaf-change', () => {
-			console.log('OnTask Editor: Active leaf change event received');
-			if (this.isEnabled()) {
-				console.log('OnTask Editor: Editor enabled, scheduling update with delay');
-				// Add a small delay to ensure the new file is fully loaded
-				requestAnimationFrame(() => {
-					this.scheduleDecorationUpdate();
-				});
-			} else {
-				console.log('OnTask Editor: Editor disabled, skipping update');
-			}
-		});
+		// Note: Disabled active-leaf-change listener to prevent excessive updates
+		// Editor decorations will be updated via file:modified events when checkboxes change
 
-		// Listen for file open events to update decorations
-		this.app.workspace.on('file-open', (file) => {
-			console.log('OnTask Editor: File open event received:', file?.path);
-			if (this.isEnabled()) {
-				console.log('OnTask Editor: Editor enabled, scheduling update for file open');
-				// Add a small delay to ensure the file is fully loaded
-				setTimeout(() => {
-					this.scheduleDecorationUpdate();
-				}, 50);
-			} else {
-				console.log('OnTask Editor: Editor disabled, skipping update');
-			}
-		});
+		// Note: Disabled file-open listener - editor decorations should only update
+		// when checkbox content actually changes, not just because a file was opened
 
 		// Listen for plugin initialization to trigger initial update
 		this.eventSystem.on('plugin:initialized', () => {
@@ -131,6 +116,14 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 	 * This prevents multiple rapid updates and batches them into a single update
 	 */
 	private scheduleDecorationUpdate(): void {
+		const now = Date.now();
+		
+		// Debounce rapid-fire updates
+		if (now - this.lastUpdateTime < this.updateDebounceMs) {
+			console.log('OnTask Editor: Update debounced, skipping');
+			return;
+		}
+		
 		console.log('OnTask Editor: scheduleDecorationUpdate called, pending:', this.pendingDecorationUpdate);
 		
 		if (this.pendingDecorationUpdate) {
@@ -139,6 +132,7 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		}
 
 		this.pendingDecorationUpdate = true;
+		this.lastUpdateTime = now;
 		console.log('OnTask Editor: Scheduling decoration update');
 		
 		// Cancel any existing request
