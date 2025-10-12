@@ -55,7 +55,8 @@ If your plugin does not need CSS, delete this file.
 
 .ontask-refresh-btn,
 .ontask-only-today-btn,
-.ontask-configure-button {
+.ontask-configure-button,
+.ontask-filter-button {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border: none;
@@ -68,13 +69,15 @@ If your plugin does not need CSS, delete this file.
 
 .ontask-refresh-btn:hover,
 .ontask-only-today-btn:hover,
-.ontask-configure-button:hover {
+.ontask-configure-button:hover,
+.ontask-filter-button:hover {
 	background: var(--interactive-accent-hover);
 }
 
 .ontask-refresh-btn:active,
 .ontask-only-today-btn:active,
-.ontask-configure-button:active {
+.ontask-configure-button:active,
+.ontask-filter-button:active {
 	transform: translateY(1px);
 }
 
@@ -1026,4 +1029,105 @@ If your plugin does not need CSS, delete this file.
 .is-phone .status-config-add-btn {
 	padding: 10px 18px;
 	font-size: 15px;
+}
+
+/* Filter Menu Styles */
+.ontask-filters-menu {
+	font-family: var(--font-interface);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+.ontask-filters-menu h3 {
+	margin: 0;
+	color: var(--text-normal);
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.ontask-filter-checkbox-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px;
+	border-radius: 4px;
+	transition: all 0.15s ease;
+	cursor: pointer;
+}
+
+.ontask-filter-checkbox-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.ontask-filter-checkbox-item input[type="checkbox"] {
+	margin: 0;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+.ontask-filter-checkbox-item label {
+	cursor: pointer;
+	margin: 0;
+	flex: 1;
+}
+
+.ontask-filter-checkbox-item label div:first-child {
+	font-weight: 500;
+	color: var(--text-normal);
+}
+
+.ontask-filter-checkbox-item label div:last-child {
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+/* Mobile responsive for filter menu */
+.is-mobile .ontask-filters-menu {
+	min-width: 280px;
+	max-width: 95vw;
+	font-size: 16px;
+}
+
+.is-mobile .ontask-filter-checkbox-item {
+	padding: 10px;
+	gap: 10px;
+	min-height: 44px;
+}
+
+.is-mobile .ontask-filter-checkbox-item input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+}
+
+.is-mobile .ontask-filter-checkbox-item label div:first-child {
+	font-size: 15px;
+}
+
+.is-mobile .ontask-filter-checkbox-item label div:last-child {
+	font-size: 13px;
+}
+
+.is-phone .ontask-filters-menu {
+	min-width: 260px;
+	max-width: 90vw;
+}
+
+.is-phone .ontask-filter-checkbox-item {
+	padding: 8px;
+	gap: 8px;
+	min-height: 40px;
+}
+
+.is-phone .ontask-filter-checkbox-item input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+}
+
+.is-phone .ontask-filter-checkbox-item label div:first-child {
+	font-size: 14px;
+}
+
+.is-phone .ontask-filter-checkbox-item label div:last-child {
+	font-size: 12px;
 }

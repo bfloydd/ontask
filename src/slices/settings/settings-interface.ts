@@ -18,6 +18,7 @@ export interface OnTaskSettings {
 	includeSubfolders: boolean;
 	initialLoadLimit: number;
 	statusConfigs: StatusConfig[];
+	statusFilters: Record<string, boolean>;
 }
 
 export const DEFAULT_SETTINGS: OnTaskSettings = {
@@ -41,7 +42,20 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 		{ symbol: '<', name: 'Scheduled', description: 'On the calendar', color: '#ffffff', backgroundColor: '#059669' },
 		{ symbol: '>', name: 'Forward', description: 'Another day', color: '#ffffff', backgroundColor: '#7c3aed' },
 		{ symbol: '-', name: 'Cancelled', description: 'Not doing', color: '#ffffff', backgroundColor: '#9ca3af' }
-	]
+	],
+	statusFilters: {
+		' ': true,
+		'x': true,
+		'/': true,
+		'!': true,
+		'?': true,
+		'*': true,
+		'r': true,
+		'b': true,
+		'<': true,
+		'>': true,
+		'-': true
+	}
 };
 
 export interface SettingsChangeEvent {

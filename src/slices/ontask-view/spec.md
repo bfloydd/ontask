@@ -1,12 +1,70 @@
-- Initial load will get a full list of files from strategy method returned file, sort them Z-A by filename (not path), scan through them until 10 tasks are found. Keep going through the files until 10 tasks are found, either hitting the end or continuing.
-- Stop scanning when 10 are found. We do this for performance.
-- Performance is #1, because its very slow on mobile if we just keep scanning files. 
-- We don't need a full up-front count of tasks because it is too costly on performance.
-- When Load More button is pressed, it loads 10 more, looking at the last file used for more in that file, then continuing down the list futher in Z-A order, looking for more tasks to add from those files. Each Load More should keep going through the files until 10 tasks are found, either hitting the end or continuing.
-- Load More logic should track what file we're looking at.
-- No task counts anywhere.
-- In the button, don't bother with the ongoing count total shown.
-- Rendering html of items in Load More should be the same as initial load.
-- If "Checkbox Source" is streams in settings, then we need to check all files in streams, using that strategy.
-- Use the strategy interface. 
-- Streams Strategy should get all files from all streams.
+
+```js
+trackedFiles = [
+  "/FolderB/2025-12-31.md",
+  "/FolderA/2025-12-29.md",
+  "/FolderB/2025-12-28.md",
+  "/FolderA/2025-12-26.md",
+  "/FolderB/2025-12-25.md",
+  "/FolderA/2025-12-23.md",
+  "/FolderB/2025-12-22.md",
+  "/FolderA/2025-12-20.md",
+  							Initial load looks through
+							many files to find 10 tasks. 
+							Then puts the index at 7
+  "/FolderB/2025-12-19.md",
+  "/FolderA/2025-12-19.md",
+  "/FolderB/2025-12-17.md",
+  "/FolderA/2025-12-16.md",
+							- Load More is clicked.
+							- Continues looking at 7. 
+							- Ends at 11, which is the new index.
+							- Final file searched has 5 tasks total,
+							  but we stopped looking at 3/5 tasks 
+							  because that got the total to 10.
+							- New found tasks are appended 
+							  and displayed.
+  "/FolderB/2025-12-14.md",
+  "/FolderB/2025-12-13.md",
+  "/FolderA/2025-12-13.md",
+  "/FolderA/2025-12-11.md",
+  "/FolderB/2025-12-10.md",
+  "/FolderA/2025-12-10.md",
+  "/FolderB/2025-12-08.md",
+  "/FolderA/2025-12-07.md",
+  "/FolderB/2025-12-05.md",
+  "/FolderA/2025-12-04.md",
+							- Load more is clicked.
+							- Continues at 11.
+							- Continues at 4/5 task count within 11.
+							- Then looks through even more 
+							  files to get to 10 tasks, 
+							  ending at 21, the new index.
+							- The file had 1 task and it got us to 10
+							  tasks.
+							- New found tasks are appended 
+							  and displayed.
+  "/FolderA/2025-12-02.md",
+  "/FolderB/2025-12-01.md",
+  "/FolderA/2025-12-01.md"
+]
+```
+
+On Initial Load:
+- Gets files into an indexed array. Use strategy for this.
+- Sorts on filename, Z-A, ignoring path in sort. See image example.
+- Loop through files, looking for tasks, ignoring totally filtered out items. 
+- When 10 tasks are reached, stop totally and remember the total tasks and where we stopped (like 3/5 tasks), and the index within out file list. We now know exactly where to start looking on Load More.
+- Continue until searching through files until 10 tasks are found.
+
+On each Load More:
+- Begin where we left off, file index in trackedFiles array and the task number within the file.
+- Filters are applied and unchecked items are not counted in totals and skipped totally.
+- Looks through as many files as necessary to reach 10 tasks, again and always ignoring filtered out statuses.
+- Append the unfiltered tasks to the OnTaskView page.
+
+Finding tasks:
+- Example of how to find checkbox `- [ALLOWED_BY_FILTER_LIST]` 
+- How the regex might work: `-\s\[[ALLOWED_BY_FILTER_LIST]\]\s.*`
+- The ALLOWED_BY_FILTER_LIST, comma separted list, is found by data statusFilters in data.json where item equals true.
+- Also include a space in the ALLOWED_BY_FILTER_LIST as a synonym to . (to-do task)

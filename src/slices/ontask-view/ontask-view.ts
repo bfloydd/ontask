@@ -20,6 +20,12 @@ export class OnTaskView extends ItemView {
 	private displayedTasksCount: number = 10; // Will be updated from settings
 	private loadMoreButton: HTMLButtonElement | null = null;
 	private lastCheckboxContent: Map<string, string> = new Map(); // Track checkbox content to detect actual changes
+	
+	// File tracking for precise Load More functionality
+	private currentFileIndex: number = 0; // Current position in trackedFiles array
+	private currentTaskIndex: number = 0; // Current task index within the current file
+	private trackedFiles: string[] = []; // Sorted array of all files (Z-A by filename)
+	private isInitialLoad: boolean = true; // Track if this is initial load or Load More
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -65,6 +71,9 @@ export class OnTaskView extends ItemView {
 		refreshButton.addEventListener('click', () => this.refreshCheckboxes());
 		
 		// Create filter buttons
+		const filtersButton = buttonsContainer.createEl('button', { text: 'Filters' });
+		filtersButton.addClass('ontask-filter-button');
+		filtersButton.addEventListener('click', () => this.showFiltersMenu());
 		
 		this.onlyTodayButton = buttonsContainer.createEl('button', { text: 'Show All' });
 		this.onlyTodayButton.addClass('ontask-filter-button');
@@ -128,33 +137,25 @@ export class OnTaskView extends ItemView {
 			// Reset file tracking for fresh start
 			this.checkboxFinderService.resetFileTracking();
 			
-			// Verify content is cleared
+			// Reset our tracking variables for fresh start
+			this.resetTracking();
 			
 			// Show loading state with progress indication
 			const loadingEl = contentArea.createDiv('ontask-loading');
 			loadingEl.textContent = 'Loading checkboxes...';
 			
-			// Remove unnecessary requestAnimationFrame delay
+			// Initialize file list and tracking for fresh start
+			await this.initializeFileTracking(settings.onlyShowToday);
+			this.currentFileIndex = 0;
+			this.currentTaskIndex = 0;
 			
-			// Try file tracking first, fallback to original method if it fails
-			this.checkboxes = await this.checkboxFinderService.findAllCheckboxes(
-				settings.onlyShowToday,
-				settings.initialLoadLimit
-			);
-			
-			// If no checkboxes found with file tracking, try fallback
-			if (this.checkboxes.length === 0) {
-				console.log('OnTask: File tracking found no checkboxes, trying fallback');
-				this.checkboxes = await this.checkboxFinderService.findAllCheckboxesFallback(
-					settings.onlyShowToday,
-					settings.initialLoadLimit
-				);
-			}
+			// Load tasks with proper filtering and tracking
+			this.checkboxes = await this.loadTasksWithFiltering(settings);
 			
 			// Clear loading state
 			loadingEl.remove();
 			
-			// Render checkboxes using the original method for now
+			// Render checkboxes
 			this.renderCheckboxes(contentArea);
 			
 			// Update button states
@@ -162,6 +163,9 @@ export class OnTaskView extends ItemView {
 			
 			// Initialize checkbox content tracking for change detection
 			this.initializeCheckboxContentTracking();
+			
+			// Mark as no longer initial load
+			this.isInitialLoad = false;
 			
 			// Emit refresh event
 			this.eventSystem.emit('view:refreshed', { 
@@ -495,67 +499,29 @@ export class OnTaskView extends ItemView {
 			this.loadMoreButton = null;
 		}
 		
-		// Get current settings to filter tasks
+		// Get current settings
 		const settings = this.settingsService.getSettings();
 		
-		// Load more checkboxes if we don't have enough
-		const totalAvailable = this.checkboxes.length;
-		const needed = this.displayedTasksCount + 10;
+		// Load more tasks using the new tracking system
+		const additionalTasks = await this.loadTasksWithFiltering(settings);
 		
-		if (totalAvailable < needed) {
-			const additionalCheckboxes = await this.checkboxFinderService.findMoreCheckboxes(
-				settings.onlyShowToday
-			);
-			
-			// Merge with existing checkboxes, avoiding duplicates
-			const existingPaths = new Set(this.checkboxes.map(cb => `${cb.file?.path}:${cb.lineNumber}`));
-			const newCheckboxes = additionalCheckboxes.filter(cb => 
-				!existingPaths.has(`${cb.file?.path}:${cb.lineNumber}`)
-			);
-			
-			this.checkboxes.push(...newCheckboxes);
-		}
+		// Add new tasks to existing ones
+		this.checkboxes.push(...additionalTasks);
 		
-		// Calculate how many tasks we've already shown
-		const currentShown = this.displayedTasksCount;
-		const newLimit = this.displayedTasksCount + 10;
-		
-		// Group tasks by file and get the additional tasks to show
-		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
-		let tasksShown = 0;
-		let additionalTasksToRender: any[] = [];
-		
-		// Find additional tasks to render
-		for (const [filePath, fileCheckboxes] of checkboxesByFile) {
-			if (tasksShown >= newLimit) break;
-			
-			const remainingSlots = newLimit - tasksShown;
-			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
-			
-			// Only add tasks that haven't been shown yet
-			const startIndex = Math.max(0, currentShown - tasksShown);
-			const endIndex = Math.min(fileCheckboxes.length, startIndex + tasksToShowFromFile);
-			
-			for (let i = startIndex; i < endIndex; i++) {
-				additionalTasksToRender.push({
-					checkbox: fileCheckboxes[i],
-					filePath: filePath
-				});
-			}
-			
-			tasksShown += tasksToShowFromFile;
-		}
+		// Update displayed count
+		this.displayedTasksCount += additionalTasks.length;
 		
 		// Render the additional tasks
-		this.renderAdditionalTasks(contentArea, additionalTasksToRender);
-		
-		// Update the displayed count
-		this.displayedTasksCount = newLimit;
+		this.renderAdditionalTasks(contentArea, additionalTasks.map(task => ({
+			checkbox: task,
+			filePath: task.file?.path || ''
+		})));
 		
 		// Always add Load More button - it will find more tasks if available
 		this.addLoadMoreButton(contentArea);
 		
-		console.log(`OnTask View: Loaded ${additionalTasksToRender.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${this.checkboxes.length}`);
+		console.log(`OnTask View: Loaded ${additionalTasks.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${this.checkboxes.length}`);
+		console.log(`OnTask View: Current position - file ${this.currentFileIndex}, task ${this.currentTaskIndex}`);
 	}
 
 	private renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
@@ -1289,6 +1255,411 @@ export class OnTaskView extends ItemView {
 		(this.app as any).setting.openTabById(this.plugin.manifest.id);
 	}
 
+
+	private showFiltersMenu(): void {
+		// Remove any existing filter menu
+		const existingMenu = document.querySelector('.ontask-filters-menu');
+		if (existingMenu) {
+			existingMenu.remove();
+		}
+
+		// Create filter menu
+		const menu = document.createElement('div');
+		menu.className = 'ontask-filters-menu';
+		menu.style.position = 'fixed';
+		menu.style.zIndex = '1000';
+		menu.style.background = 'var(--background-primary)';
+		menu.style.border = '1px solid var(--background-modifier-border)';
+		menu.style.borderRadius = '6px';
+		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+		menu.style.padding = '12px';
+		menu.style.minWidth = '300px';
+		menu.style.maxWidth = '400px';
+
+		// Get current settings and status configs
+		const settings = this.settingsService.getSettings();
+		const statusConfigs = this.statusConfigService.getStatusConfigs();
+
+		// Create header
+		const header = menu.createDiv();
+		header.createEl('h3', { text: 'Status Filters' });
+		header.style.marginBottom = '12px';
+		header.style.borderBottom = '1px solid var(--background-modifier-border)';
+		header.style.paddingBottom = '8px';
+
+		// Create checkboxes for each status
+		const checkboxesContainer = menu.createDiv();
+		checkboxesContainer.style.display = 'flex';
+		checkboxesContainer.style.flexDirection = 'column';
+		checkboxesContainer.style.gap = '8px';
+
+		// Track checkbox elements for save functionality
+		const checkboxElements: { [key: string]: HTMLInputElement } = {};
+
+		for (const status of statusConfigs) {
+			const checkboxItem = checkboxesContainer.createDiv();
+			checkboxItem.style.display = 'flex';
+			checkboxItem.style.alignItems = 'center';
+			checkboxItem.style.gap = '8px';
+
+			// Create checkbox
+			const checkbox = document.createElement('input');
+			checkbox.type = 'checkbox';
+			checkbox.id = `filter-${status.symbol}`;
+			checkbox.checked = settings.statusFilters[status.symbol] ?? true;
+			checkboxElements[status.symbol] = checkbox;
+
+			// Create status display
+			const statusDisplay = document.createElement('div');
+			statusDisplay.className = 'ontask-checkbox-display';
+			statusDisplay.setAttribute('data-status', status.symbol);
+			statusDisplay.textContent = this.getStatusDisplayText(status.symbol);
+			statusDisplay.style.fontSize = '12px';
+			statusDisplay.style.minWidth = '24px';
+			statusDisplay.style.height = '20px';
+			statusDisplay.style.display = 'flex';
+			statusDisplay.style.alignItems = 'center';
+			statusDisplay.style.justifyContent = 'center';
+			statusDisplay.style.color = status.color;
+			statusDisplay.style.backgroundColor = status.backgroundColor || 'transparent';
+			statusDisplay.style.border = `1px solid ${status.color}`;
+			statusDisplay.style.borderRadius = '3px';
+
+			// Create label
+			const label = document.createElement('label');
+			label.htmlFor = `filter-${status.symbol}`;
+			label.style.display = 'flex';
+			label.style.flexDirection = 'column';
+			label.style.gap = '2px';
+			label.style.cursor = 'pointer';
+			label.style.flex = '1';
+
+			const nameEl = document.createElement('div');
+			nameEl.textContent = status.name;
+			nameEl.style.fontWeight = '500';
+
+			const descEl = document.createElement('div');
+			descEl.textContent = status.description;
+			descEl.style.fontSize = '12px';
+			descEl.style.color = 'var(--text-muted)';
+
+			label.appendChild(nameEl);
+			label.appendChild(descEl);
+
+			checkboxItem.appendChild(checkbox);
+			checkboxItem.appendChild(statusDisplay);
+			checkboxItem.appendChild(label);
+
+			// Add click handler to the entire item
+			checkboxItem.addEventListener('click', (e) => {
+				if (e.target !== checkbox) {
+					checkbox.checked = !checkbox.checked;
+				}
+			});
+		}
+
+		// Create buttons container
+		const buttonsContainer = menu.createDiv();
+		buttonsContainer.style.display = 'flex';
+		buttonsContainer.style.justifyContent = 'flex-end';
+		buttonsContainer.style.gap = '8px';
+		buttonsContainer.style.marginTop = '12px';
+		buttonsContainer.style.borderTop = '1px solid var(--background-modifier-border)';
+		buttonsContainer.style.paddingTop = '8px';
+
+		// Create Save button
+		const saveButton = buttonsContainer.createEl('button', { text: 'Save' });
+		saveButton.addClass('mod-cta');
+		saveButton.addEventListener('click', async () => {
+			// Collect filter states
+			const newFilters: Record<string, boolean> = {};
+			for (const [symbol, checkbox] of Object.entries(checkboxElements)) {
+				newFilters[symbol] = checkbox.checked;
+			}
+
+			// Update settings
+			await this.settingsService.updateSetting('statusFilters', newFilters);
+			
+			// Close menu
+			menu.remove();
+			
+			// Reset tracking when filters change
+			this.resetTracking();
+			
+			// Refresh the view to apply filters
+			await this.refreshCheckboxes();
+		});
+
+		// Add to document
+		document.body.appendChild(menu);
+
+		// Position the menu
+		this.positionFilterMenu(menu);
+
+		// Close menu when clicking outside
+		const closeMenu = (e: MouseEvent) => {
+			if (!menu.contains(e.target as Node)) {
+				menu.remove();
+				document.removeEventListener('click', closeMenu);
+			}
+		};
+
+		// Use requestAnimationFrame to avoid immediate closure
+		requestAnimationFrame(() => {
+			document.addEventListener('click', closeMenu);
+		});
+	}
+
+	private positionFilterMenu(menu: HTMLElement): void {
+		// Position the menu in the center of the viewport
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+		const menuRect = menu.getBoundingClientRect();
+		const menuWidth = menuRect.width;
+		const menuHeight = menuRect.height;
+
+		const left = (viewportWidth - menuWidth) / 2;
+		const top = (viewportHeight - menuHeight) / 2;
+
+		menu.style.left = `${Math.max(10, left)}px`;
+		menu.style.top = `${Math.max(10, top)}px`;
+	}
+
+	private async initializeFileTracking(onlyShowToday: boolean): Promise<void> {
+		// Get all files from the checkbox finder service
+		const allFiles = await this.getFilesFromStrategies(onlyShowToday);
+		
+		// Sort files by filename Z-A (ignoring path)
+		this.trackedFiles = allFiles.sort((a, b) => {
+			const filenameA = a.split('/').pop() || a;
+			const filenameB = b.split('/').pop() || b;
+			return filenameB.localeCompare(filenameA);
+		});
+		
+		console.log(`OnTask: Initialized file tracking with ${this.trackedFiles.length} files`);
+		console.log('OnTask: First few files:', this.trackedFiles.slice(0, 5));
+	}
+
+	private async getFilesFromStrategies(onlyShowToday: boolean): Promise<string[]> {
+		// Get files from all active strategies
+		const allFiles: string[] = [];
+		
+		// Get files from streams strategy
+		const streamsService = this.checkboxFinderService.getStreamsService();
+		if (streamsService && streamsService.isStreamsPluginAvailable()) {
+			const allStreams = streamsService.getAllStreams();
+			const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');
+			
+			for (const stream of streams) {
+				const streamFolder = this.app.vault.getAbstractFileByPath(stream.folder);
+				if (streamFolder) {
+					if (streamFolder instanceof TFile) {
+						// Single file
+						allFiles.push(stream.folder);
+					} else {
+						// Directory - get all markdown files
+						const streamFiles = this.app.vault.getMarkdownFiles().filter(file => 
+							file.path.startsWith(stream.folder)
+						);
+						allFiles.push(...streamFiles.map(file => file.path));
+					}
+				}
+			}
+		}
+		
+		// Get files from daily notes if available
+		const dailyNotesPlugin = (this.app as any).plugins?.getPlugin('daily-notes');
+		if (dailyNotesPlugin) {
+			const dailyNotes = this.app.vault.getMarkdownFiles().filter(file => {
+				const fileName = file.name.toLowerCase();
+				// Check for common daily note patterns
+				return fileName.match(/\d{4}-\d{2}-\d{2}/) || 
+					   fileName.match(/\d{2}-\d{2}-\d{4}/) ||
+					   fileName.match(/\d{4}\d{2}\d{2}/);
+			});
+			allFiles.push(...dailyNotes.map(file => file.path));
+		}
+		
+		// Get files from custom folder if configured
+		const settings = this.settingsService.getSettings();
+		if (settings.checkboxSource === 'folder' && settings.customFolderPath) {
+			const folderFiles = this.app.vault.getMarkdownFiles().filter(file => 
+				file.path.startsWith(settings.customFolderPath)
+			);
+			allFiles.push(...folderFiles.map(file => file.path));
+		}
+		
+		// Filter by today if needed
+		if (onlyShowToday) {
+			return allFiles.filter(filePath => {
+				const file = this.app.vault.getAbstractFileByPath(filePath);
+				return file && this.isTodayFile(file);
+			});
+		}
+		
+		// Remove duplicates
+		return [...new Set(allFiles)];
+	}
+
+	private isTodayFile(file: any): boolean {
+		const today = new Date();
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, '0');
+		const day = String(today.getDate()).padStart(2, '0');
+		
+		const todayFormats = [
+			`${year}-${month}-${day}`,
+			`${month}-${day}-${year}`,
+			`${day}-${month}-${year}`,
+			`${year}${month}${day}`,
+			`${month}${day}${year}`,
+			`${day}${month}${year}`
+		];
+		
+		const fileName = file.name.toLowerCase();
+		const filePath = file.path.toLowerCase();
+		
+		return todayFormats.some(format => 
+			fileName.includes(format) || filePath.includes(format)
+		);
+	}
+
+	private async loadTasksWithFiltering(settings: any): Promise<any[]> {
+		const targetTasks = this.isInitialLoad ? settings.initialLoadLimit : 10;
+		const loadedTasks: any[] = [];
+		const statusFilters = settings.statusFilters;
+		
+		console.log(`OnTask: Loading ${targetTasks} tasks starting from file index ${this.currentFileIndex}, task index ${this.currentTaskIndex}`);
+		
+		// Create regex pattern for allowed statuses only
+		const allowedStatuses = this.getAllowedStatuses(statusFilters);
+		const checkboxRegex = this.createCheckboxRegex(allowedStatuses);
+		
+		console.log(`OnTask: Using regex pattern: ${checkboxRegex}`);
+		console.log(`OnTask: Allowed statuses: ${allowedStatuses.join(', ')}`);
+		
+		// Loop through files starting from current position
+		for (let fileIndex = this.currentFileIndex; fileIndex < this.trackedFiles.length; fileIndex++) {
+			const filePath = this.trackedFiles[fileIndex];
+			const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+			
+			console.log(`OnTask: Processing file ${fileIndex + 1}/${this.trackedFiles.length}: ${filePath}`);
+			
+			if (!file) {
+				console.log(`OnTask: File not found: ${filePath}`);
+				continue;
+			}
+			
+			try {
+				// Read file content
+				const content = await this.app.vault.read(file);
+				const lines = content.split('\n');
+				
+				// Find checkboxes in this file using regex filtering
+				const fileTasks: any[] = [];
+				for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+					const line = lines[lineIndex];
+					
+					// Use regex to find only allowed checkboxes
+					if (line.match(checkboxRegex)) {
+						fileTasks.push({
+							file: file,
+							lineNumber: lineIndex + 1,
+							lineContent: line.trim(),
+							sourceName: 'file'
+						});
+					}
+				}
+				
+				// Add tasks from this file, starting from current task index if it's the current file
+				const startTaskIndex = (fileIndex === this.currentFileIndex) ? this.currentTaskIndex : 0;
+				const tasksToAdd = fileTasks.slice(startTaskIndex);
+				
+				console.log(`OnTask: Found ${fileTasks.length} tasks in ${filePath}, adding ${tasksToAdd.length} (start from index ${startTaskIndex})`);
+				
+				// Add tasks until we reach the target
+				for (const task of tasksToAdd) {
+					if (loadedTasks.length >= targetTasks) {
+						// We've reached our target, remember where we stopped
+						this.currentFileIndex = fileIndex;
+						this.currentTaskIndex = fileTasks.indexOf(task);
+						console.log(`OnTask: Stopped at file ${fileIndex} (${filePath}), task ${this.currentTaskIndex} of ${fileTasks.length}`);
+						return loadedTasks;
+					}
+					
+					loadedTasks.push(task);
+				}
+				
+				// Update tracking for next file (only if we didn't reach target)
+				if (loadedTasks.length < targetTasks) {
+					this.currentFileIndex = fileIndex + 1;
+					this.currentTaskIndex = 0;
+				}
+				
+			} catch (error) {
+				console.error(`OnTask: Error reading file ${filePath}:`, error);
+				continue;
+			}
+		}
+		
+		console.log(`OnTask: Loaded ${loadedTasks.length} tasks from ${this.trackedFiles.length} files`);
+		return loadedTasks;
+	}
+
+	private getAllowedStatuses(statusFilters: Record<string, boolean>): string[] {
+		const allowedStatuses = Object.entries(statusFilters)
+			.filter(([_, isAllowed]) => isAllowed !== false)
+			.map(([status, _]) => status);
+		
+		// Add space as synonym for dot (to-do task) if dot is allowed
+		if (allowedStatuses.includes('.')) {
+			allowedStatuses.push(' '); // Space is synonym for dot
+		}
+		
+		return allowedStatuses;
+	}
+
+	private createCheckboxRegex(allowedStatuses: string[]): RegExp {
+		if (allowedStatuses.length === 0) {
+			// If no statuses are allowed, match nothing
+			return /^$/; // This will never match
+		}
+		
+		// Escape special regex characters in status symbols
+		const escapedStatuses = allowedStatuses.map(status => 
+			status.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+		);
+		
+		// Create regex pattern: -\s\[(ALLOWED_STATUS_1|ALLOWED_STATUS_2|...)\]\s.*
+		const statusPattern = escapedStatuses.join('|');
+		const regexPattern = `^\\s*-\\s*\\[(${statusPattern})\\]\\s.*`;
+		
+		return new RegExp(regexPattern);
+	}
+
+	private resetTracking(): void {
+		this.currentFileIndex = 0;
+		this.currentTaskIndex = 0;
+		this.trackedFiles = [];
+		this.isInitialLoad = true;
+		this.checkboxes = []; // Clear existing checkboxes
+		console.log('OnTask: Reset tracking for fresh start');
+	}
+
+	private applyStatusFilters(checkboxes: any[], statusFilters: Record<string, boolean>): any[] {
+		if (!statusFilters) {
+			return checkboxes;
+		}
+
+		return checkboxes.filter(checkbox => {
+			// Parse the status symbol from the checkbox content
+			const { statusSymbol } = this.parseCheckboxLine(checkbox.lineContent);
+			
+			// Check if this status is enabled in the filters
+			// Default to true if the status is not in the filters (for backward compatibility)
+			return statusFilters[statusSymbol] !== false;
+		});
+	}
 
 	private async toggleOnlyToday(): Promise<void> {
 		const settings = this.settingsService.getSettings();
