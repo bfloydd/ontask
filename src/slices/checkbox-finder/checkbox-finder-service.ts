@@ -395,12 +395,88 @@ export class CheckboxFinderService {
 	}
 
 	/**
-	 * Check if a file is from today
+	 * Check if a file is from today (based on filename patterns)
 	 */
 	private isTodayFile(file: any): boolean {
 		const today = new Date();
-		const fileDate = new Date(file.stat.mtime);
-		return fileDate.toDateString() === today.toDateString();
+		
+		// Generate multiple date formats that might be used in filenames
+		const todayFormats = this.getTodayDateFormats(today);
+		
+		// Check if filename contains today's date in any common format
+		const fileName = file.name.toLowerCase();
+		const filePath = file.path.toLowerCase();
+		
+		// Check both filename and full path for date patterns
+		for (const dateFormat of todayFormats) {
+			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
+				return true;
+			}
+		}
+		
+		// Check for date patterns in the filename using regex
+		const datePatterns = this.getDatePatterns(today);
+		for (const pattern of datePatterns) {
+			if (pattern.test(fileName) || pattern.test(filePath)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Generate today's date in various formats
+	 */
+	private getTodayDateFormats(today: Date): string[] {
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, '0');
+		const day = String(today.getDate()).padStart(2, '0');
+		const monthName = today.toLocaleDateString('en-US', { month: 'long' });
+		const monthNameShort = today.toLocaleDateString('en-US', { month: 'short' });
+		const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+		const dayNameShort = today.toLocaleDateString('en-US', { weekday: 'short' });
+		
+		return [
+			`${year}-${month}-${day}`,           // 2024-01-15
+			`${month}-${day}-${year}`,            // 01-15-2024
+			`${day}-${month}-${year}`,            // 15-01-2024
+			`${year}${month}${day}`,               // 20240115
+			`${month}${day}${year}`,              // 01152024
+			`${day}${month}${year}`,              // 15012024
+			`${monthName} ${day}, ${year}`,       // January 15, 2024
+			`${monthNameShort} ${day}, ${year}`,  // Jan 15, 2024
+			`${day} ${monthName} ${year}`,        // 15 January 2024
+			`${day} ${monthNameShort} ${year}`,   // 15 Jan 2024
+			`${dayName}, ${monthName} ${day}`,   // Monday, January 15
+			`${dayNameShort}, ${monthName} ${day}`, // Mon, January 15
+			`${dayName}`,                         // Monday
+			`${dayNameShort}`,                    // Mon
+		];
+	}
+
+	/**
+	 * Generate regex patterns for date matching
+	 */
+	private getDatePatterns(today: Date): RegExp[] {
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, '0');
+		const day = String(today.getDate()).padStart(2, '0');
+		
+		return [
+			// YYYY-MM-DD pattern
+			new RegExp(`${year}-${month}-${day}`),
+			// MM-DD-YYYY pattern
+			new RegExp(`${month}-${day}-${year}`),
+			// DD-MM-YYYY pattern
+			new RegExp(`${day}-${month}-${year}`),
+			// YYYYMMDD pattern
+			new RegExp(`${year}${month}${day}`),
+			// MMDDYYYY pattern
+			new RegExp(`${month}${day}${year}`),
+			// DDMMYYYY pattern
+			new RegExp(`${day}${month}${year}`),
+		];
 	}
 
 	/**
