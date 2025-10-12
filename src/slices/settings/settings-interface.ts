@@ -22,7 +22,7 @@ export interface OnTaskSettings {
 }
 
 export const DEFAULT_SETTINGS: OnTaskSettings = {
-	hideCompletedTasks: false,
+	hideCompletedTasks: true,
 	onlyShowToday: false,
 	topTaskColor: 'neutral',
 	showTopTaskInStatusBar: true,

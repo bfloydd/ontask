@@ -35,14 +35,6 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	private renderBasicSettings(containerEl: HTMLElement): void {
 		const settings = this.settingsService.getSettings();
 
-		new Setting(containerEl)
-			.setName('Hide completed tasks')
-			.setDesc('When enabled, completed checkboxes will not be displayed in the task view for better performance')
-			.addToggle(toggle => toggle
-				.setValue(settings.hideCompletedTasks)
-				.onChange(async (value) => {
-					await this.settingsService.updateSetting('hideCompletedTasks', value);
-				}));
 
 		new Setting(containerEl)
 			.setName('Only show today')
