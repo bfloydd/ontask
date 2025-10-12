@@ -14,7 +14,6 @@ export class OnTaskView extends ItemView {
 	private eventSystem: EventSystem;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
-	private hideCompletedButton: HTMLButtonElement;
 	private onlyTodayButton: HTMLButtonElement;
 	private isRefreshing: boolean = false;
 	private isUpdatingStatus: boolean = false;
@@ -66,9 +65,6 @@ export class OnTaskView extends ItemView {
 		refreshButton.addEventListener('click', () => this.refreshCheckboxes());
 		
 		// Create filter buttons
-		this.hideCompletedButton = buttonsContainer.createEl('button', { text: 'Hide Completed' });
-		this.hideCompletedButton.addClass('ontask-filter-button');
-		this.hideCompletedButton.addEventListener('click', () => this.toggleHideCompleted());
 		
 		this.onlyTodayButton = buttonsContainer.createEl('button', { text: 'Show All' });
 		this.onlyTodayButton.addClass('ontask-filter-button');
@@ -142,7 +138,6 @@ export class OnTaskView extends ItemView {
 			
 			// Try file tracking first, fallback to original method if it fails
 			this.checkboxes = await this.checkboxFinderService.findAllCheckboxes(
-				settings.hideCompletedTasks,
 				settings.onlyShowToday,
 				settings.initialLoadLimit
 			);
@@ -151,7 +146,6 @@ export class OnTaskView extends ItemView {
 			if (this.checkboxes.length === 0) {
 				console.log('OnTask: File tracking found no checkboxes, trying fallback');
 				this.checkboxes = await this.checkboxFinderService.findAllCheckboxesFallback(
-					settings.hideCompletedTasks,
 					settings.onlyShowToday,
 					settings.initialLoadLimit
 				);
@@ -510,7 +504,6 @@ export class OnTaskView extends ItemView {
 		
 		if (totalAvailable < needed) {
 			const additionalCheckboxes = await this.checkboxFinderService.findMoreCheckboxes(
-				settings.hideCompletedTasks,
 				settings.onlyShowToday
 			);
 			
@@ -990,7 +983,7 @@ export class OnTaskView extends ItemView {
 		// Listen for settings changes
 		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
 			console.log('OnTask View: Settings changed event received:', event.data.key);
-			if (event.data.key === 'hideCompletedTasks' || event.data.key === 'onlyShowToday') {
+			if (event.data.key === 'onlyShowToday') {
 				console.log('OnTask View: Triggering refresh due to settings change');
 				this.refreshCheckboxes();
 			}
@@ -1296,14 +1289,6 @@ export class OnTaskView extends ItemView {
 		(this.app as any).setting.openTabById(this.plugin.manifest.id);
 	}
 
-	private async toggleHideCompleted(): Promise<void> {
-		const settings = this.settingsService.getSettings();
-		const newValue = !settings.hideCompletedTasks;
-		// Update settings through settings service
-		await this.settingsService.updateSetting('hideCompletedTasks', newValue);
-		this.updateButtonStates();
-		this.refreshCheckboxes();
-	}
 
 	private async toggleOnlyToday(): Promise<void> {
 		const settings = this.settingsService.getSettings();
@@ -1322,14 +1307,6 @@ export class OnTaskView extends ItemView {
 	private updateButtonStates(): void {
 		const settings = this.settingsService.getSettings();
 		
-		// Update Hide Completed button state
-		if (this.hideCompletedButton) {
-			if (settings.hideCompletedTasks) {
-				this.hideCompletedButton.textContent = 'Hide Completed';
-			} else {
-				this.hideCompletedButton.textContent = 'Show Completed';
-			}
-		}
 		
 		// Update Only Today button state
 		if (this.onlyTodayButton) {

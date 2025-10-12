@@ -54,7 +54,6 @@ If your plugin does not need CSS, delete this file.
 }
 
 .ontask-refresh-btn,
-.ontask-hide-completed-btn,
 .ontask-only-today-btn,
 .ontask-configure-button {
 	background: var(--interactive-accent);
@@ -68,14 +67,12 @@ If your plugin does not need CSS, delete this file.
 }
 
 .ontask-refresh-btn:hover,
-.ontask-hide-completed-btn:hover,
 .ontask-only-today-btn:hover,
 .ontask-configure-button:hover {
 	background: var(--interactive-accent-hover);
 }
 
 .ontask-refresh-btn:active,
-.ontask-hide-completed-btn:active,
 .ontask-only-today-btn:active,
 .ontask-configure-button:active {
 	transform: translateY(1px);

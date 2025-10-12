@@ -151,12 +151,6 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 				const checkboxMatch = this.findCheckboxInLine(line);
 				
 				if (checkboxMatch) {
-					// Check if this is a completed checkbox and if we should hide it
-					const isCompleted = this.isCheckboxCompleted(line);
-					if (context.hideCompleted && isCompleted) {
-						continue;
-					}
-					
 					checkboxes.push({
 						file: file,
 						lineNumber: i + 1,

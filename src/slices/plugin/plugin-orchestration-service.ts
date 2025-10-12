@@ -106,7 +106,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 				return;
 			}
 
-			const checkboxes = await checkboxFinderService.findAllCheckboxes(settings.hideCompletedTasks, settings.onlyShowToday);
+			const checkboxes = await checkboxFinderService.findAllCheckboxes(settings.onlyShowToday);
 			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
 			
 			// Emit checkboxes found event

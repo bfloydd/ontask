@@ -9,7 +9,6 @@ export interface StatusConfig {
 }
 
 export interface OnTaskSettings {
-	hideCompletedTasks: boolean;
 	onlyShowToday: boolean;
 	topTaskColor: string;
 	showTopTaskInStatusBar: boolean;
@@ -22,7 +21,6 @@ export interface OnTaskSettings {
 }
 
 export const DEFAULT_SETTINGS: OnTaskSettings = {
-	hideCompletedTasks: true,
 	onlyShowToday: false,
 	topTaskColor: 'neutral',
 	showTopTaskInStatusBar: true,

@@ -78,7 +78,7 @@ export class CheckboxFinderService {
 	 * Find all checkboxes with proper file tracking for performance
 	 * Gets all files from strategy, sorts Z-A by filename, scans until 10 tasks found
 	 */
-	public async findAllCheckboxes(hideCompleted: boolean = false, onlyShowToday: boolean = false, limit?: number): Promise<CheckboxItem[]> {
+	public async findAllCheckboxes(onlyShowToday: boolean = false, limit?: number): Promise<CheckboxItem[]> {
 		// Initialize file list if not done yet
 		if (this.allAvailableFiles.length === 0) {
 			await this.initializeFileList(onlyShowToday);
@@ -103,7 +103,6 @@ export class CheckboxFinderService {
 			}
 
 			const context: CheckboxFinderContext = {
-				hideCompleted,
 				onlyShowToday,
 				limit: targetTasks - allCheckboxes.length, // Only get what we need
 				filePaths: unscannedFiles // Pass specific files to scan
@@ -154,17 +153,16 @@ export class CheckboxFinderService {
 	 * Find more checkboxes for Load More functionality
 	 * Continues from where we left off using file tracking
 	 */
-	public async findMoreCheckboxes(hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+	public async findMoreCheckboxes(onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
 		// Continue from where we left off using file tracking
-		return this.findAllCheckboxes(hideCompleted, onlyShowToday, 10);
+		return this.findAllCheckboxes(onlyShowToday, 10);
 	}
 
 	/**
 	 * Find checkboxes using a specific strategy
 	 */
-	public async findCheckboxesByStrategy(strategyName: string, hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+	public async findCheckboxesByStrategy(strategyName: string, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
 		const context: CheckboxFinderContext = {
-			hideCompleted,
 			onlyShowToday
 		};
 
@@ -185,16 +183,16 @@ export class CheckboxFinderService {
 	/**
 	 * Get checkboxes by source name
 	 */
-	public async getCheckboxesBySource(sourceName: string, hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
-		const allCheckboxes = await this.findAllCheckboxes(hideCompleted, onlyShowToday);
+	public async getCheckboxesBySource(sourceName: string, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+		const allCheckboxes = await this.findAllCheckboxes(onlyShowToday);
 		return allCheckboxes.filter(checkbox => checkbox.sourceName === sourceName);
 	}
 
 	/**
 	 * Get checkboxes by file
 	 */
-	public async getCheckboxesByFile(filePath: string, hideCompleted: boolean = false, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
-		const allCheckboxes = await this.findAllCheckboxes(hideCompleted, onlyShowToday);
+	public async getCheckboxesByFile(filePath: string, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+		const allCheckboxes = await this.findAllCheckboxes(onlyShowToday);
 		return allCheckboxes.filter(checkbox => checkbox.file.path === filePath);
 	}
 
@@ -416,11 +414,10 @@ export class CheckboxFinderService {
 	/**
 	 * Fallback method without file tracking (for debugging)
 	 */
-	public async findAllCheckboxesFallback(hideCompleted: boolean = false, onlyShowToday: boolean = false, limit?: number): Promise<CheckboxItem[]> {
+	public async findAllCheckboxesFallback(onlyShowToday: boolean = false, limit?: number): Promise<CheckboxItem[]> {
 		console.log('OnTask: Using fallback method without file tracking');
 		
 		const context: CheckboxFinderContext = {
-			hideCompleted,
 			onlyShowToday
 			// Don't pass limit - we want to get ALL files from ALL streams, then sort them
 		};

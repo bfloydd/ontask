@@ -147,7 +147,6 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 			const settings = this.settingsService.getSettings();
 			
 			const checkboxes = await this.checkboxFinderService.findAllCheckboxes(
-				settings.hideCompletedTasks,
 				settings.onlyShowToday
 			);
 			
