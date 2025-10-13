@@ -109,8 +109,10 @@ export class OnTaskView extends ItemView {
 	}
 
 	async refreshCheckboxes(): Promise<void> {
+		console.log('OnTask View: refreshCheckboxes called');
 		// Prevent multiple simultaneous refreshes
 		if (this.isRefreshing) {
+			console.log('OnTask View: Already refreshing, skipping');
 			return;
 		}
 		
@@ -151,6 +153,16 @@ export class OnTaskView extends ItemView {
 			
 			// Load tasks with proper filtering and tracking
 			this.checkboxes = await this.loadTasksWithFiltering(settings);
+			console.log('OnTask View: Loaded checkboxes:', this.checkboxes.length);
+			
+			// Process top tasks from the displayed tasks (as per spec)
+			this.processTopTasksFromDisplayedTasks();
+			
+			console.log('OnTask View: Checkbox details after top task processing:', this.checkboxes.map(cb => ({
+				lineContent: cb.lineContent,
+				isTopTask: cb.isTopTask,
+				file: cb.file?.path
+			})));
 			
 			// Clear loading state
 			loadingEl.remove();
@@ -307,7 +319,7 @@ export class OnTaskView extends ItemView {
 			fragment.appendChild(topTaskSection);
 		}
 
-		// Group all checkboxes by file (including the top task)
+		// Group all checkboxes by file (including the top task - it should appear in both hero box and list per spec)
 		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
 		
 		// Sort files by modification date (latest first)
@@ -355,6 +367,15 @@ export class OnTaskView extends ItemView {
 
 		// Find the top task (the winner)
 		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
+		console.log('OnTask View: Looking for top task. Total checkboxes:', this.checkboxes.length);
+		console.log('OnTask View: Top task found:', topTask ? 'YES' : 'NO');
+		if (topTask) {
+			console.log('OnTask View: Top task details:', {
+				lineContent: topTask.lineContent,
+				isTopTask: topTask.isTopTask,
+				file: topTask.file?.path
+			});
+		}
 
 		// Render top task prominently at the top if it exists
 		if (topTask) {
@@ -420,7 +441,7 @@ export class OnTaskView extends ItemView {
 			this.addMobileTouchHandlers(topTaskDisplay, topTask);
 		}
 
-		// Group all checkboxes by file (including the top task)
+		// Group all checkboxes by file (including the top task - it should appear in both hero box and list per spec)
 		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
 		
 		// Sort files by modification date (latest first)
@@ -1881,6 +1902,72 @@ export class OnTaskView extends ItemView {
 		}
 		
 		return fileSection;
+	}
+
+	/**
+	 * Process top tasks from the displayed tasks (as per spec)
+	 * This implements the spec: "Prefer `/`, but fallback to `!`. If one is found in the displayed tasks, put it in the top task."
+	 */
+	private processTopTasksFromDisplayedTasks(): void {
+		console.log('OnTask View: Processing top tasks from displayed tasks');
+		
+		// First, clear any existing top task markers
+		this.checkboxes.forEach(checkbox => {
+			checkbox.isTopTask = false;
+			checkbox.isTopTaskContender = false;
+		});
+		
+		// Find all slash tasks (/) in the displayed tasks
+		const slashTasks = this.checkboxes.filter(checkbox => this.isSlashTopTask(checkbox));
+		// Find all exclamation tasks (!) in the displayed tasks
+		const exclamationTasks = this.checkboxes.filter(checkbox => this.isExclamationTopTask(checkbox));
+		
+		console.log(`OnTask View: Found ${slashTasks.length} slash tasks, ${exclamationTasks.length} exclamation tasks in displayed tasks`);
+		
+		let finalTopTask: any = null;
+		
+		// Prefer `/` tasks, fallback to `!` tasks (as per spec)
+		if (slashTasks.length > 0) {
+			// Sort by file modification time (most recent first)
+			slashTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+			finalTopTask = slashTasks[0];
+			finalTopTask.isTopTask = true;
+			console.log('OnTask View: Selected slash task as top task:', finalTopTask.lineContent);
+		} else if (exclamationTasks.length > 0) {
+			// Sort by file modification time (most recent first)
+			exclamationTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+			finalTopTask = exclamationTasks[0];
+			finalTopTask.isTopTask = true;
+			console.log('OnTask View: Selected exclamation task as top task:', finalTopTask.lineContent);
+		}
+		
+		if (finalTopTask) {
+			console.log('OnTask View: Top task selected:', {
+				lineContent: finalTopTask.lineContent,
+				file: finalTopTask.file?.path,
+				isTopTask: finalTopTask.isTopTask
+			});
+		} else {
+			console.log('OnTask View: No top task found in displayed tasks');
+		}
+	}
+	
+	/**
+	 * Check if a checkbox is a slash top task (/) - matches pattern: - [/] or - [/x] etc.
+	 */
+	private isSlashTopTask(checkbox: any): boolean {
+		const line = checkbox.lineContent;
+		const checkboxMatch = line.match(/^-\s*\[\/([^\]]*)\]/);
+		return checkboxMatch !== null;
+	}
+	
+	/**
+	 * Check if a checkbox is an exclamation top task (!) - matches pattern: - [!] or - [!x] etc.
+	 */
+	private isExclamationTopTask(checkbox: any): boolean {
+		const line = checkbox.lineContent;
+		const checkboxMatch = line.match(/^-\s*\[!([^\]]*)\]/);
+		return checkboxMatch !== null;
 	}
 
 	/**
