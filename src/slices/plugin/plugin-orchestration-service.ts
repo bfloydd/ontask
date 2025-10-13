@@ -233,7 +233,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		// Add top task status bar item
 		this.topTaskStatusBarItem = plugin.addStatusBarItem();
 		console.log('OnTask: Status bar item created', this.topTaskStatusBarItem);
-		this.topTaskStatusBarItem.addClass('ontask-top-task-status');
+		this.topTaskStatusBarItem.addClass('ontask-toptask-hero-status');
 		this.topTaskStatusBarItem.style.cursor = 'pointer';
 		this.topTaskStatusBarItem.style.opacity = '0.7';
 		this.topTaskStatusBarItem.style.pointerEvents = 'auto';

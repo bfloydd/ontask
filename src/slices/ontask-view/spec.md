@@ -50,21 +50,28 @@ trackedFiles = [
 ]
 ```
 
-On Initial Load:
+## On Initial Load:
 - Gets files into an indexed array. Use strategy for this.
 - Sorts on filename, Z-A, ignoring path in sort. See image example.
 - Loop through files, looking for tasks, ignoring totally filtered out items. 
 - When 10 tasks are reached, stop totally and remember the total tasks and where we stopped (like 3/5 tasks), and the index within out file list. We now know exactly where to start looking on Load More.
 - Continue until searching through files until 10 tasks are found.
 
-On each Load More:
+## On each Load More:
 - Begin where we left off, file index in trackedFiles array and the task number within the file.
 - Filters are applied and unchecked items are not counted in totals and skipped totally.
 - Looks through as many files as necessary to reach 10 tasks, again and always ignoring filtered out statuses.
 - Append the unfiltered tasks to the OnTaskView page.
 
-Finding tasks:
+## Finding tasks:
 - Example of how to find checkbox `- [ALLOWED_BY_FILTER_LIST]` 
 - How the regex might work: `-\s\[[ALLOWED_BY_FILTER_LIST]\]\s.*`
 - The ALLOWED_BY_FILTER_LIST, comma separted list, is found by data statusFilters in data.json where item equals true.
 - Also include a space in the ALLOWED_BY_FILTER_LIST as a synonym to . (to-do task)
+
+## Top task:
+- Top task is identified by an algorithm - Prefer `/`, but fallback to `!`.
+- When a top task is found, it emits an event that is caught by other handlers in the plugin; handlers listed here:
+  - Handler 1: Hero section in OnTaskView. The Hero section (ontask-toptask-hero-section) shows the top task but it also remains in the task list.
+  - Handler 2: ontask-toptask-hero-content. 
+  - Handler 3: Status bar top-task visual. The status bar picks that up and shows the updated top-task.

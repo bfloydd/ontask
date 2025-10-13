@@ -208,7 +208,7 @@ export class OnTaskView extends ItemView {
 		}
 		
 		// Find the existing top task section
-		const existingTopTaskSection = contentArea.querySelector('.ontask-top-task-section');
+		const existingTopTaskSection = contentArea.querySelector('.ontask-toptask-hero-section');
 		
 		// Find the current top task
 		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
@@ -224,7 +224,7 @@ export class OnTaskView extends ItemView {
 				}
 				
 				// Update the top task text
-				const topTaskText = existingTopTaskSection.querySelector('.ontask-top-task-text');
+				const topTaskText = existingTopTaskSection.querySelector('.ontask-toptask-hero-text');
 				if (topTaskText) {
 					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 					topTaskText.textContent = remainingText || 'Top Task';
@@ -243,19 +243,19 @@ export class OnTaskView extends ItemView {
 	}
 
 	private createTopTaskSection(contentArea: HTMLElement, topTask: any): void {
-		const topTaskSection = contentArea.createDiv('ontask-top-task-section');
+		const topTaskSection = contentArea.createDiv('ontask-toptask-hero-section');
 		topTaskSection.addClass('ontask-file-section');
 		
 		// Top task header
-		const topTaskHeader = topTaskSection.createDiv('ontask-file-header');
+		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
 		
 		// Top task display
-		const topTaskDisplay = topTaskSection.createDiv('ontask-top-task-display');
-		topTaskDisplay.addClass('ontask-top-task-item');
+		const topTaskDisplay = topTaskSection.createDiv('ontask-toptask-hero-display');
+		topTaskDisplay.addClass('ontask-toptask-hero-item');
 		
 		// Create top task content
-		const topTaskContent = topTaskDisplay.createDiv('ontask-top-task-content');
+		const topTaskContent = topTaskDisplay.createDiv('ontask-toptask-hero-content');
 		
 		// Top task status display
 		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
@@ -268,7 +268,7 @@ export class OnTaskView extends ItemView {
 		});
 		
 		// Top task text
-		const topTaskText = topTaskDisplay.createDiv('ontask-top-task-text');
+		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
 		topTaskText.textContent = remainingText || 'Top Task';
 		topTaskText.style.cursor = 'pointer';
 		topTaskText.addEventListener('click', () => {
@@ -276,7 +276,7 @@ export class OnTaskView extends ItemView {
 		});
 		
 		// Top task source
-		const topTaskSource = topTaskDisplay.createDiv('ontask-top-task-source');
+		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
 		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
 		topTaskSource.style.fontSize = '12px';
 		topTaskSource.style.color = 'var(--text-muted)';
@@ -319,7 +319,7 @@ export class OnTaskView extends ItemView {
 			fragment.appendChild(topTaskSection);
 		}
 
-		// Group all checkboxes by file (including the top task - it should appear in both hero box and list per spec)
+		// Group all checkboxes by file (including the top task - it should appear in both the Hero section and list per spec)
 		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
 		
 		// Sort files by modification date (latest first)
@@ -379,19 +379,19 @@ export class OnTaskView extends ItemView {
 
 		// Render top task prominently at the top if it exists
 		if (topTask) {
-			const topTaskSection = contentArea.createDiv('ontask-top-task-section');
+			const topTaskSection = contentArea.createDiv('ontask-toptask-hero-section');
 			topTaskSection.addClass('ontask-file-section');
 			
 			// Top task header
-			const topTaskHeader = topTaskSection.createDiv('ontask-file-header');
+			const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 			topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
 			
 			// Top task display
-			const topTaskDisplay = topTaskSection.createDiv('ontask-top-task-display');
-			topTaskDisplay.addClass('ontask-top-task-item');
+			const topTaskDisplay = topTaskSection.createDiv('ontask-toptask-hero-display');
+			topTaskDisplay.addClass('ontask-toptask-hero-item');
 			
 			// Create top task content
-			const topTaskContent = topTaskDisplay.createDiv('ontask-top-task-content');
+			const topTaskContent = topTaskDisplay.createDiv('ontask-toptask-hero-content');
 			
 			// Top task status display with colors
 			const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
@@ -412,7 +412,7 @@ export class OnTaskView extends ItemView {
 			});
 			
 			// Top task text
-			const topTaskText = topTaskDisplay.createDiv('ontask-top-task-text');
+			const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
 			topTaskText.textContent = remainingText || 'Top Task';
 			topTaskText.style.cursor = 'pointer';
 			topTaskText.addEventListener('click', () => {
@@ -420,7 +420,7 @@ export class OnTaskView extends ItemView {
 			});
 			
 			// Top task source
-			const topTaskSource = topTaskDisplay.createDiv('ontask-top-task-source');
+			const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
 			topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
 			topTaskSource.style.fontSize = '12px';
 			topTaskSource.style.color = 'var(--text-muted)';
@@ -441,7 +441,7 @@ export class OnTaskView extends ItemView {
 			this.addMobileTouchHandlers(topTaskDisplay, topTask);
 		}
 
-		// Group all checkboxes by file (including the top task - it should appear in both hero box and list per spec)
+		// Group all checkboxes by file (including the top task - it should appear in both the Hero section and list per spec)
 		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
 		
 		// Sort files by modification date (latest first)
@@ -695,7 +695,7 @@ export class OnTaskView extends ItemView {
 		
 		// Add top task indicator
 		if (checkbox.isTopTask) {
-			checkboxEl.addClass('ontask-top-task');
+			checkboxEl.addClass('ontask-toptask-hero');
 		}
 		
 		// Create checkbox container
@@ -1812,18 +1812,18 @@ export class OnTaskView extends ItemView {
 	 */
 	private createTopTaskSectionElement(topTask: any): HTMLElement {
 		const topTaskSection = document.createElement('div');
-		topTaskSection.className = 'ontask-top-task-section ontask-file-section';
+		topTaskSection.className = 'ontask-toptask-hero-section ontask-file-section';
 		
 		// Top task header
-		const topTaskHeader = topTaskSection.createDiv('ontask-file-header');
+		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
 		
 		// Top task display
-		const topTaskDisplay = topTaskSection.createDiv('ontask-top-task-display');
-		topTaskDisplay.addClass('ontask-top-task-item');
+		const topTaskDisplay = topTaskSection.createDiv('ontask-toptask-hero-display');
+		topTaskDisplay.addClass('ontask-toptask-hero-item');
 		
 		// Create top task content
-		const topTaskContent = topTaskDisplay.createDiv('ontask-top-task-content');
+		const topTaskContent = topTaskDisplay.createDiv('ontask-toptask-hero-content');
 		
 		// Top task status display with colors
 		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
@@ -1844,7 +1844,7 @@ export class OnTaskView extends ItemView {
 		});
 		
 		// Top task text
-		const topTaskText = topTaskDisplay.createDiv('ontask-top-task-text');
+		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
 		topTaskText.textContent = remainingText || 'Top Task';
 		topTaskText.style.cursor = 'pointer';
 		topTaskText.addEventListener('click', () => {
@@ -1852,7 +1852,7 @@ export class OnTaskView extends ItemView {
 		});
 		
 		// Top task source
-		const topTaskSource = topTaskDisplay.createDiv('ontask-top-task-source');
+		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
 		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
 		topTaskSource.style.fontSize = '12px';
 		topTaskSource.style.color = 'var(--text-muted)';

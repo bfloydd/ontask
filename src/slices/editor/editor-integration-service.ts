@@ -214,14 +214,14 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		console.log('OnTask Editor: Workspace root children count:', workspaceRoot.children.length);
 
 		// Check if overlay already exists in the workspace root
-		const existingOverlay = workspaceRoot.querySelector('.ontask-top-task-overlay');
+		const existingOverlay = workspaceRoot.querySelector('.ontask-toptask-hero-overlay');
 		if (existingOverlay) {
 			return; // Don't create duplicate
 		}
 
 		// Create top task bar element
 		const topTaskBar = workspaceRoot.createEl('div', {
-			cls: 'ontask-top-task-overlay',
+			cls: 'ontask-toptask-hero-overlay',
 			attr: {
 				'data-top-task': 'true'
 			}
@@ -232,10 +232,10 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		const displayText = remainingText || 'Top Task';
 		
 		topTaskBar.innerHTML = `
-			<div class="ontask-top-task-content">
-				<span class="ontask-top-task-icon">🔥</span>
-				<span class="ontask-top-task-text">${displayText}</span>
-				<span class="ontask-top-task-source">From: ${topTask.file.name}</span>
+			<div class="ontask-toptask-hero-content">
+				<span class="ontask-toptask-hero-icon">🔥</span>
+				<span class="ontask-toptask-hero-text">${displayText}</span>
+				<span class="ontask-toptask-hero-source">From: ${topTask.file.name}</span>
 			</div>
 		`;
 
@@ -284,7 +284,7 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		// Also remove any orphaned overlays from workspace root
 		const workspaceRoot = document.querySelector('.workspace-split.mod-vertical.mod-root');
 		if (workspaceRoot) {
-			const overlays = workspaceRoot.querySelectorAll('.ontask-top-task-overlay');
+			const overlays = workspaceRoot.querySelectorAll('.ontask-toptask-hero-overlay');
 			overlays.forEach((overlay: HTMLElement) => {
 				overlay.remove();
 			});

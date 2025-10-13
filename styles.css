@@ -124,10 +124,6 @@ If your plugin does not need CSS, delete this file.
 	background: var(--background-primary);
 }
 
-.ontask-file-section:not(:last-child) {
-	/* border-bottom: 2px solid var(--background-modifier-border); */
-}
-
 .ontask-file-header {
 	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-modifier-border) 100%);
 	padding: 14px 16px;
@@ -451,7 +447,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Top Task Section Styles */
-.ontask-top-task-section {
+.ontask-toptask-hero-section {
 	margin-bottom: 25px;
 	border: 8px solid var(--text-error);
 	border-radius: 10px;
@@ -461,7 +457,7 @@ If your plugin does not need CSS, delete this file.
 	position: relative;
 }
 
-.ontask-top-task-section::before {
+.ontask-toptask-hero-section::before {
 	content: '';
 	position: absolute;
 	top: 0;
@@ -471,17 +467,29 @@ If your plugin does not need CSS, delete this file.
 	background: linear-gradient(90deg, var(--text-error), var(--text-warning), var(--text-accent));
 }
 
-.ontask-top-task-header {
-	background: var(--text-error);
-	color: var(--text-on-accent);
-	padding: 12px 15px;
+.ontask-toptask-hero-header {
+	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-modifier-border) 100%);
+	padding: 14px 16px;
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	flex-direction: column;
+	gap: 4px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	position: relative;
 }
 
-.ontask-top-task-header h2 {
+.ontask-toptask-hero-header::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(90deg, transparent 0%, var(--text-accent) 50%, transparent 100%);
+}
+
+.ontask-toptask-hero-header h3 {
 	margin: 0;
+	color: var(--text-normal);
 	font-size: 16px;
 	font-weight: 700;
 	display: flex;
@@ -489,31 +497,31 @@ If your plugin does not need CSS, delete this file.
 	gap: 8px;
 }
 
-.ontask-top-task-source {
+.ontask-toptask-hero-source {
 	font-size: 11px;
 	opacity: 0.9;
 	font-style: italic;
 }
 
-.ontask-top-task-content {
+.ontask-toptask-hero-content {
 	padding: 17px;
 }
 
-.ontask-top-task-item {
+.ontask-toptask-hero-item {
 	border: none !important;
 	background: var(--background-primary);
 	border-radius: 6px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.ontask-top-task-item .ontask-checkbox-label {
+.ontask-toptask-hero-item .ontask-checkbox-label {
 	background: var(--background-secondary);
 	border: 1px solid var(--background-modifier-border);
 	padding: 8px 12px;
 	border-radius: 4px;
 }
 
-.ontask-top-task-item .ontask-checkbox-display {
+.ontask-toptask-hero-item .ontask-checkbox-display {
 	font-size: 14px;
 	font-weight: bold;
 	min-width: 24px;
@@ -523,13 +531,13 @@ If your plugin does not need CSS, delete this file.
 	color: var(--text-on-accent);
 }
 
-.ontask-top-task-item .ontask-checkbox-text {
+.ontask-toptask-hero-item .ontask-checkbox-text {
 	font-size: 14px;
 	font-weight: 500;
 	color: var(--text-normal);
 }
 
-.ontask-top-task-item .ontask-link-btn {
+.ontask-toptask-hero-item .ontask-link-btn {
 	opacity: 1;
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
@@ -537,7 +545,7 @@ If your plugin does not need CSS, delete this file.
 	font-weight: 500;
 }
 
-.ontask-top-task-item .ontask-link-btn:hover {
+.ontask-toptask-hero-item .ontask-link-btn:hover {
 	background: var(--interactive-accent-hover);
 	opacity: 1;
 }
@@ -578,23 +586,23 @@ If your plugin does not need CSS, delete this file.
 	font-size: 16px;
 }
 
-.is-mobile .ontask-top-task-header {
+.is-mobile .ontask-toptask-hero-header {
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 4px;
 	padding: 10px 12px;
 }
 
-.is-mobile .ontask-top-task-content {
+.is-mobile .ontask-toptask-hero-content {
 	padding: 12px;
 }
 
-.is-mobile .ontask-top-task-item {
+.is-mobile .ontask-toptask-hero-item {
 	padding: 10px;
 }
 
 /* Status Bar Top Task Styles */
-.ontask-top-task-status {
+.ontask-toptask-hero-status {
 	font-weight: 500;
 }
 
@@ -686,7 +694,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Editor Top Task Overlay Styles */
-.ontask-top-task-overlay {
+.ontask-toptask-hero-overlay {
 	display: block;
 	width: 100%;
 	background: var(--background-primary);
@@ -705,28 +713,28 @@ If your plugin does not need CSS, delete this file.
 	z-index: 10;
 }
 
-.ontask-top-task-overlay:hover {
+.ontask-toptask-hero-overlay:hover {
 	background: var(--background-modifier-hover);
 }
 
-.ontask-top-task-content {
+.ontask-toptask-hero-content {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 }
 
-.ontask-top-task-icon {
+.ontask-toptask-hero-icon {
 	font-size: 12px;
 	color: var(--text-error);
 }
 
-.ontask-top-task-text {
+.ontask-toptask-hero-text {
 	flex: 1;
 	color: var(--text-normal);
 	font-weight: 500;
 }
 
-.ontask-top-task-source {
+.ontask-toptask-hero-source {
 	font-size: 9px;
 	color: var(--text-muted);
 	font-style: italic;
@@ -734,39 +742,39 @@ If your plugin does not need CSS, delete this file.
 }
 
 /* Mobile responsive for editor overlay */
-.is-mobile .ontask-top-task-overlay {
+.is-mobile .ontask-toptask-hero-overlay {
 	padding: 3px 8px;
 	font-size: 13px;
 	min-height: 22px;
 }
 
-.is-mobile .ontask-top-task-content {
+.is-mobile .ontask-toptask-hero-content {
 	gap: 6px;
 }
 
-.is-mobile .ontask-top-task-icon {
+.is-mobile .ontask-toptask-hero-icon {
 	font-size: 14px;
 }
 
-.is-mobile .ontask-top-task-source {
+.is-mobile .ontask-toptask-hero-source {
 	font-size: 10px;
 }
 
-.is-phone .ontask-top-task-overlay {
+.is-phone .ontask-toptask-hero-overlay {
 	padding: 2px 6px;
 	font-size: 12px;
 	min-height: 20px;
 }
 
-.is-phone .ontask-top-task-content {
+.is-phone .ontask-toptask-hero-content {
 	gap: 4px;
 }
 
-.is-phone .ontask-top-task-icon {
+.is-phone .ontask-toptask-hero-icon {
 	font-size: 12px;
 }
 
-.is-phone .ontask-top-task-source {
+.is-phone .ontask-toptask-hero-source {
 	font-size: 9px;
 }
 
