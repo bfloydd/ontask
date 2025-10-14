@@ -16,7 +16,7 @@ export interface OnTaskSettings {
 	checkboxSource: 'streams' | 'daily-notes' | 'folder';
 	customFolderPath: string;
 	includeSubfolders: boolean;
-	initialLoadLimit: number;
+	loadMoreLimit: number;
 	statusConfigs: StatusConfig[];
 	statusFilters: Record<string, boolean>;
 }
@@ -29,7 +29,7 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	checkboxSource: 'streams',
 	customFolderPath: '',
 	includeSubfolders: true,
-	initialLoadLimit: 10,
+	loadMoreLimit: 10,
 	statusConfigs: [
 		{ symbol: ' ', name: 'To-do', description: 'Not started', color: '#6b7280', backgroundColor: 'transparent' },
 		{ symbol: 'x', name: 'Done', description: 'Completed', color: '#ffffff', backgroundColor: '#10b981' },

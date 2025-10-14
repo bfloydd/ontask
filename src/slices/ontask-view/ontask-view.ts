@@ -25,7 +25,6 @@ export class OnTaskView extends ItemView {
 	private currentFileIndex: number = 0; // Current position in trackedFiles array
 	private currentTaskIndex: number = 0; // Current task index within the current file
 	private trackedFiles: string[] = []; // Sorted array of all files (Z-A by filename)
-	private isInitialLoad: boolean = true; // Track if this is initial load or Load More
 
 	/**
 	 * Top task configuration - easily modifiable priority order
@@ -155,7 +154,7 @@ export class OnTaskView extends ItemView {
 			const settings = this.settingsService.getSettings();
 			
 			// Reset pagination state using settings
-			this.displayedTasksCount = settings.initialLoadLimit;
+			this.displayedTasksCount = settings.loadMoreLimit;
 			this.loadMoreButton = null;
 			
 			// Reset file tracking for fresh start
@@ -198,8 +197,6 @@ export class OnTaskView extends ItemView {
 			// Initialize checkbox content tracking for change detection
 			this.initializeCheckboxContentTracking();
 			
-			// Mark as no longer initial load
-			this.isInitialLoad = false;
 			
 			// Emit refresh event
 			this.eventSystem.emit('view:refreshed', { 
@@ -1568,7 +1565,7 @@ export class OnTaskView extends ItemView {
 	}
 
 	private async loadTasksWithFiltering(settings: any): Promise<any[]> {
-		const targetTasks = this.isInitialLoad ? settings.initialLoadLimit : 10;
+		const targetTasks = settings.loadMoreLimit;
 		const loadedTasks: any[] = [];
 		const statusFilters = settings.statusFilters;
 		
@@ -1684,7 +1681,6 @@ export class OnTaskView extends ItemView {
 		this.currentFileIndex = 0;
 		this.currentTaskIndex = 0;
 		this.trackedFiles = [];
-		this.isInitialLoad = true;
 		this.checkboxes = []; // Clear existing checkboxes
 		console.log('OnTask: Reset tracking for fresh start');
 	}

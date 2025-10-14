@@ -74,14 +74,14 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Initial load limit')
-			.setDesc('Number of tasks to load initially for better performance. Load More will fetch additional tasks as needed.')
+			.setName('Load more limit')
+			.setDesc('Number of tasks to load per batch for better performance. This limit applies to both initial load and all subsequent Load More operations.')
 			.addText(text => text
-				.setValue(settings.initialLoadLimit.toString())
+				.setValue(settings.loadMoreLimit.toString())
 				.setPlaceholder('10')
 				.onChange(async (value) => {
 					const numValue = parseInt(value) || 10;
-					await this.settingsService.updateSetting('initialLoadLimit', numValue);
+					await this.settingsService.updateSetting('loadMoreLimit', numValue);
 				}));
 	}
 
