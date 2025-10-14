@@ -140,6 +140,9 @@ export class CheckboxFinderService {
 		// Remove duplicates but preserve original order (no sorting)
 		const uniqueCheckboxes = this.removeDuplicateCheckboxes(allCheckboxes);
 		
+		// Process top tasks from the found checkboxes
+		this.processTopTasks(uniqueCheckboxes);
+		
 		console.log(`OnTask: Found ${uniqueCheckboxes.length} checkboxes from ${filesScanned.length} files`);
 		console.log(`OnTask: Scanned files:`, filesScanned);
 		console.log(`OnTask: Total scanned files: ${this.scannedFiles.size} of ${this.allAvailableFiles.length}`);
@@ -543,5 +546,73 @@ export class CheckboxFinderService {
 			size: this.fileContentCache.size,
 			lastRefresh: this.lastRefreshTime
 		};
+	}
+
+	/**
+	 * Process top tasks from the found checkboxes
+	 * This implements the spec: "Prefer `/`, but fallback to `!`. If one is found in the displayed tasks, put it in the top task."
+	 */
+	private processTopTasks(checkboxes: CheckboxItem[]): void {
+		console.log('OnTask CheckboxFinder: Processing top tasks from', checkboxes.length, 'checkboxes');
+		
+		// First, clear any existing top task markers
+		checkboxes.forEach(checkbox => {
+			checkbox.isTopTask = false;
+			checkbox.isTopTaskContender = false;
+		});
+		
+		// Find all slash tasks (/) in the checkboxes
+		const slashTasks = checkboxes.filter(checkbox => this.isSlashTopTask(checkbox));
+		// Find all exclamation tasks (!) in the checkboxes
+		const exclamationTasks = checkboxes.filter(checkbox => this.isExclamationTopTask(checkbox));
+		
+		console.log(`OnTask CheckboxFinder: Found ${slashTasks.length} slash tasks, ${exclamationTasks.length} exclamation tasks`);
+		
+		let finalTopTask: CheckboxItem | null = null;
+		
+		// Prefer `/` tasks, fallback to `!` tasks (as per spec)
+		if (slashTasks.length > 0) {
+			// Sort by file modification time (most recent first)
+			slashTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+			finalTopTask = slashTasks[0];
+			finalTopTask.isTopTask = true;
+			console.log('OnTask CheckboxFinder: Selected slash task as top task:', finalTopTask.lineContent);
+		} else if (exclamationTasks.length > 0) {
+			// Sort by file modification time (most recent first)
+			exclamationTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+			finalTopTask = exclamationTasks[0];
+			finalTopTask.isTopTask = true;
+			console.log('OnTask CheckboxFinder: Selected exclamation task as top task:', finalTopTask.lineContent);
+		}
+		
+		if (finalTopTask) {
+			console.log('OnTask CheckboxFinder: Top task selected:', {
+				lineContent: finalTopTask.lineContent,
+				file: finalTopTask.file?.path,
+				isTopTask: finalTopTask.isTopTask
+			});
+		} else {
+			console.log('OnTask CheckboxFinder: No top task found in checkboxes');
+		}
+	}
+
+	/**
+	 * Check if a checkbox is a slash top task (/) - matches pattern: - [/] or - [/x] etc.
+	 */
+	private isSlashTopTask(checkbox: CheckboxItem): boolean {
+		const trimmedLine = checkbox.lineContent.trim();
+		// Look for checkbox pattern with slash: - [/] or - [/x] etc.
+		const slashMatch = trimmedLine.match(/^-\s*\[\/\w*\]\s*(.*)$/);
+		return !!slashMatch;
+	}
+
+	/**
+	 * Check if a checkbox is an exclamation top task (!) - matches pattern: - [!] or - [!x] etc.
+	 */
+	private isExclamationTopTask(checkbox: CheckboxItem): boolean {
+		const trimmedLine = checkbox.lineContent.trim();
+		// Look for checkbox pattern with exclamation: - [!] or - [!x] etc.
+		const exclamationMatch = trimmedLine.match(/^-\s*\[!\w*\]\s*(.*)$/);
+		return !!exclamationMatch;
 	}
 }

@@ -1947,8 +1947,16 @@ export class OnTaskView extends ItemView {
 				file: finalTopTask.file?.path,
 				isTopTask: finalTopTask.isTopTask
 			});
+			
+			// Emit top task found event for other components to use
+			this.eventSystem.emit('top-task:found', {
+				topTask: finalTopTask
+			});
 		} else {
 			console.log('OnTask View: No top task found in displayed tasks');
+			
+			// Emit top task cleared event
+			this.eventSystem.emit('top-task:cleared', {});
 		}
 	}
 	

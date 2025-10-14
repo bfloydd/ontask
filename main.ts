@@ -38,7 +38,7 @@ export default class OnTask extends Plugin {
 		this.settings = this.settingsService.getSettings();
 		await this.orchestrator.initialize();
 		await this.editorIntegrationService.initialize();
-
+		
 		// Add settings tab
 		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService));
 
@@ -53,7 +53,6 @@ export default class OnTask extends Plugin {
 				}
 			}
 		});
-
 	}
 
 	async onunload() {

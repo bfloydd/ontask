@@ -688,11 +688,7 @@ If your plugin does not need CSS, delete this file.
 	height: auto !important;
 }
 
-/* Workspace root positioning for overlay */
-.workspace-split.mod-vertical.mod-root {
-	position: relative;
-	padding-bottom: 30px; /* Add space for the overlay at the bottom */
-}
+/* Note: Workspace root positioning removed - overlay now uses sticky positioning within editor containers */
 
 /* Editor Top Task Overlay Styles */
 .ontask-toptask-hero-overlay {
@@ -707,11 +703,10 @@ If your plugin does not need CSS, delete this file.
 	transition: all 0.2s ease;
 	box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.05);
 	min-height: 20px;
-	position: absolute;
+	position: sticky;
 	bottom: 0;
-	left: 0;
-	right: 0;
 	z-index: 10;
+	flex-shrink: 0; /* Prevent shrinking in flex containers */
 }
 
 .ontask-toptask-hero-overlay:hover {

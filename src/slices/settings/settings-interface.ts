@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	onlyShowToday: false,
 	topTaskColor: 'neutral',
 	showTopTaskInStatusBar: true,
-	showTopTaskInEditor: false,
+	showTopTaskInEditor: true,
 	checkboxSource: 'streams',
 	customFolderPath: '',
 	includeSubfolders: true,
