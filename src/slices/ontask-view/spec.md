@@ -54,13 +54,13 @@ trackedFiles = [
 - Gets files into an indexed array. Use strategy for this.
 - Sorts on filename, Z-A, ignoring path in sort. See image example.
 - Loop through files, looking for tasks, ignoring totally filtered out items. 
-- When 10 tasks are reached, stop totally and remember the total tasks and where we stopped (like 3/5 tasks), and the index within out file list. We now know exactly where to start looking on Load More.
-- Continue until searching through files until 10 tasks are found.
+- When the configured load more limit (default 10) tasks are reached, stop totally and remember the total tasks within the file and where we stopped (like 3/5 tasks within the file), and the index within out file list. We now know exactly where to start looking on Load More.
+- Continue until searching through files until the load more limit tasks are found.
 
 ## On each Load More:
 - Begin where we left off, file index in trackedFiles array and the task number within the file.
 - Filters are applied and unchecked items are not counted in totals and skipped totally.
-- Looks through as many files as necessary to reach 10 tasks, again and always ignoring filtered out statuses.
+- Looks through as many files as necessary to reach the configured load more limit tasks, again and always ignoring filtered out statuses.
 - Append the unfiltered tasks to the OnTaskView page.
 
 ## Finding tasks:
