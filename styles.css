@@ -41,10 +41,8 @@
 	align-items: center;
 }
 
-.ontask-refresh-btn,
-.ontask-only-today-btn,
-.ontask-configure-button,
-.ontask-filter-button {
+/* Standard button styling for all header buttons */
+.ontask-header-button {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border: none;
@@ -55,17 +53,11 @@
 	transition: all 0.2s ease;
 }
 
-.ontask-refresh-btn:hover,
-.ontask-only-today-btn:hover,
-.ontask-configure-button:hover,
-.ontask-filter-button:hover {
+.ontask-header-button:hover {
 	background: var(--interactive-accent-hover);
 }
 
-.ontask-refresh-btn:active,
-.ontask-only-today-btn:active,
-.ontask-configure-button:active,
-.ontask-filter-button:active {
+.ontask-header-button:active {
 	transform: translateY(1px);
 }
 
@@ -367,24 +359,6 @@
 	margin-top: 15px;
 }
 
-.ontask-load-more-btn {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border: none;
-	border-radius: 4px;
-	padding: 8px 16px;
-	cursor: pointer;
-	font-size: 14px;
-	font-weight: 500;
-}
-
-.ontask-load-more-btn:hover {
-	background: var(--interactive-accent-hover);
-}
-
-.ontask-load-more-btn:active {
-	transform: translateY(1px);
-}
 
 /* Load More Button Styles */
 .ontask-load-more-section {
@@ -570,10 +544,6 @@
 	padding: 15px;
 }
 
-.is-mobile .ontask-load-more-btn {
-	padding: 10px 20px;
-	font-size: 16px;
-}
 
 .is-mobile .ontask-toptask-hero-header {
 	flex-direction: column;

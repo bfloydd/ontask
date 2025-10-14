@@ -88,21 +88,21 @@ export class OnTaskView extends ItemView {
 		
 		// Create refresh button
 		const refreshButton = buttonsContainer.createEl('button', { text: 'Refresh' });
-		refreshButton.addClass('ontask-refresh-button');
+		refreshButton.addClass('ontask-header-button');
 		refreshButton.addEventListener('click', () => this.refreshCheckboxes());
 		
 		// Create filter buttons
 		const filtersButton = buttonsContainer.createEl('button', { text: 'Filters' });
-		filtersButton.addClass('ontask-filter-button');
+		filtersButton.addClass('ontask-header-button');
 		filtersButton.addEventListener('click', () => this.showFiltersMenu());
 		
 		this.onlyTodayButton = buttonsContainer.createEl('button', { text: 'Show All' });
-		this.onlyTodayButton.addClass('ontask-filter-button');
+		this.onlyTodayButton.addClass('ontask-header-button');
 		this.onlyTodayButton.addEventListener('click', () => this.toggleOnlyToday());
 		
 		// Create configure button
 		const configureButton = buttonsContainer.createEl('button', { text: 'Configure' });
-		configureButton.addClass('ontask-configure-button');
+		configureButton.addClass('ontask-header-button');
 		configureButton.addEventListener('click', () => this.openSettings());
 		
 		// Set initial button states
@@ -1452,7 +1452,7 @@ export class OnTaskView extends ItemView {
 
 	private positionFilterMenu(menu: HTMLElement): void {
 		// Find the filters button to position the menu below it
-		const filtersButton = this.contentEl.querySelector('.ontask-filter-button') as HTMLElement;
+		const filtersButton = this.contentEl.querySelector('.ontask-header-button') as HTMLElement;
 		if (!filtersButton) {
 			// Fallback to center positioning if button not found
 			const viewportWidth = window.innerWidth;
