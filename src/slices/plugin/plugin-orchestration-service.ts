@@ -120,13 +120,14 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 				if (this.isTopTaskVisible) {
 					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 					const displayText = remainingText || 'Top Task';
+					const fileName = topTask.file?.name || 'Unknown';
 					if (this.topTaskStatusBarItem) {
-						this.topTaskStatusBarItem.setText(`🔥 ${displayText}`);
-						console.log('OnTask: Status bar text set to:', `🔥 ${displayText}`);
+						this.topTaskStatusBarItem.setText(`🔥 ${displayText} | ${fileName}`);
+						console.log('OnTask: Status bar text set to:', `🔥 ${displayText} | ${fileName}`);
 					}
 					this.eventSystem.emit('ui:status-bar-updated', { 
 						visible: true, 
-						text: `🔥 ${displayText}` 
+						text: `🔥 ${displayText} | ${fileName}` 
 					});
 				} else {
 					if (this.topTaskStatusBarItem) {
@@ -488,15 +489,14 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 	private parseCheckboxLine(line: string): { remainingText: string } {
 		const trimmedLine = line.trim();
 		
-		// Look for checkbox pattern: - [ ] or - [x] or any other status
-		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]]*)\]\s*(.*)$/);
-		
-		if (checkboxMatch) {
-			const remainingText = checkboxMatch[2].trim();
+		// Simple approach: find the first occurrence of ']' and take everything after it
+		const bracketIndex = trimmedLine.indexOf(']');
+		if (bracketIndex !== -1) {
+			const remainingText = trimmedLine.substring(bracketIndex + 1).trim();
 			return { remainingText };
 		}
 		
-		// Fallback if no match
-		return { remainingText: '' };
+		// Fallback: return the original line if no bracket found
+		return { remainingText: trimmedLine };
 	}
 }

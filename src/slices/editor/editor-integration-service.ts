@@ -262,10 +262,17 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 	}
 
 	private parseCheckboxLine(line: string): { remainingText: string } {
-		// Remove checkbox symbols and extract remaining text
-		const checkboxPattern = /^\s*[-*+]\s*\[[ x]\]\s*/;
-		const remainingText = line.replace(checkboxPattern, '').trim();
-		return { remainingText };
+		const trimmedLine = line.trim();
+		
+		// Simple approach: find the first occurrence of ']' and take everything after it
+		const bracketIndex = trimmedLine.indexOf(']');
+		if (bracketIndex !== -1) {
+			const remainingText = trimmedLine.substring(bracketIndex + 1).trim();
+			return { remainingText };
+		}
+		
+		// Fallback: return the original line if no bracket found
+		return { remainingText: trimmedLine };
 	}
 
 	cleanup(): void {

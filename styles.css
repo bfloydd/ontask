@@ -716,6 +716,7 @@
 	flex: 1;
 	color: var(--text-normal);
 	font-weight: 500;
+	padding-left: 5px;
 }
 
 .ontask-toptask-hero-source {

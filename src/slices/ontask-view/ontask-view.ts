@@ -1713,12 +1713,11 @@ export class OnTaskView extends ItemView {
 	private parseCheckboxLine(line: string): { statusSymbol: string; remainingText: string } {
 		const trimmedLine = line.trim();
 		
-		// Look for checkbox pattern: - [ANYTHING] at the beginning of the line
-		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]]*)\]\s*(.*)$/);
-		
-		if (checkboxMatch) {
-			const statusSymbol = checkboxMatch[1].trim() || this.getToDoSymbol();
-			const remainingText = checkboxMatch[2].trim();
+		// Simple approach: find the first occurrence of ']' and take everything after it
+		const bracketIndex = trimmedLine.indexOf(']');
+		if (bracketIndex !== -1) {
+			const statusSymbol = trimmedLine.substring(0, bracketIndex).replace(/^-\s*\[/, '').trim() || this.getToDoSymbol();
+			const remainingText = trimmedLine.substring(bracketIndex + 1).trim();
 			return { statusSymbol, remainingText };
 		}
 		
