@@ -470,7 +470,7 @@ If your plugin does not need CSS, delete this file.
 
 .ontask-toptask-hero-header {
 	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-modifier-border) 100%);
-	padding: 14px 16px;
+	padding: 10px;
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -505,7 +505,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .ontask-toptask-hero-content {
-	padding: 17px;
+	padding: 10px;
 }
 
 .ontask-toptask-hero-item {
@@ -591,7 +591,7 @@ If your plugin does not need CSS, delete this file.
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 4px;
-	padding: 10px 12px;
+	padding: 10px;
 }
 
 .is-mobile .ontask-toptask-hero-content {
