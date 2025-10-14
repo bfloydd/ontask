@@ -1029,6 +1029,9 @@
 	font-family: var(--font-interface);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
+	max-height: 80vh;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .ontask-filters-menu h3 {
@@ -1077,9 +1080,9 @@
 
 /* Mobile responsive for filter menu */
 .is-mobile .ontask-filters-menu {
-	min-width: 280px;
 	max-width: 95vw;
 	font-size: 16px;
+	max-height: 70vh;
 }
 
 .is-mobile .ontask-filter-checkbox-item {
@@ -1102,8 +1105,8 @@
 }
 
 .is-phone .ontask-filters-menu {
-	min-width: 260px;
 	max-width: 90vw;
+	max-height: 65vh;
 }
 
 .is-phone .ontask-filter-checkbox-item {

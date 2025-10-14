@@ -1297,10 +1297,11 @@ export class OnTaskView extends ItemView {
 
 
 	private showFiltersMenu(): void {
-		// Remove any existing filter menu
+		// Check if menu is already open and toggle it
 		const existingMenu = document.querySelector('.ontask-filters-menu');
 		if (existingMenu) {
 			existingMenu.remove();
+			return; // Menu was open, now it's closed - we're done
 		}
 
 		// Create filter menu
@@ -1313,7 +1314,6 @@ export class OnTaskView extends ItemView {
 		menu.style.borderRadius = '6px';
 		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
 		menu.style.padding = '12px';
-		menu.style.minWidth = '300px';
 		menu.style.maxWidth = '400px';
 
 		// Get current settings and status configs
@@ -1401,7 +1401,7 @@ export class OnTaskView extends ItemView {
 		// Create buttons container
 		const buttonsContainer = menu.createDiv();
 		buttonsContainer.style.display = 'flex';
-		buttonsContainer.style.justifyContent = 'flex-end';
+		buttonsContainer.style.justifyContent = 'center';
 		buttonsContainer.style.gap = '8px';
 		buttonsContainer.style.marginTop = '12px';
 		buttonsContainer.style.borderTop = '1px solid var(--background-modifier-border)';
@@ -1451,18 +1451,61 @@ export class OnTaskView extends ItemView {
 	}
 
 	private positionFilterMenu(menu: HTMLElement): void {
-		// Position the menu in the center of the viewport
+		// Find the filters button to position the menu below it
+		const filtersButton = this.contentEl.querySelector('.ontask-filter-button') as HTMLElement;
+		if (!filtersButton) {
+			// Fallback to center positioning if button not found
+			const viewportWidth = window.innerWidth;
+			const viewportHeight = window.innerHeight;
+			const menuRect = menu.getBoundingClientRect();
+			const menuWidth = menuRect.width;
+			const menuHeight = menuRect.height;
+
+			const left = (viewportWidth - menuWidth) / 2;
+			const top = (viewportHeight - menuHeight) / 2;
+
+			menu.style.left = `${Math.max(10, left)}px`;
+			menu.style.top = `${Math.max(10, top)}px`;
+			return;
+		}
+
+		// Get button position and dimensions
+		const buttonRect = filtersButton.getBoundingClientRect();
+		const menuRect = menu.getBoundingClientRect();
+		
+		// Calculate position below the button
 		const viewportWidth = window.innerWidth;
 		const viewportHeight = window.innerHeight;
-		const menuRect = menu.getBoundingClientRect();
 		const menuWidth = menuRect.width;
 		const menuHeight = menuRect.height;
-
-		const left = (viewportWidth - menuWidth) / 2;
-		const top = (viewportHeight - menuHeight) / 2;
-
-		menu.style.left = `${Math.max(10, left)}px`;
-		menu.style.top = `${Math.max(10, top)}px`;
+		
+		// Position below the button with some spacing
+		let left = buttonRect.left;
+		let top = buttonRect.bottom + 8; // 8px spacing below button
+		
+		// Ensure menu doesn't go off the right edge
+		if (left + menuWidth > viewportWidth - 10) {
+			left = viewportWidth - menuWidth - 10;
+		}
+		
+		// Ensure menu doesn't go off the left edge
+		if (left < 10) {
+			left = 10;
+		}
+		
+		// If menu would go off the bottom edge, position it above the button instead
+		if (top + menuHeight > viewportHeight - 10) {
+			top = buttonRect.top - menuHeight - 8; // 8px spacing above button
+		}
+		
+		// Ensure menu doesn't go off the top edge
+		if (top < 10) {
+			top = 10;
+		}
+		
+		// Apply the calculated position
+		menu.style.left = `${left}px`;
+		menu.style.top = `${top}px`;
 	}
 
 	private async initializeFileTracking(onlyShowToday: boolean): Promise<void> {
