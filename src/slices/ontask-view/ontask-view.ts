@@ -27,6 +27,28 @@ export class OnTaskView extends ItemView {
 	private trackedFiles: string[] = []; // Sorted array of all files (Z-A by filename)
 	private isInitialLoad: boolean = true; // Track if this is initial load or Load More
 
+	/**
+	 * Top task configuration - easily modifiable priority order
+	 * Each entry defines: symbol, name, and regex pattern for detection
+	 */
+	private static readonly TOP_TASK_CONFIG = [
+		{
+			symbol: '/',
+			name: 'slash',
+			pattern: /^-\s*\[\/([^\]]*)\]/
+		},
+		{
+			symbol: '!',
+			name: 'exclamation', 
+			pattern: /^-\s*\[!([^\]]*)\]/
+		},
+		{
+			symbol: '+',
+			name: 'plus',
+			pattern: /^-\s*\[\+([^\]]*)\]/
+		}
+	] as const;
+
 	constructor(
 		leaf: WorkspaceLeaf,
 		checkboxFinderService: CheckboxFinderService,
@@ -1905,7 +1927,7 @@ export class OnTaskView extends ItemView {
 
 	/**
 	 * Process top tasks from the displayed tasks (as per spec)
-	 * This implements the spec: "Prefer `/`, but fallback to `!`. If one is found in the displayed tasks, put it in the top task."
+	 * Uses declarative configuration for easy modification of top task priorities
 	 */
 	private processTopTasksFromDisplayedTasks(): void {
 		console.log('OnTask View: Processing top tasks from displayed tasks');
@@ -1916,28 +1938,30 @@ export class OnTaskView extends ItemView {
 			checkbox.isTopTaskContender = false;
 		});
 		
-		// Find all slash tasks (/) in the displayed tasks
-		const slashTasks = this.checkboxes.filter(checkbox => this.isSlashTopTask(checkbox));
-		// Find all exclamation tasks (!) in the displayed tasks
-		const exclamationTasks = this.checkboxes.filter(checkbox => this.isExclamationTopTask(checkbox));
+		// Find tasks for each priority level using declarative config
+		const taskCounts: Record<string, number> = {};
+		const tasksByType: Record<string, any[]> = {};
 		
-		console.log(`OnTask View: Found ${slashTasks.length} slash tasks, ${exclamationTasks.length} exclamation tasks in displayed tasks`);
+		OnTaskView.TOP_TASK_CONFIG.forEach(config => {
+			const matchingTasks = this.checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
+			taskCounts[config.name] = matchingTasks.length;
+			tasksByType[config.name] = matchingTasks;
+		});
 		
+		console.log('OnTask View: Found tasks:', taskCounts);
+		
+		// Find the highest priority task type that has tasks
 		let finalTopTask: any = null;
-		
-		// Prefer `/` tasks, fallback to `!` tasks (as per spec)
-		if (slashTasks.length > 0) {
-			// Sort by file modification time (most recent first)
-			slashTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
-			finalTopTask = slashTasks[0];
-			finalTopTask.isTopTask = true;
-			console.log('OnTask View: Selected slash task as top task:', finalTopTask.lineContent);
-		} else if (exclamationTasks.length > 0) {
-			// Sort by file modification time (most recent first)
-			exclamationTasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
-			finalTopTask = exclamationTasks[0];
-			finalTopTask.isTopTask = true;
-			console.log('OnTask View: Selected exclamation task as top task:', finalTopTask.lineContent);
+		for (const config of OnTaskView.TOP_TASK_CONFIG) {
+			const tasks = tasksByType[config.name];
+			if (tasks.length > 0) {
+				// Sort by file modification time (most recent first)
+				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+				finalTopTask = tasks[0];
+				finalTopTask.isTopTask = true;
+				console.log(`OnTask View: Selected ${config.name} task as top task:`, finalTopTask.lineContent);
+				break;
+			}
 		}
 		
 		if (finalTopTask) {
@@ -1960,21 +1984,12 @@ export class OnTaskView extends ItemView {
 	}
 	
 	/**
-	 * Check if a checkbox is a slash top task (/) - matches pattern: - [/] or - [/x] etc.
+	 * Generic method to check if a checkbox matches a top task configuration
+	 * Uses the declarative config for pattern matching
 	 */
-	private isSlashTopTask(checkbox: any): boolean {
+	private isTopTaskByConfig(checkbox: any, config: { symbol: string; name: string; pattern: RegExp }): boolean {
 		const line = checkbox.lineContent;
-		const checkboxMatch = line.match(/^-\s*\[\/([^\]]*)\]/);
-		return checkboxMatch !== null;
-	}
-	
-	/**
-	 * Check if a checkbox is an exclamation top task (!) - matches pattern: - [!] or - [!x] etc.
-	 */
-	private isExclamationTopTask(checkbox: any): boolean {
-		const line = checkbox.lineContent;
-		const checkboxMatch = line.match(/^-\s*\[!([^\]]*)\]/);
-		return checkboxMatch !== null;
+		return config.pattern.test(line);
 	}
 
 	/**

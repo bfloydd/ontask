@@ -70,7 +70,8 @@ trackedFiles = [
 - Also include a space in the ALLOWED_BY_FILTER_LIST as a synonym to . (to-do task)
 
 ## Top task:
-- Top task is identified by an algorithm - Prefer `/`, but fallback to `!`.
+- Top task is identified by an algorithm - Prefer `/`, but fallback to `!`, then fallback to `+`.
+- `/`, but fallback to `!`, then fallback to `+` are special tasks and immutable in settings.
 - When a top task is found, it emits an event that is caught by other handlers in the plugin; handlers listed here:
   - Handler 1: Hero section in OnTaskView. The Hero section (ontask-toptask-hero-section) shows the top task but it also remains in the task list.
   - Handler 2: ontask-toptask-hero-content. 
