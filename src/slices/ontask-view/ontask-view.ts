@@ -81,7 +81,7 @@ export class OnTaskView extends ItemView {
 		
 		// Create header
 		const header = this.contentEl.createDiv('ontask-header');
-		header.createEl('h2', { text: 'On Task' });
+		// header.createEl('h2', { text: 'On Task' });
 		
 		// Create buttons container
 		const buttonsContainer = header.createDiv('ontask-buttons-container');
