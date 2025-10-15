@@ -1,14 +1,3 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
-
-/* On Task Plugin Styles */
-
 /* Warning styles */
 .ontask-warning {
 	background: var(--background-modifier-error);
@@ -64,7 +53,7 @@ If your plugin does not need CSS, delete this file.
 	border-radius: 4px;
 	padding: 6px 12px;
 	cursor: pointer;
-	font-size: 12px;
+	font-size: 14px;
 	transition: all 0.2s ease;
 	display: flex;
 	align-items: center;
@@ -601,7 +590,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .is-mobile .ontask-toptask-hero-content {
-	padding: 12px;
+	padding: 10px;
 }
 
 .is-mobile .ontask-toptask-hero-item {
@@ -751,7 +740,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .is-mobile .ontask-toptask-hero-content {
-	gap: 6px;
+	gap: 8px;
 }
 
 .is-mobile .ontask-toptask-hero-icon {
@@ -769,7 +758,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .is-phone .ontask-toptask-hero-content {
-	gap: 4px;
+	gap: 8px;
 }
 
 .is-phone .ontask-toptask-hero-icon {
