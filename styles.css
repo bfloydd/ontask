@@ -51,13 +51,15 @@
 	color: var(--text-on-accent);
 	border: none;
 	border-radius: 4px;
-	padding: 6px 12px;
+	/* padding: 6px 12px; */
+	padding: 0px 6px 0px 6px;
 	cursor: pointer;
 	font-size: 14px;
 	transition: all 0.2s ease;
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
+	height: 25px;
 }
 
 .ontask-refresh-btn:hover,
