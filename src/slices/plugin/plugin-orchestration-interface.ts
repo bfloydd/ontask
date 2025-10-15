@@ -5,6 +5,8 @@ import { SettingsService } from '../settings';
 import { CheckboxFinderService } from '../checkbox-finder';
 import { StreamsService } from '../streams';
 import { EventSystem } from '../events';
+import { DataService } from '../data';
+import { StatusConfigService } from '../settings/status-config';
 
 export interface PluginOrchestrator {
 	// Lifecycle management
@@ -15,6 +17,8 @@ export interface PluginOrchestrator {
 	getSettingsService(): SettingsService;
 	getCheckboxFinderService(): CheckboxFinderService;
 	getStreamsService(): StreamsService;
+	getDataService(): DataService;
+	getStatusConfigService(): StatusConfigService;
 	
 	// UI management
 	openOnTaskView(): Promise<void>;
@@ -33,6 +37,8 @@ export interface PluginDependencies {
 	checkboxFinderService: CheckboxFinderService;
 	streamsService: StreamsService;
 	eventSystem: EventSystem;
+	dataService: DataService;
+	statusConfigService: StatusConfigService;
 }
 
 export interface PluginLifecycleEvents {

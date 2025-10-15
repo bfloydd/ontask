@@ -3,13 +3,16 @@ import { App, PluginSettingTab, Setting } from 'obsidian';
 import { SettingsService } from './settings-interface';
 import { SettingsServiceImpl } from './settings-service';
 import { StatusConfigView } from './status-config-view';
+import { StatusConfigService } from './status-config';
 
 export class OnTaskSettingsTab extends PluginSettingTab {
 	private settingsService: SettingsService;
+	private statusConfigService: StatusConfigService;
 
-	constructor(app: App, plugin: any, settingsService: SettingsService) {
+	constructor(app: App, plugin: any, settingsService: SettingsService, statusConfigService: StatusConfigService) {
 		super(app, plugin);
 		this.settingsService = settingsService;
+		this.statusConfigService = statusConfigService;
 	}
 
 	display(): void {
@@ -159,7 +162,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 		const statusConfigContainer = containerEl.createEl('div', { cls: 'status-config-container' });
 		
 		// Initialize and render the status configuration view
-		const statusConfigView = new StatusConfigView(statusConfigContainer, this.settingsService, this.app);
+		const statusConfigView = new StatusConfigView(statusConfigContainer, this.statusConfigService, this.app);
 		statusConfigView.render();
 	}
 }

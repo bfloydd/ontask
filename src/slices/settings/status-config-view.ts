@@ -1,22 +1,23 @@
 // Status configuration UI component
 import { App, Setting, Modal } from 'obsidian';
 import { StatusConfig } from './settings-interface';
+import { StatusConfigService } from './status-config';
 
 export class StatusConfigView {
 	private containerEl: HTMLElement;
-	private settingsService: any;
+	private statusConfigService: StatusConfigService;
 	private app: App;
 	private statusConfigs: StatusConfig[] = [];
 
-	constructor(containerEl: HTMLElement, settingsService: any, app: App) {
+	constructor(containerEl: HTMLElement, statusConfigService: StatusConfigService, app: App) {
 		this.containerEl = containerEl;
-		this.settingsService = settingsService;
+		this.statusConfigService = statusConfigService;
 		this.app = app;
 	}
 
 	render(): void {
 		this.containerEl.empty();
-		this.statusConfigs = [...this.settingsService.getSettings().statusConfigs];
+		this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
 
 		// Header
 		const headerEl = this.containerEl.createEl('div', { cls: 'status-config-header' });
@@ -215,8 +216,8 @@ export class StatusConfigView {
 			backgroundColor: 'transparent'
 		};
 
-		await this.settingsService.addStatusConfig(newStatus);
-		this.statusConfigs = [...this.settingsService.getStatusConfigs()];
+		await this.statusConfigService.addStatusConfig(newStatus);
+		this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
 		this.render();
 	}
 
@@ -227,20 +228,20 @@ export class StatusConfigView {
 		}
 
 		const configToDelete = this.statusConfigs[index];
-		await this.settingsService.removeStatusConfig(configToDelete.symbol);
-		this.statusConfigs = [...this.settingsService.getStatusConfigs()];
+		await this.statusConfigService.removeStatusConfig(configToDelete.symbol);
+		this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
 		this.render();
 	}
 
 	private async saveStatus(config: StatusConfig, index: number): Promise<void> {
 		const originalSymbol = this.statusConfigs[index].symbol;
-		await this.settingsService.updateStatusConfig(originalSymbol, config);
-		this.statusConfigs = [...this.settingsService.getStatusConfigs()];
+		await this.statusConfigService.updateStatusConfig(originalSymbol, config);
+		this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
 		this.render();
 	}
 
 	private async saveAllStatuses(): Promise<void> {
-		await this.settingsService.reorderStatusConfigs([...this.statusConfigs]);
+		await this.statusConfigService.reorderStatusConfigs([...this.statusConfigs]);
 	}
 
 	private setupDragAndDrop(itemEl: HTMLElement, index: number): void {
@@ -267,8 +268,8 @@ export class StatusConfigView {
 				this.statusConfigs.splice(draggedIndex, 1);
 				this.statusConfigs.splice(index, 0, draggedItem);
 				
-				await this.settingsService.reorderStatusConfigs([...this.statusConfigs]);
-				this.statusConfigs = [...this.settingsService.getStatusConfigs()];
+				await this.statusConfigService.reorderStatusConfigs([...this.statusConfigs]);
+				this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
 				this.render();
 			}
 		});

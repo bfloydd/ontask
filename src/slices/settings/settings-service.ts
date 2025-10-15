@@ -1,6 +1,6 @@
 // Settings slice - Service implementation
 import { App, Plugin } from 'obsidian';
-import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService, StatusConfig } from './settings-interface';
+import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './settings-interface';
 import { EventSystem } from '../events';
 
 export class SettingsServiceImpl implements SettingsService {
@@ -27,21 +27,8 @@ export class SettingsServiceImpl implements SettingsService {
 	}
 
 	private async migrateFromOldStructure(loadedSettings: any): Promise<void> {
-		// Check if we have old statusFilters structure that needs migration
-		if (loadedSettings.statusFilters && !this.settings.statusConfigs.some(config => config.filtered !== undefined)) {
-			console.log('OnTask: Migrating from old statusFilters structure');
-			
-			// Migrate statusFilters to filtered property in statusConfigs
-			const statusFilters = loadedSettings.statusFilters;
-			this.settings.statusConfigs = this.settings.statusConfigs.map(config => ({
-				...config,
-				filtered: statusFilters[config.symbol] !== false
-			}));
-			
-			// Save the migrated settings
-			await this.plugin.saveData(this.settings);
-			console.log('OnTask: Migration completed');
-		}
+		// Migration logic for old settings structure if needed
+		// This can be used for future migrations of settings-only data
 	}
 
 	getSettings(): OnTaskSettings {
@@ -134,94 +121,4 @@ export class SettingsServiceImpl implements SettingsService {
 		});
 	}
 
-	// Status configuration methods
-	getStatusConfigs(): StatusConfig[] {
-		return [...this.settings.statusConfigs];
-	}
-
-	getStatusConfig(symbol: string): StatusConfig | undefined {
-		return this.settings.statusConfigs.find(config => config.symbol === symbol);
-	}
-
-	getFilteredStatusConfigs(): StatusConfig[] {
-		return this.settings.statusConfigs.filter(config => config.filtered !== false);
-	}
-
-	getStatusFilters(): Record<string, boolean> {
-		const filters: Record<string, boolean> = {};
-		this.settings.statusConfigs.forEach(config => {
-			filters[config.symbol] = config.filtered !== false;
-		});
-		return filters;
-	}
-
-	async updateStatusFiltered(symbol: string, filtered: boolean): Promise<void> {
-		const config = this.getStatusConfig(symbol);
-		if (config) {
-			await this.updateStatusConfig(symbol, { ...config, filtered });
-		}
-	}
-
-	async updateStatusConfig(symbol: string, config: StatusConfig): Promise<void> {
-		const index = this.settings.statusConfigs.findIndex(c => c.symbol === symbol);
-		if (index !== -1) {
-			const oldValue = [...this.settings.statusConfigs];
-			this.settings.statusConfigs[index] = { ...config };
-			
-			// Save to plugin data
-			await this.plugin.saveData(this.settings);
-			
-			// Notify listeners
-			this.notifyChange({ 
-				key: 'statusConfigs', 
-				value: [...this.settings.statusConfigs], 
-				oldValue 
-			});
-		}
-	}
-
-	async addStatusConfig(config: StatusConfig): Promise<void> {
-		const oldValue = [...this.settings.statusConfigs];
-		this.settings.statusConfigs.push({ ...config });
-		
-		// Save to plugin data
-		await this.plugin.saveData(this.settings);
-		
-		// Notify listeners
-		this.notifyChange({ 
-			key: 'statusConfigs', 
-			value: [...this.settings.statusConfigs], 
-			oldValue 
-		});
-	}
-
-	async removeStatusConfig(symbol: string): Promise<void> {
-		const oldValue = [...this.settings.statusConfigs];
-		this.settings.statusConfigs = this.settings.statusConfigs.filter(c => c.symbol !== symbol);
-		
-		// Save to plugin data
-		await this.plugin.saveData(this.settings);
-		
-		// Notify listeners
-		this.notifyChange({ 
-			key: 'statusConfigs', 
-			value: [...this.settings.statusConfigs], 
-			oldValue 
-		});
-	}
-
-	async reorderStatusConfigs(configs: StatusConfig[]): Promise<void> {
-		const oldValue = [...this.settings.statusConfigs];
-		this.settings.statusConfigs = [...configs];
-		
-		// Save to plugin data
-		await this.plugin.saveData(this.settings);
-		
-		// Notify listeners
-		this.notifyChange({ 
-			key: 'statusConfigs', 
-			value: [...this.settings.statusConfigs], 
-			oldValue 
-		});
-	}
 }

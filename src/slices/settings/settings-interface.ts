@@ -19,7 +19,6 @@ export interface OnTaskSettings {
 	includeSubfolders: boolean;
 	loadMoreLimit: number;
 	hideCompletedTasks: boolean;
-	statusConfigs: StatusConfig[];
 }
 
 export const DEFAULT_SETTINGS: OnTaskSettings = {
@@ -31,23 +30,25 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	customFolderPath: '',
 	includeSubfolders: true,
 	loadMoreLimit: 10,
-	hideCompletedTasks: false,
-	statusConfigs: [
-		{ symbol: '.', name: 'To-do', description: 'Not started', color: '#6b7280', backgroundColor: 'transparent', filtered: true },
-		{ symbol: '+', name: 'Next', description: 'Next up, on deck', color: '#fff', backgroundColor: 'brown', filtered: true },
-		{ symbol: '/', name: 'In Progress', description: 'Incomplete', color: '#ffffff', backgroundColor: '#dc2626', filtered: true },
-		{ symbol: 'x', name: 'Done', description: 'Completed', color: '#ffffff', backgroundColor: '#10b981', filtered: true },
-		{ symbol: '!', name: 'Important', description: 'Top task', color: '#ffffff', backgroundColor: '#ef4444', filtered: true },
-		{ symbol: '*', name: 'Star', description: 'Marked', color: '#ffffff', backgroundColor: '#8b5cf6', filtered: true },
-		{ symbol: '?', name: 'Question', description: 'Needs clarification', color: '#ffffff', backgroundColor: '#f59e0b', filtered: true },
-		{ symbol: 'r', name: 'Review', description: 'In review', color: '#ffffff', backgroundColor: '#6b7280', filtered: true },
-		{ symbol: 'b', name: 'Blocked', description: 'Can\'t continue', color: '#ffffff', backgroundColor: '#dc2626', filtered: true },
-		{ symbol: '<', name: 'Scheduled', description: 'On the calendar', color: '#ffffff', backgroundColor: '#059669', filtered: true },
-		{ symbol: '>', name: 'Forward', description: 'Another day', color: '#ffffff', backgroundColor: '#7c3aed', filtered: true },
-		{ symbol: '#', name: 'Backburner', description: 'Indefinitely delayed', color: '#ffffff', backgroundColor: '#7c3aed', filtered: true },
-		{ symbol: '-', name: 'Cancelled', description: 'Not doing', color: '#ffffff', backgroundColor: '#9ca3af', filtered: true }
-	]
+	hideCompletedTasks: false
 };
+
+// Default status configurations - used only for initialization
+export const DEFAULT_STATUS_CONFIGS: StatusConfig[] = [
+	{ symbol: '.', name: 'To-do', description: 'Not started', color: '#6b7280', backgroundColor: 'transparent', filtered: true },
+	{ symbol: '+', name: 'Next', description: 'Next up, on deck', color: '#fff', backgroundColor: 'brown', filtered: true },
+	{ symbol: '/', name: 'In Progress', description: 'Incomplete', color: '#ffffff', backgroundColor: '#dc2626', filtered: true },
+	{ symbol: 'x', name: 'Done', description: 'Completed', color: '#ffffff', backgroundColor: '#10b981', filtered: true },
+	{ symbol: '!', name: 'Important', description: 'Top task', color: '#ffffff', backgroundColor: '#ef4444', filtered: true },
+	{ symbol: '*', name: 'Star', description: 'Marked', color: '#ffffff', backgroundColor: '#8b5cf6', filtered: true },
+	{ symbol: '?', name: 'Question', description: 'Needs clarification', color: '#ffffff', backgroundColor: '#f59e0b', filtered: true },
+	{ symbol: 'r', name: 'Review', description: 'In review', color: '#ffffff', backgroundColor: '#6b7280', filtered: true },
+	{ symbol: 'b', name: 'Blocked', description: 'Can\'t continue', color: '#ffffff', backgroundColor: '#dc2626', filtered: true },
+	{ symbol: '<', name: 'Scheduled', description: 'On the calendar', color: '#ffffff', backgroundColor: '#059669', filtered: true },
+	{ symbol: '>', name: 'Forward', description: 'Another day', color: '#ffffff', backgroundColor: '#7c3aed', filtered: true },
+	{ symbol: '#', name: 'Backburner', description: 'Indefinitely delayed', color: '#ffffff', backgroundColor: '#7c3aed', filtered: true },
+	{ symbol: '-', name: 'Cancelled', description: 'Not doing', color: '#ffffff', backgroundColor: '#9ca3af', filtered: true }
+];
 
 export interface SettingsChangeEvent {
 	key: keyof OnTaskSettings;
@@ -76,15 +77,4 @@ export interface SettingsService {
 	
 	// Check if Daily Notes is available
 	isDailyNotesAvailable(): boolean;
-	
-	// Status configuration methods
-	getStatusConfigs(): StatusConfig[];
-	getStatusConfig(symbol: string): StatusConfig | undefined;
-	getFilteredStatusConfigs(): StatusConfig[];
-	getStatusFilters(): Record<string, boolean>;
-	updateStatusFiltered(symbol: string, filtered: boolean): Promise<void>;
-	updateStatusConfig(symbol: string, config: StatusConfig): Promise<void>;
-	addStatusConfig(config: StatusConfig): Promise<void>;
-	removeStatusConfig(symbol: string): Promise<void>;
-	reorderStatusConfigs(configs: StatusConfig[]): Promise<void>;
 }

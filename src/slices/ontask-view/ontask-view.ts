@@ -49,16 +49,17 @@ export class OnTaskView extends ItemView {
 	] as const;
 
 	constructor(
-		leaf: WorkspaceLeaf,
-		checkboxFinderService: CheckboxFinderService,
-		settingsService: SettingsService,
-		plugin: any,
+		leaf: WorkspaceLeaf, 
+		checkboxFinderService: CheckboxFinderService, 
+		settingsService: SettingsService, 
+		statusConfigService: StatusConfigService,
+		plugin: any, 
 		eventSystem: EventSystem
 	) {
 		super(leaf);
 		this.checkboxFinderService = checkboxFinderService;
 		this.settingsService = settingsService;
-		this.statusConfigService = new StatusConfigService(settingsService);
+		this.statusConfigService = statusConfigService;
 		this.plugin = plugin;
 		this.eventSystem = eventSystem;
 	}
@@ -1421,9 +1422,9 @@ export class OnTaskView extends ItemView {
 				newFilters[symbol] = checkbox.checked;
 			}
 
-			// Update settings - update each status config's filtered property
+			// Update status configs - update each status config's filtered property
 			for (const [symbol, filtered] of Object.entries(newFilters)) {
-				await this.settingsService.updateStatusFiltered(symbol, filtered);
+				await this.statusConfigService.updateStatusFiltered(symbol, filtered);
 			}
 			
 			// Close menu
@@ -1616,7 +1617,7 @@ export class OnTaskView extends ItemView {
 	private async loadTasksWithFiltering(settings: any): Promise<any[]> {
 		const targetTasks = settings.loadMoreLimit;
 		const loadedTasks: any[] = [];
-		const statusFilters = this.settingsService.getStatusFilters();
+		const statusFilters = this.statusConfigService.getStatusFilters();
 		
 		console.log(`OnTask: Loading ${targetTasks} tasks starting from file index ${this.currentFileIndex}, task index ${this.currentTaskIndex}`);
 		

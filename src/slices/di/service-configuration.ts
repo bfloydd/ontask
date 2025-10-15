@@ -6,6 +6,8 @@ import { StreamsService, StreamsServiceImpl } from '../streams';
 import { CheckboxFinderService } from '../checkbox-finder';
 import { PluginOrchestrator, PluginOrchestrationServiceImpl, PluginDependencies } from '../plugin';
 import { EditorIntegrationService, EditorIntegrationServiceImpl } from '../editor';
+import { DataService, DataServiceImpl } from '../data';
+import { StatusConfigService } from '../settings/status-config';
 import { App, Plugin } from 'obsidian';
 
 export class ServiceConfiguration {
@@ -17,6 +19,19 @@ export class ServiceConfiguration {
 		// Register event system
 		container.registerSingleton(SERVICE_IDS.EVENT_SYSTEM, (container) => {
 			return new EventSystemServiceImpl();
+		});
+
+		// Register data service
+		container.registerSingleton(SERVICE_IDS.DATA_SERVICE, (container) => {
+			const app = container.resolve<App>(SERVICE_IDS.APP);
+			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
+			return new DataServiceImpl(app, plugin);
+		});
+
+		// Register status config service
+		container.registerSingleton(SERVICE_IDS.STATUS_CONFIG_SERVICE, (container) => {
+			const dataService = container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
+			return new StatusConfigService(dataService);
 		});
 
 		// Register settings service
@@ -57,6 +72,8 @@ export class ServiceConfiguration {
 			const streamsService = container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
 			const checkboxFinderService = container.resolve<CheckboxFinderService>(SERVICE_IDS.CHECKBOX_FINDER_SERVICE);
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
+			const dataService = container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
+			const statusConfigService = container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
 
 			const dependencies: PluginDependencies = {
 				app,
@@ -64,7 +81,9 @@ export class ServiceConfiguration {
 				settingsService,
 				checkboxFinderService,
 				streamsService,
-				eventSystem
+				eventSystem,
+				dataService,
+				statusConfigService
 			};
 
 			return new PluginOrchestrationServiceImpl(dependencies, eventSystem);

@@ -6,6 +6,8 @@ import { CheckboxFinderService } from '../checkbox-finder';
 import { StreamsService } from '../streams';
 import { OnTaskView, ONTASK_VIEW_TYPE } from '../ontask-view';
 import { EventSystem } from '../events';
+import { DataService } from '../data';
+import { StatusConfigService } from '../settings/status-config';
 
 export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 	private dependencies: PluginDependencies;
@@ -20,7 +22,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 	}
 
 	async initialize(): Promise<void> {
-		const { app, plugin, settingsService, checkboxFinderService, streamsService } = this.dependencies;
+		const { app, plugin, settingsService, checkboxFinderService, streamsService, dataService, statusConfigService } = this.dependencies;
 		
 		// Set up UI elements
 		await this.setupUI(app, plugin, settingsService);
@@ -55,6 +57,14 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 
 	getStreamsService(): StreamsService {
 		return this.dependencies.streamsService;
+	}
+
+	getDataService(): DataService {
+		return this.dependencies.dataService;
+	}
+
+	getStatusConfigService(): StatusConfigService {
+		return this.dependencies.statusConfigService;
 	}
 
 	async openOnTaskView(): Promise<void> {
@@ -221,6 +231,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			leaf, 
 			this.dependencies.checkboxFinderService, 
 			settingsService, 
+			this.dependencies.statusConfigService,
 			plugin,
 			this.dependencies.eventSystem
 		));

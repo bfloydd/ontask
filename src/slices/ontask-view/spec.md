@@ -66,8 +66,9 @@ trackedFiles = [
 ## Finding tasks:
 - Example of how to find checkbox `- [ALLOWED_BY_FILTER_LIST]` 
 - How the regex might work: `-\s\[[ALLOWED_BY_FILTER_LIST]\]\s.*`
-- The ALLOWED_BY_FILTER_LIST, comma separated list, is found by statusConfigs in data.json where filtered equals true.
+- The ALLOWED_BY_FILTER_LIST, comma separated list, is found by StatusConfigService.getFilteredStatusConfigs() from data.json where filtered equals true.
 - Also include a space in the ALLOWED_BY_FILTER_LIST as a synonym to . (to-do task)
+- Status configuration is managed by the Data Service, not Settings Service
 
 ## Top task:
 - Top task is identified by an algorithm - Prefer `/`, but fallback to `!`, then fallback to `+`.
@@ -76,3 +77,10 @@ trackedFiles = [
   - Handler 1: Hero section in OnTaskView. The Hero section (ontask-toptask-hero-section) shows the top task but it also remains in the task list.
   - Handler 2: ontask-toptask-hero-content. 
   - Handler 3: Status bar top-task visual. The status bar picks that up and shows the updated top-task.
+
+## Dependencies:
+- **CheckboxFinderService**: For finding checkboxes in files
+- **SettingsService**: For plugin settings (load limits, display options, etc.)
+- **StatusConfigService**: For status configuration and filtering (manages data.json)
+- **EventSystem**: For communication with other plugin components
+- **Plugin**: For accessing Obsidian APIs and plugin context
