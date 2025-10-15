@@ -22,9 +22,6 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 		// Basic settings
 		this.renderBasicSettings(containerEl);
 		
-		// Add separator
-		containerEl.createEl('hr');
-
 		// Checkbox source settings
 		this.renderCheckboxSourceSettings(containerEl);
 

@@ -772,8 +772,6 @@
 /* Status Configuration UI Styles */
 .status-config-header {
 	margin-bottom: 20px;
-	padding-bottom: 15px;
-	border-bottom: 1px solid var(--background-modifier-border);
 }
 
 /* Disabled symbol input for TOP_TASK_CONFIG symbols */
