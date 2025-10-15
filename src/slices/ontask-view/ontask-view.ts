@@ -1350,7 +1350,7 @@ export class OnTaskView extends ItemView {
 			const checkbox = document.createElement('input');
 			checkbox.type = 'checkbox';
 			checkbox.id = `filter-${status.symbol}`;
-			checkbox.checked = settings.statusFilters[status.symbol] ?? true;
+			checkbox.checked = status.filtered !== false;
 			checkboxElements[status.symbol] = checkbox;
 
 			// Create status display
@@ -1421,8 +1421,10 @@ export class OnTaskView extends ItemView {
 				newFilters[symbol] = checkbox.checked;
 			}
 
-			// Update settings
-			await this.settingsService.updateSetting('statusFilters', newFilters);
+			// Update settings - update each status config's filtered property
+			for (const [symbol, filtered] of Object.entries(newFilters)) {
+				await this.settingsService.updateStatusFiltered(symbol, filtered);
+			}
 			
 			// Close menu
 			menu.remove();
@@ -1614,7 +1616,7 @@ export class OnTaskView extends ItemView {
 	private async loadTasksWithFiltering(settings: any): Promise<any[]> {
 		const targetTasks = settings.loadMoreLimit;
 		const loadedTasks: any[] = [];
-		const statusFilters = settings.statusFilters;
+		const statusFilters = this.settingsService.getStatusFilters();
 		
 		console.log(`OnTask: Loading ${targetTasks} tasks starting from file index ${this.currentFileIndex}, task index ${this.currentTaskIndex}`);
 		

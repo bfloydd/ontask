@@ -21,6 +21,27 @@ export class SettingsServiceImpl implements SettingsService {
 		// Load settings from plugin data
 		const loadedSettings = await this.plugin.loadData();
 		this.settings = { ...DEFAULT_SETTINGS, ...loadedSettings };
+		
+		// Migrate from old statusFilters structure if needed
+		await this.migrateFromOldStructure(loadedSettings);
+	}
+
+	private async migrateFromOldStructure(loadedSettings: any): Promise<void> {
+		// Check if we have old statusFilters structure that needs migration
+		if (loadedSettings.statusFilters && !this.settings.statusConfigs.some(config => config.filtered !== undefined)) {
+			console.log('OnTask: Migrating from old statusFilters structure');
+			
+			// Migrate statusFilters to filtered property in statusConfigs
+			const statusFilters = loadedSettings.statusFilters;
+			this.settings.statusConfigs = this.settings.statusConfigs.map(config => ({
+				...config,
+				filtered: statusFilters[config.symbol] !== false
+			}));
+			
+			// Save the migrated settings
+			await this.plugin.saveData(this.settings);
+			console.log('OnTask: Migration completed');
+		}
 	}
 
 	getSettings(): OnTaskSettings {
@@ -120,6 +141,25 @@ export class SettingsServiceImpl implements SettingsService {
 
 	getStatusConfig(symbol: string): StatusConfig | undefined {
 		return this.settings.statusConfigs.find(config => config.symbol === symbol);
+	}
+
+	getFilteredStatusConfigs(): StatusConfig[] {
+		return this.settings.statusConfigs.filter(config => config.filtered !== false);
+	}
+
+	getStatusFilters(): Record<string, boolean> {
+		const filters: Record<string, boolean> = {};
+		this.settings.statusConfigs.forEach(config => {
+			filters[config.symbol] = config.filtered !== false;
+		});
+		return filters;
+	}
+
+	async updateStatusFiltered(symbol: string, filtered: boolean): Promise<void> {
+		const config = this.getStatusConfig(symbol);
+		if (config) {
+			await this.updateStatusConfig(symbol, { ...config, filtered });
+		}
 	}
 
 	async updateStatusConfig(symbol: string, config: StatusConfig): Promise<void> {

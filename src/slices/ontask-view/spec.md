@@ -66,7 +66,7 @@ trackedFiles = [
 ## Finding tasks:
 - Example of how to find checkbox `- [ALLOWED_BY_FILTER_LIST]` 
 - How the regex might work: `-\s\[[ALLOWED_BY_FILTER_LIST]\]\s.*`
-- The ALLOWED_BY_FILTER_LIST, comma separted list, is found by data statusFilters in data.json where item equals true.
+- The ALLOWED_BY_FILTER_LIST, comma separated list, is found by statusConfigs in data.json where filtered equals true.
 - Also include a space in the ALLOWED_BY_FILTER_LIST as a synonym to . (to-do task)
 
 ## Top task:
