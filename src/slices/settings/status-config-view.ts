@@ -3,6 +3,9 @@ import { App, Setting, Modal } from 'obsidian';
 import { StatusConfig } from './settings-interface';
 import { StatusConfigService } from './status-config';
 
+// Symbols that should not be editable (TOP_TASK_CONFIG + default to-do symbol + done symbol)
+const NON_EDITABLE_SYMBOLS = ['/', '!', '+', '.', 'x'];
+
 export class StatusConfigView {
 	private containerEl: HTMLElement;
 	private statusConfigService: StatusConfigService;
@@ -45,6 +48,9 @@ export class StatusConfigView {
 			attr: { 'data-index': index.toString() }
 		});
 
+		// Check if this is a non-editable symbol
+		const isNonEditableSymbol = NON_EDITABLE_SYMBOLS.includes(config.symbol);
+
 		// Drag handle
 		const dragHandle = itemEl.createEl('div', { 
 			cls: 'status-config-drag-handle',
@@ -63,13 +69,52 @@ export class StatusConfigView {
 		statusEl.style.padding = '2px 6px';
 		statusEl.style.borderRadius = '4px';
 		statusEl.style.fontWeight = 'bold';
+		
+		// Add lock icon for non-editable symbols
+		if (isNonEditableSymbol) {
+			const lockIcon = previewEl.createEl('span', {
+				cls: 'status-config-symbol-lock',
+				text: '🔒',
+				attr: { title: 'This symbol is read-only (used for task detection)' }
+			});
+			lockIcon.style.marginLeft = '4px';
+			lockIcon.style.fontSize = '10px';
+			lockIcon.style.opacity = '0.7';
+		}
 
 		// Status info
 		const infoEl = itemEl.createEl('div', { cls: 'status-config-info' });
-		infoEl.createEl('div', { 
+		const nameEl = infoEl.createEl('div', { 
 			cls: 'status-config-name',
 			text: config.name
 		});
+		
+		// Add visual indicator for non-editable symbols
+		if (isNonEditableSymbol) {
+			let indicatorText: string;
+			let tooltipText: string;
+			
+			if (config.symbol === '.') {
+				indicatorText = ' (Default)';
+				tooltipText = 'This symbol represents the default task state and cannot be modified';
+			} else if (config.symbol === 'x') {
+				indicatorText = ' (Done)';
+				tooltipText = 'This symbol represents the completed task state and cannot be modified';
+			} else {
+				indicatorText = ' (Top Task)';
+				tooltipText = 'This symbol is used for top task detection and cannot be modified';
+			}
+			
+			const indicatorEl = nameEl.createEl('span', {
+				cls: 'status-config-non-editable-indicator',
+				text: indicatorText,
+				attr: { title: tooltipText }
+			});
+			indicatorEl.style.color = 'var(--text-muted)';
+			indicatorEl.style.fontSize = '0.9em';
+			indicatorEl.style.fontStyle = 'italic';
+		}
+		
 		infoEl.createEl('div', { 
 			cls: 'status-config-description',
 			text: config.description
@@ -81,15 +126,21 @@ export class StatusConfigView {
 			text: 'Edit'
 		});
 
-		// Delete button
-		const deleteBtn = itemEl.createEl('button', { 
-			cls: 'status-config-delete-btn',
-			text: 'Delete'
-		});
+		// Delete button (only show for editable symbols)
+		let deleteBtn: HTMLButtonElement | null = null;
+		
+		if (!isNonEditableSymbol) {
+			deleteBtn = itemEl.createEl('button', { 
+				cls: 'status-config-delete-btn',
+				text: 'Delete'
+			});
+		}
 
 		// Event listeners
 		editBtn.addEventListener('click', () => this.editStatus(config, index));
-		deleteBtn.addEventListener('click', () => this.deleteStatus(index));
+		if (deleteBtn) {
+			deleteBtn.addEventListener('click', () => this.deleteStatus(index));
+		}
 		
 		// Drag and drop
 		this.setupDragAndDrop(itemEl, index);
@@ -113,13 +164,40 @@ export class StatusConfigView {
 		contentEl.empty();
 
 		// Symbol input
-		new Setting(contentEl)
+		const isNonEditableSymbol = NON_EDITABLE_SYMBOLS.includes(config.symbol);
+		let symbolDescription: string;
+		
+		if (isNonEditableSymbol) {
+			if (config.symbol === '.') {
+				symbolDescription = 'Single character symbol for this status (read-only - this is the default task symbol)';
+			} else if (config.symbol === 'x') {
+				symbolDescription = 'Single character symbol for this status (read-only - this is the done/completed symbol)';
+			} else {
+				symbolDescription = 'Single character symbol for this status (read-only - this is a top task symbol)';
+			}
+		} else {
+			symbolDescription = 'Single character symbol for this status';
+		}
+		
+		const symbolSetting = new Setting(contentEl)
 			.setName('Symbol')
-			.setDesc('Single character symbol for this status')
-			.addText(text => text
+			.setDesc(symbolDescription);
+		
+		if (isNonEditableSymbol) {
+			// Make symbol read-only for non-editable symbols
+			symbolSetting.addText(text => {
+				text.setValue(config.symbol)
+					.setDisabled(true)
+					.setPlaceholder('e.g., x, !, ?');
+				// Add visual styling for disabled state
+				text.inputEl.addClass('status-config-modal-symbol-disabled');
+			});
+		} else {
+			symbolSetting.addText(text => text
 				.setValue(config.symbol)
 				.setPlaceholder('e.g., x, !, ?')
 				.onChange(value => config.symbol = value));
+		}
 
 		// Name input
 		new Setting(contentEl)
@@ -228,6 +306,12 @@ export class StatusConfigView {
 		}
 
 		const configToDelete = this.statusConfigs[index];
+		
+		// Don't allow deleting non-editable symbols
+		if (NON_EDITABLE_SYMBOLS.includes(configToDelete.symbol)) {
+			return;
+		}
+
 		await this.statusConfigService.removeStatusConfig(configToDelete.symbol);
 		this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
 		this.render();

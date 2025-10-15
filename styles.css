@@ -787,6 +787,33 @@ If your plugin does not need CSS, delete this file.
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
+/* Disabled symbol input for TOP_TASK_CONFIG symbols */
+.status-config-modal-symbol-disabled {
+	background: var(--background-modifier-border) !important;
+	color: var(--text-muted) !important;
+	border-color: var(--background-modifier-border) !important;
+	cursor: not-allowed !important;
+	opacity: 0.6 !important;
+	position: relative;
+}
+
+.status-config-modal-symbol-disabled::after {
+	content: '🔒';
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 12px;
+	opacity: 0.7;
+}
+
+.status-config-modal-symbol-disabled:hover {
+	background: var(--background-modifier-border) !important;
+	border-color: var(--background-modifier-border) !important;
+	transform: none !important;
+	box-shadow: none !important;
+}
+
 .status-config-header h3 {
 	margin: 0 0 8px 0;
 	color: var(--text-normal);
