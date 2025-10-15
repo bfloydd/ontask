@@ -56,7 +56,8 @@ If your plugin does not need CSS, delete this file.
 .ontask-refresh-btn,
 .ontask-only-today-btn,
 .ontask-configure-button,
-.ontask-filter-button {
+.ontask-filter-button,
+.ontask-header-button {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border: none;
@@ -65,19 +66,24 @@ If your plugin does not need CSS, delete this file.
 	cursor: pointer;
 	font-size: 12px;
 	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .ontask-refresh-btn:hover,
 .ontask-only-today-btn:hover,
 .ontask-configure-button:hover,
-.ontask-filter-button:hover {
+.ontask-filter-button:hover,
+.ontask-header-button:hover {
 	background: var(--interactive-accent-hover);
 }
 
 .ontask-refresh-btn:active,
 .ontask-only-today-btn:active,
 .ontask-configure-button:active,
-.ontask-filter-button:active {
+.ontask-filter-button:active,
+.ontask-header-button:active {
 	transform: translateY(1px);
 }
 
@@ -716,7 +722,7 @@ If your plugin does not need CSS, delete this file.
 .ontask-toptask-hero-content {
 	display: flex;
 	align-items: center;
-	gap: 4px;
+	gap: 8px;
 }
 
 .ontask-toptask-hero-icon {
@@ -967,6 +973,7 @@ If your plugin does not need CSS, delete this file.
 .status-config-modal-buttons button:not(.mod-cta):hover {
 	background: var(--background-modifier-hover);
 	border-color: var(--background-modifier-border-hover);
+
 }
 
 /* Mobile responsive for status configuration */
