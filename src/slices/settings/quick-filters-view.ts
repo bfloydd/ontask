@@ -67,8 +67,7 @@ export class QuickFiltersView {
 		settingItem.addClass('quick-filter-item');
 
 		const setting = new Setting(settingItem)
-			.setName(filter.name)
-			.setDesc(this.getFilterDescription(filter));
+			.setName(filter.name);
 
 		// Enable/disable toggle
 		setting.addToggle(toggle => toggle
@@ -115,13 +114,6 @@ export class QuickFiltersView {
 		});
 	}
 
-	private getFilterDescription(filter: QuickFilter): string {
-		const statusNames = filter.statusSymbols
-			.map(symbol => this.statusConfigService.getStatusConfig(symbol)?.name)
-			.filter(Boolean)
-			.join(', ');
-		return `Statuses: ${statusNames}`;
-	}
 
 	private showAddQuickFilterModal(): void {
 		this.showQuickFilterModal();
