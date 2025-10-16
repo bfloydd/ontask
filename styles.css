@@ -23,9 +23,9 @@
 
 /* OnTaskView Styles */
 .ontask-header {
-	border-bottom: 1px solid var(--background-modifier-border);
+	/* border-bottom: 1px solid var(--background-modifier-border); */
 	padding-bottom: 10px;
-	margin-bottom: 15px;
+	/* margin-bottom: 15px; */
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -446,7 +446,7 @@
 
 /* Top Task Section Styles */
 .ontask-toptask-hero-section {
-	margin-bottom: 25px;
+	/* margin-bottom: 25px; */
 	border: 8px solid var(--text-error);
 	border-radius: 10px;
 	background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);

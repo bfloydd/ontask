@@ -1,5 +1,5 @@
 // Quick Filters view component for settings
-import { App, Setting } from 'obsidian';
+import { App, Setting, Modal } from 'obsidian';
 import { DataService, QuickFilter } from '../data/data-service-interface';
 import { StatusConfigService } from './status-config';
 
@@ -132,7 +132,7 @@ export class QuickFiltersView {
 	}
 
 	private showQuickFilterModal(existingFilter?: QuickFilter): void {
-		const modal = new (this.app as any).modal(this.app);
+		const modal = new Modal(this.app);
 		modal.titleEl.textContent = existingFilter ? 'Edit Quick Filter' : 'Add Quick Filter';
 
 		const content = modal.contentEl;
@@ -220,7 +220,7 @@ export class QuickFiltersView {
 	}
 
 	private showDeleteConfirmation(filter: QuickFilter): void {
-		const modal = new (this.app as any).modal(this.app);
+		const modal = new Modal(this.app);
 		modal.titleEl.textContent = 'Delete Quick Filter';
 
 		const content = modal.contentEl;
