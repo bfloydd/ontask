@@ -1332,9 +1332,6 @@ export class OnTaskView extends ItemView {
 		// Create header
 		const header = menu.createDiv();
 		header.createEl('h3', { text: 'Status Filters' });
-		header.style.marginBottom = '12px';
-		header.style.borderBottom = '1px solid var(--background-modifier-border)';
-		header.style.paddingBottom = '8px';
 
 		// Create checkboxes for each status
 		const checkboxesContainer = menu.createDiv();
@@ -1475,21 +1472,19 @@ export class OnTaskView extends ItemView {
 		const separator = menu.createDiv();
 		separator.style.borderTop = '1px solid var(--background-modifier-border)';
 		separator.style.margin = '12px 0';
-		separator.style.paddingTop = '8px';
+		// separator.style.paddingTop = '8px';
 
 		// Create Quick Filters header
 		const quickFiltersHeader = menu.createDiv();
-		quickFiltersHeader.createEl('h4', { text: 'Quick Filters' });
-		quickFiltersHeader.style.marginBottom = '8px';
-		quickFiltersHeader.style.fontSize = '14px';
-		quickFiltersHeader.style.fontWeight = '500';
+		quickFiltersHeader.createEl('h3', { text: 'Quick Filters' });
+		// quickFiltersHeader.style.marginTop = '14px';
 
 		// Create Quick Filters buttons container
 		const quickFiltersContainer = menu.createDiv();
 		quickFiltersContainer.style.display = 'flex';
 		quickFiltersContainer.style.flexWrap = 'wrap';
 		quickFiltersContainer.style.gap = '6px';
-		quickFiltersContainer.style.marginBottom = '8px';
+		// quickFiltersContainer.style.marginBottom = '8px';
 
 		quickFilters.forEach(filter => {
 			const button = quickFiltersContainer.createEl('button', { text: filter.name });

@@ -1066,10 +1066,11 @@
 }
 
 .ontask-filters-menu h3 {
-	margin: 0;
+	margin: 0 0 12px 0;
 	color: var(--text-normal);
 	font-size: 16px;
 	font-weight: 600;
+	padding-bottom: 8px;
 }
 
 .ontask-filter-checkbox-item {
