@@ -25,3 +25,4 @@ export class StatusConfigSettingsView {
 		statusConfigView.render();
 	}
 }
+
