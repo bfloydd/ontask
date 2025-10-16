@@ -6,6 +6,7 @@ import { StatusConfigService } from '../settings/status-config';
 import { DataService } from '../data/data-service-interface';
 import { ContextMenuService } from './context-menu-service';
 import { TaskLoadingService } from './task-loading-service';
+import { DOMRenderingService } from './dom-rendering-service';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -18,6 +19,7 @@ export class OnTaskView extends ItemView {
 	private eventSystem: EventSystem;
 	private contextMenuService: ContextMenuService;
 	private taskLoadingService: TaskLoadingService;
+	private domRenderingService: DOMRenderingService;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
 	private onlyTodayButton: HTMLButtonElement;
@@ -85,6 +87,18 @@ export class OnTaskView extends ItemView {
 			(checkbox: any, newStatus: string) => this.updateCheckboxStatus(checkbox, newStatus),
 			() => this.refreshCheckboxes(),
 			() => this.taskLoadingService.resetTracking()
+		);
+		
+		// Initialize DOM rendering service
+		this.domRenderingService = new DOMRenderingService(
+			this.statusConfigService,
+			this.contextMenuService,
+			this.app,
+			(filePath: string, lineNumber: number) => this.openFile(filePath, lineNumber),
+			(filePath: string) => this.getFileName(filePath),
+			(line: string) => this.parseCheckboxLine(line),
+			(statusSymbol: string) => this.getStatusDisplayText(statusSymbol),
+			(element: HTMLElement, task: any) => this.addMobileTouchHandlers(element, task)
 		);
 	}
 
@@ -216,7 +230,7 @@ export class OnTaskView extends ItemView {
 			loadingEl.remove();
 			
 			// Render checkboxes
-			this.renderCheckboxes(contentArea);
+			this.domRenderingService.renderCheckboxes(contentArea, this.checkboxes, this.displayedTasksCount);
 			
 			// Update button states
 			this.updateButtonStates();
@@ -278,7 +292,7 @@ export class OnTaskView extends ItemView {
 				
 			} else {
 				// Create new top task section immediately
-				this.createTopTaskSection(contentArea, topTask);
+				this.domRenderingService.createTopTaskSection(contentArea, topTask);
 			}
 		} else {
 			// If no top task, remove the section if it exists
@@ -288,62 +302,6 @@ export class OnTaskView extends ItemView {
 		}
 	}
 
-	private createTopTaskSection(contentArea: HTMLElement, topTask: any): void {
-		const topTaskSection = contentArea.createDiv('ontask-toptask-hero-section');
-		topTaskSection.addClass('ontask-file-section');
-		
-		// Top task header
-		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
-		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
-		
-		// Top task display
-		const topTaskDisplay = topTaskSection.createDiv('ontask-toptask-hero-display');
-		topTaskDisplay.addClass('ontask-toptask-hero-item');
-		
-		// Create top task content
-		const topTaskContent = topTaskDisplay.createDiv('ontask-toptask-hero-content');
-		
-		// Top task status display
-		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
-		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
-		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
-		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
-		topTaskStatusDisplay.style.cursor = 'pointer';
-		topTaskStatusDisplay.addEventListener('click', () => {
-			this.openFile(topTask.file?.path || '', topTask.lineNumber);
-		});
-		
-		// Top task text
-		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
-		topTaskText.textContent = remainingText || 'Top Task';
-		topTaskText.style.cursor = 'pointer';
-		topTaskText.addEventListener('click', () => {
-			this.openFile(topTask.file?.path || '', topTask.lineNumber);
-		});
-		
-		// Top task source
-		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
-		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
-		topTaskSource.style.fontSize = '12px';
-		topTaskSource.style.color = 'var(--text-muted)';
-		topTaskSource.style.marginTop = '4px';
-		
-		topTaskContent.appendChild(topTaskStatusDisplay);
-		topTaskContent.appendChild(topTaskText);
-		topTaskContent.appendChild(topTaskSource);
-		
-		// Add context menu event listener to the top task
-		topTaskDisplay.addEventListener('contextmenu', (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			this.contextMenuService.showContextMenu(e, topTask);
-		});
-		
-		// Insert at the beginning of content area
-		contentArea.insertBefore(topTaskSection, contentArea.firstChild);
-		
-		console.log('OnTask View: Top task section created and inserted');
-	}
 
 	private async renderCheckboxesOptimized(contentArea: HTMLElement): Promise<void> {
 		
@@ -361,15 +319,15 @@ export class OnTaskView extends ItemView {
 
 		// Render top task prominently at the top if it exists
 		if (topTask) {
-			const topTaskSection = this.createTopTaskSectionElement(topTask);
+			const topTaskSection = this.domRenderingService.createTopTaskSectionElement(topTask);
 			fragment.appendChild(topTaskSection);
 		}
 
 		// Group all checkboxes by file (including the top task - it should appear in both the Hero section and list per spec)
-		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
+		const checkboxesByFile = this.domRenderingService.groupCheckboxesByFile(this.checkboxes);
 		
 		// Sort files by modification date (latest first)
-		const sortedFiles = this.sortFilesByDate(checkboxesByFile);
+		const sortedFiles = this.domRenderingService.sortFilesByDate(checkboxesByFile);
 		
 		// Calculate how many tasks to show based on pagination
 		let tasksShown = 0;
@@ -383,7 +341,7 @@ export class OnTaskView extends ItemView {
 				break; // Stop rendering if we've reached the limit
 			}
 			
-			const fileSection = this.createFileSectionElement(filePath, fileCheckboxes, maxTasksToShow, tasksShown);
+			const fileSection = this.domRenderingService.createFileSectionElement(filePath, fileCheckboxes, maxTasksToShow, tasksShown);
 			fileSections.push(fileSection);
 			
 			// Update tasks shown count
@@ -396,161 +354,14 @@ export class OnTaskView extends ItemView {
 		fileSections.forEach(section => fragment.appendChild(section));
 		
 		// Always show Load More button - it will find more tasks if available
-		const loadMoreSection = this.createLoadMoreButtonElement();
+		const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
 		fragment.appendChild(loadMoreSection);
 		
 		// Append fragment to content area in one operation
 		contentArea.appendChild(fragment);
 	}
 
-	private renderCheckboxes(contentArea: HTMLElement): void {
-		
-		if (this.checkboxes.length === 0) {
-			const emptyEl = contentArea.createDiv('ontask-empty');
-			emptyEl.textContent = 'No checkboxes found.';
-			return;
-		}
 
-		// Find the top task (the winner)
-		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
-		console.log('OnTask View: Looking for top task. Total checkboxes:', this.checkboxes.length);
-		console.log('OnTask View: Top task found:', topTask ? 'YES' : 'NO');
-		if (topTask) {
-			console.log('OnTask View: Top task details:', {
-				lineContent: topTask.lineContent,
-				isTopTask: topTask.isTopTask,
-				file: topTask.file?.path
-			});
-		}
-
-		// Render top task prominently at the top if it exists
-		if (topTask) {
-			const topTaskSection = contentArea.createDiv('ontask-toptask-hero-section');
-			topTaskSection.addClass('ontask-file-section');
-			
-			// Top task header
-			const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
-			topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
-			
-			// Top task display
-			const topTaskDisplay = topTaskSection.createDiv('ontask-toptask-hero-display');
-			topTaskDisplay.addClass('ontask-toptask-hero-item');
-			
-			// Create top task content
-			const topTaskContent = topTaskDisplay.createDiv('ontask-toptask-hero-content');
-			
-			// Top task status display with colors
-			const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
-			const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
-			topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
-			topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
-			topTaskStatusDisplay.style.cursor = 'pointer';
-			
-			// Apply colors from status configuration
-			const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
-			const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-			topTaskStatusDisplay.style.color = statusColor;
-			topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
-			topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
-			
-			topTaskStatusDisplay.addEventListener('click', () => {
-				this.openFile(topTask.file?.path || '', topTask.lineNumber);
-			});
-			
-			// Top task text
-			const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
-			topTaskText.textContent = remainingText || 'Top Task';
-			topTaskText.style.cursor = 'pointer';
-			topTaskText.addEventListener('click', () => {
-				this.openFile(topTask.file?.path || '', topTask.lineNumber);
-			});
-			
-			// Top task source
-			const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
-			topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
-			topTaskSource.style.fontSize = '12px';
-			topTaskSource.style.color = 'var(--text-muted)';
-			topTaskSource.style.marginTop = '4px';
-			
-			topTaskContent.appendChild(topTaskStatusDisplay);
-			topTaskContent.appendChild(topTaskText);
-			topTaskContent.appendChild(topTaskSource);
-			
-			// Add context menu event listener to the top task
-			topTaskDisplay.addEventListener('contextmenu', (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				this.contextMenuService.showContextMenu(e, topTask);
-			});
-
-			// Add touch support for mobile devices with long-press detection
-			this.addMobileTouchHandlers(topTaskDisplay, topTask);
-		}
-
-		// Group all checkboxes by file (including the top task - it should appear in both the Hero section and list per spec)
-		const checkboxesByFile = this.groupCheckboxesByFile(this.checkboxes);
-		
-		// Sort files by modification date (latest first)
-		const sortedFiles = this.sortFilesByDate(checkboxesByFile);
-		
-		// Calculate how many tasks to show based on pagination
-		let tasksShown = 0;
-		const maxTasksToShow = this.displayedTasksCount;
-		
-		// Render each file's checkboxes with pagination
-		for (const [filePath, fileCheckboxes] of sortedFiles) {
-			if (tasksShown >= maxTasksToShow) {
-				break; // Stop rendering if we've reached the limit
-			}
-			
-			const fileSection = contentArea.createDiv('ontask-file-section');
-			fileSection.setAttribute('data-file-path', filePath);
-			
-			// File header
-			const fileHeader = fileSection.createDiv('ontask-file-header');
-			fileHeader.createEl('h3', { text: this.getFileName(filePath) });
-			
-			// Calculate how many tasks from this file we can show
-			const remainingSlots = maxTasksToShow - tasksShown;
-			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
-			
-			// Checkboxes list
-			const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
-			
-			for (let i = 0; i < tasksToShowFromFile; i++) {
-				const checkbox = fileCheckboxes[i];
-				const checkboxEl = this.createCheckboxElement(checkbox);
-				checkboxesList.appendChild(checkboxEl);
-				tasksShown++;
-			}
-		}
-		
-		// Always show Load More button - it will find more tasks if available
-		this.addLoadMoreButton(contentArea);
-	}
-
-	private addLoadMoreButton(contentArea: HTMLElement): void {
-		// Remove existing load more button if it exists
-		if (this.loadMoreButton) {
-			this.loadMoreButton.remove();
-		}
-
-		// Remove any existing load more sections to prevent duplicates
-		const existingSections = contentArea.querySelectorAll('.ontask-load-more-section');
-		existingSections.forEach(section => section.remove());
-
-		const loadMoreSection = contentArea.createDiv('ontask-load-more-section');
-		loadMoreSection.addClass('ontask-file-section');
-		
-		this.loadMoreButton = loadMoreSection.createEl('button', {
-			text: 'Load More',
-			cls: 'ontask-load-more-button'
-		});
-		
-		this.loadMoreButton.addEventListener('click', async () => {
-			await this.loadMoreTasks();
-		});
-	}
 
 	private async loadMoreTasks(): Promise<void> {
 		// Find the content area
@@ -579,152 +390,22 @@ export class OnTaskView extends ItemView {
 		this.displayedTasksCount += additionalTasks.length;
 		
 		// Render the additional tasks
-		this.renderAdditionalTasks(contentArea, additionalTasks.map(task => ({
+		this.domRenderingService.renderAdditionalTasks(contentArea, additionalTasks.map(task => ({
 			checkbox: task,
 			filePath: task.file?.path || ''
 		})));
 		
 		// Always add Load More button - it will find more tasks if available
-		this.addLoadMoreButton(contentArea);
+		this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
 		
 		console.log(`OnTask View: Loaded ${additionalTasks.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${this.checkboxes.length}`);
 		console.log(`OnTask View: Current position - file ${this.taskLoadingService.getCurrentFileIndex()}, task ${this.taskLoadingService.getCurrentTaskIndex()}`);
 	}
 
-	private renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
-		console.log('OnTask View: Rendering additional tasks');
-		
-		// Group additional tasks by file
-		const tasksByFile = new Map<string, any[]>();
-		for (const task of additionalTasks) {
-			if (!tasksByFile.has(task.filePath)) {
-				tasksByFile.set(task.filePath, []);
-			}
-			tasksByFile.get(task.filePath)!.push(task.checkbox);
-		}
-		
-		// Render tasks for each file
-		for (const [filePath, fileTasks] of tasksByFile) {
-			// Check if this file section already exists
-			let existingFileSection = contentArea.querySelector(`[data-file-path="${filePath}"]`) as HTMLElement;
-			
-			if (existingFileSection) {
-				// Update existing file section
-				this.appendTasksToExistingFile(existingFileSection, fileTasks, filePath);
-			} else {
-				// Create new file section
-				this.createNewFileSection(contentArea, fileTasks, filePath);
-			}
-		}
-	}
 
-	private appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: any[], filePath: string): void {
-		// Find the checkboxes list in the existing file section
-		const checkboxesList = fileSection.querySelector('.ontask-checkboxes-list') as HTMLElement;
-		if (!checkboxesList) {
-			console.error('Checkboxes list not found in existing file section');
-			return;
-		}
-		
-		// Add the new tasks
-		for (const checkbox of fileTasks) {
-			const checkboxEl = this.createCheckboxElement(checkbox);
-			checkboxesList.appendChild(checkboxEl);
-		}
-		
-		// Update the task count in the header
-		const fileCount = fileSection.querySelector('.ontask-file-count') as HTMLElement;
-		if (fileCount) {
-			const currentCount = checkboxesList.children.length;
-			fileCount.textContent = `${currentCount} task${currentCount === 1 ? '' : 's'}`;
-		}
-		
-		console.log(`OnTask View: Appended ${fileTasks.length} tasks to existing file section: ${filePath}`);
-	}
 
-	private createNewFileSection(contentArea: HTMLElement, fileTasks: any[], filePath: string): void {
-		const fileSection = contentArea.createDiv('ontask-file-section');
-		fileSection.setAttribute('data-file-path', filePath);
-		
-		// File header
-		const fileHeader = fileSection.createDiv('ontask-file-header');
-		fileHeader.createEl('h3', { text: this.getFileName(filePath) });
-		
-		// Checkboxes list
-		const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
-		
-		for (const checkbox of fileTasks) {
-			const checkboxEl = this.createCheckboxElement(checkbox);
-			checkboxesList.appendChild(checkboxEl);
-		}
-		
-	}
 
-	private groupCheckboxesByFile(checkboxes: any[]): Map<string, any[]> {
-		const grouped = new Map<string, any[]>();
-		
-		for (const checkbox of checkboxes) {
-			const filePath = checkbox.file?.path || 'Unknown';
-			if (!grouped.has(filePath)) {
-				grouped.set(filePath, []);
-			}
-			grouped.get(filePath)!.push(checkbox);
-		}
-		
-		return grouped;
-	}
 
-	private sortFilesByDate(checkboxesByFile: Map<string, any[]>): Map<string, any[]> {
-		// Convert Map to array of entries for sorting
-		const fileEntries = Array.from(checkboxesByFile.entries());
-		
-		// Sort by date in filename (latest first)
-		fileEntries.sort((a, b) => {
-			try {
-				const fileNameA = this.getFileName(a[0]);
-				const fileNameB = this.getFileName(b[0]);
-				
-				// Extract date from filename (format: YYYY-MM-DD)
-				const dateMatchA = fileNameA.match(/(\d{4}-\d{2}-\d{2})/);
-				const dateMatchB = fileNameB.match(/(\d{4}-\d{2}-\d{2})/);
-				
-				if (!dateMatchA || !dateMatchB) {
-					// If no date found in filename, fall back to file modification date
-					const fileA = this.app.vault.getAbstractFileByPath(a[0]) as TFile;
-					const fileB = this.app.vault.getAbstractFileByPath(b[0]) as TFile;
-					
-				if (!fileA || !fileB) {
-					return 0;
-				}
-					
-					const dateA = fileA.stat?.mtime || fileA.stat?.ctime || 0;
-					const dateB = fileB.stat?.mtime || fileB.stat?.ctime || 0;
-					
-					return dateB - dateA;
-				}
-				
-				// Parse dates from filename
-				const dateA = new Date(dateMatchA[1]);
-				const dateB = new Date(dateMatchB[1]);
-				
-				
-				// Sort latest first (descending order)
-				return dateB.getTime() - dateA.getTime();
-			} catch (error) {
-				console.error('OnTask View: Error sorting files by date:', error);
-				// If there's an error, maintain original order
-				return 0;
-			}
-		});
-		
-		// Convert back to Map
-		const sortedMap = new Map<string, any[]>();
-		for (const [filePath, checkboxes] of fileEntries) {
-			sortedMap.set(filePath, checkboxes);
-		}
-		
-		return sortedMap;
-	}
 
 	/**
 	 * Centralized method for displaying status symbols consistently across the plugin
@@ -735,68 +416,6 @@ export class OnTaskView extends ItemView {
 		return statusSymbol;
 	}
 
-	private createCheckboxElement(checkbox: any): HTMLElement {
-		const checkboxEl = document.createElement('div');
-		checkboxEl.addClass('ontask-checkbox-item');
-		
-		// Add top task indicator
-		if (checkbox.isTopTask) {
-			checkboxEl.addClass('ontask-toptask-hero');
-		}
-		
-		// Create checkbox container
-		const checkboxContainer = document.createElement('div');
-		checkboxContainer.addClass('ontask-checkbox-label');
-		
-		// Create status display with colors from configuration
-		const statusDisplay = document.createElement('div');
-		statusDisplay.addClass('ontask-checkbox-display');
-		
-		// Extract status symbol from checkbox content
-		const { statusSymbol, remainingText } = this.parseCheckboxLine(checkbox.lineContent);
-		statusDisplay.setAttribute('data-status', statusSymbol);
-		statusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
-		
-		// Apply colors from status configuration
-		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
-		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-		statusDisplay.style.color = statusColor;
-		statusDisplay.style.backgroundColor = statusBackgroundColor;
-		statusDisplay.style.border = `1px solid ${statusColor}`;
-		
-		// Create text content
-		const textEl = document.createElement('span');
-		textEl.textContent = remainingText || 'Task';
-		textEl.addClass('ontask-checkbox-text');
-		
-		// Add click handler for status display (to open file)
-		statusDisplay.addEventListener('click', () => {
-			this.openFile(checkbox.file?.path || '', checkbox.lineNumber);
-		});
-		statusDisplay.style.cursor = 'pointer';
-		
-		// Add click handler for text (to open file)
-		textEl.addEventListener('click', () => {
-			this.openFile(checkbox.file?.path || '', checkbox.lineNumber);
-		});
-		textEl.style.cursor = 'pointer';
-		
-		// Add context menu event listener to the task row
-		checkboxEl.addEventListener('contextmenu', (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			this.contextMenuService.showContextMenu(e, checkbox);
-		});
-
-		// Add touch support for mobile devices with long-press detection
-		this.addMobileTouchHandlers(checkboxEl, checkbox);
-		
-		checkboxContainer.appendChild(statusDisplay);
-		checkboxContainer.appendChild(textEl);
-		checkboxEl.appendChild(checkboxContainer);
-		
-		return checkboxEl;
-	}
 
 	private async toggleCheckbox(checkbox: any, isCompleted: boolean): Promise<void> {
 		try {
@@ -1026,7 +645,10 @@ export class OnTaskView extends ItemView {
 		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
 			console.log('OnTask View: Checkboxes updated event received, updating top task section');
 			// Only update the top task section without full refresh
-			this.updateTopTaskSection();
+		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
+		if (contentArea) {
+			this.domRenderingService.updateTopTaskSection(contentArea, this.checkboxes);
+		}
 		});
 		
 		// Listen for file modifications
@@ -1305,99 +927,10 @@ export class OnTaskView extends ItemView {
 	/**
 	 * Create top task section element for optimized rendering
 	 */
-	private createTopTaskSectionElement(topTask: any): HTMLElement {
-		const topTaskSection = document.createElement('div');
-		topTaskSection.className = 'ontask-toptask-hero-section ontask-file-section';
-		
-		// Top task header
-		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
-		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
-		
-		// Top task display
-		const topTaskDisplay = topTaskSection.createDiv('ontask-toptask-hero-display');
-		topTaskDisplay.addClass('ontask-toptask-hero-item');
-		
-		// Create top task content
-		const topTaskContent = topTaskDisplay.createDiv('ontask-toptask-hero-content');
-		
-		// Top task status display with colors
-		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
-		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
-		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
-		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
-		topTaskStatusDisplay.style.cursor = 'pointer';
-		
-		// Apply colors from status configuration
-		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
-		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-		topTaskStatusDisplay.style.color = statusColor;
-		topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
-		topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
-		
-		topTaskStatusDisplay.addEventListener('click', () => {
-			this.openFile(topTask.file?.path || '', topTask.lineNumber);
-		});
-		
-		// Top task text
-		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
-		topTaskText.textContent = remainingText || 'Top Task';
-		topTaskText.style.cursor = 'pointer';
-		topTaskText.addEventListener('click', () => {
-			this.openFile(topTask.file?.path || '', topTask.lineNumber);
-		});
-		
-		// Top task source
-		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
-		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
-		topTaskSource.style.fontSize = '12px';
-		topTaskSource.style.color = 'var(--text-muted)';
-		topTaskSource.style.marginTop = '4px';
-		
-		topTaskContent.appendChild(topTaskStatusDisplay);
-		topTaskContent.appendChild(topTaskText);
-		topTaskContent.appendChild(topTaskSource);
-		
-		// Add context menu event listener to the top task
-		topTaskDisplay.addEventListener('contextmenu', (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			this.contextMenuService.showContextMenu(e, topTask);
-		});
-
-		// Add touch support for mobile devices with long-press detection
-		this.addMobileTouchHandlers(topTaskDisplay, topTask);
-		
-		return topTaskSection;
-	}
 
 	/**
 	 * Create file section element for optimized rendering
 	 */
-	private createFileSectionElement(filePath: string, fileCheckboxes: any[], maxTasksToShow: number, tasksShown: number): HTMLElement {
-		const fileSection = document.createElement('div');
-		fileSection.className = 'ontask-file-section';
-		fileSection.setAttribute('data-file-path', filePath);
-		
-		// File header
-		const fileHeader = fileSection.createDiv('ontask-file-header');
-		fileHeader.createEl('h3', { text: this.getFileName(filePath) });
-		
-		// Calculate how many tasks from this file we can show
-		const remainingSlots = maxTasksToShow - tasksShown;
-		const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
-		
-		
-		// Checkboxes list
-		const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
-		
-		for (let i = 0; i < tasksToShowFromFile; i++) {
-			const checkbox = fileCheckboxes[i];
-			const checkboxEl = this.createCheckboxElement(checkbox);
-			checkboxesList.appendChild(checkboxEl);
-		}
-		
-		return fileSection;
-	}
 
 	/**
 	 * Process top tasks from the displayed tasks (as per spec)
@@ -1469,20 +1002,4 @@ export class OnTaskView extends ItemView {
 	/**
 	 * Create load more button element for optimized rendering
 	 */
-	private createLoadMoreButtonElement(): HTMLElement {
-		const loadMoreSection = document.createElement('div');
-		loadMoreSection.className = 'ontask-load-more-section ontask-file-section';
-		
-		// Create button using vanilla DOM methods instead of createEl
-		this.loadMoreButton = document.createElement('button');
-		this.loadMoreButton.textContent = 'Load More';
-		this.loadMoreButton.className = 'ontask-load-more-button';
-		loadMoreSection.appendChild(this.loadMoreButton);
-		
-		this.loadMoreButton.addEventListener('click', async () => {
-			await this.loadMoreTasks();
-		});
-		
-		return loadMoreSection;
-	}
 }
