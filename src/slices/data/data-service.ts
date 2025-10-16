@@ -1,7 +1,7 @@
 // Data service implementation for handling data.json operations
 
 import { App, Plugin } from 'obsidian';
-import { DataService, StatusConfig } from './data-service-interface';
+import { DataService, StatusConfig, QuickFilter } from './data-service-interface';
 import { DEFAULT_STATUS_CONFIGS } from '../settings/settings-interface';
 
 export class DataServiceImpl implements DataService {
@@ -21,6 +21,25 @@ export class DataServiceImpl implements DataService {
 		// Initialize statusConfigs with defaults if not present
 		if (!this.data.statusConfigs || this.data.statusConfigs.length === 0) {
 			this.data.statusConfigs = [...DEFAULT_STATUS_CONFIGS];
+			await this.saveData();
+		}
+		
+		// Initialize quickFilters with defaults if not present
+		if (!this.data.quickFilters || this.data.quickFilters.length === 0) {
+			this.data.quickFilters = [
+				{
+					id: 'review',
+					name: 'Review',
+					statusSymbols: ['r'],
+					enabled: true
+				},
+				{
+					id: 'lagging',
+					name: 'Lagging',
+					statusSymbols: ['.', '>', 'r', 'b', '?'],
+					enabled: true
+				}
+			];
 			await this.saveData();
 		}
 	}
@@ -90,6 +109,36 @@ export class DataServiceImpl implements DataService {
 
 	async reorderStatusConfigs(configs: StatusConfig[]): Promise<void> {
 		this.data.statusConfigs = [...configs];
+		await this.saveData();
+	}
+
+	// Quick filter methods
+	getQuickFilters(): QuickFilter[] {
+		return [...(this.data.quickFilters || [])];
+	}
+
+	getQuickFilter(id: string): QuickFilter | undefined {
+		return this.data.quickFilters?.find((filter: QuickFilter) => filter.id === id);
+	}
+
+	async addQuickFilter(filter: QuickFilter): Promise<void> {
+		if (!this.data.quickFilters) {
+			this.data.quickFilters = [];
+		}
+		this.data.quickFilters.push({ ...filter });
+		await this.saveData();
+	}
+
+	async updateQuickFilter(id: string, filter: QuickFilter): Promise<void> {
+		const index = this.data.quickFilters.findIndex((f: QuickFilter) => f.id === id);
+		if (index !== -1) {
+			this.data.quickFilters[index] = { ...filter };
+			await this.saveData();
+		}
+	}
+
+	async removeQuickFilter(id: string): Promise<void> {
+		this.data.quickFilters = this.data.quickFilters.filter((f: QuickFilter) => f.id !== id);
 		await this.saveData();
 	}
 }

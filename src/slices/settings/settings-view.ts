@@ -1,165 +1,96 @@
 // Settings slice - UI view implementation
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab } from 'obsidian';
 import { SettingsService } from './settings-interface';
-import { SettingsServiceImpl } from './settings-service';
-import { StatusConfigView } from './status-config-view';
 import { StatusConfigService } from './status-config';
+import { DataService } from '../data/data-service-interface';
+import { GeneralSettingsView } from './general-settings-view';
+import { StatusConfigSettingsView } from './status-config-settings-view';
+import { QuickFiltersView } from './quick-filters-view';
 
 export class OnTaskSettingsTab extends PluginSettingTab {
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
+	private dataService: DataService;
+	private currentTab: 'general' | 'status' | 'quick-filters' = 'general';
 
-	constructor(app: App, plugin: any, settingsService: SettingsService, statusConfigService: StatusConfigService) {
+	constructor(app: App, plugin: any, settingsService: SettingsService, statusConfigService: StatusConfigService, dataService: DataService) {
 		super(app, plugin);
 		this.settingsService = settingsService;
 		this.statusConfigService = statusConfigService;
+		this.dataService = dataService;
 	}
 
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		// Basic settings
-		this.renderBasicSettings(containerEl);
-		
-		// Checkbox source settings
-		this.renderCheckboxSourceSettings(containerEl);
+		// Render tab navigation
+		this.renderTabNavigation(containerEl);
 
-		// Add separator
-		containerEl.createEl('hr');
-
-		// Status configuration settings
-		this.renderStatusConfiguration(containerEl);
+		// Render content based on current tab
+		this.renderTabContent(containerEl);
 	}
 
-	private renderBasicSettings(containerEl: HTMLElement): void {
-		const settings = this.settingsService.getSettings();
+	private renderTabNavigation(containerEl: HTMLElement): void {
+		const tabContainer = containerEl.createDiv();
+		tabContainer.addClass('ontask-settings-tabs');
+		tabContainer.style.display = 'flex';
+		tabContainer.style.borderBottom = '1px solid var(--background-modifier-border)';
+		tabContainer.style.marginBottom = '16px';
 
+		const tabs = [
+			{ id: 'general', name: 'General' },
+			{ id: 'status', name: 'Status Configuration' },
+			{ id: 'quick-filters', name: 'Quick Filters' }
+		];
 
-		new Setting(containerEl)
-			.setName('Only show today')
-			.setDesc('When enabled, only tasks from today\'s files will be displayed in the task view')
-			.addToggle(toggle => toggle
-				.setValue(settings.onlyShowToday)
-				.onChange(async (value) => {
-					await this.settingsService.updateSetting('onlyShowToday', value);
-				}));
+		tabs.forEach(tab => {
+			const tabEl = tabContainer.createEl('button', { text: tab.name });
+			tabEl.addClass('ontask-tab-button');
+			tabEl.style.padding = '8px 16px';
+			tabEl.style.border = 'none';
+			tabEl.style.background = 'transparent';
+			tabEl.style.cursor = 'pointer';
+			tabEl.style.borderBottom = this.currentTab === tab.id ? '2px solid var(--interactive-accent)' : '2px solid transparent';
+			tabEl.style.color = this.currentTab === tab.id ? 'var(--interactive-accent)' : 'var(--text-muted)';
 
-		new Setting(containerEl)
-			.setName('Show top task in status bar')
-			.setDesc('When enabled, the current top task will be displayed in the status bar')
-			.addToggle(toggle => toggle
-				.setValue(settings.showTopTaskInStatusBar)
-				.onChange(async (value) => {
-					await this.settingsService.updateSetting('showTopTaskInStatusBar', value);
-					// Trigger status bar update
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'showTopTaskInStatusBar', 
-						value 
-					});
-				}));
-
-		new Setting(containerEl)
-			.setName('Show top task in editor')
-			.setDesc('When enabled, the current top task will be displayed at the top of every editor page below the heading')
-			.addToggle(toggle => toggle
-				.setValue(settings.showTopTaskInEditor)
-				.onChange(async (value) => {
-					await this.settingsService.updateSetting('showTopTaskInEditor', value);
-					// Trigger editor update
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'showTopTaskInEditor', 
-						value 
-					});
-				}));
-
-		new Setting(containerEl)
-			.setName('Load more limit')
-			.setDesc('Number of tasks to load per batch for better performance. This limit applies to both initial load and all subsequent Load More operations.')
-			.addText(text => text
-				.setValue(settings.loadMoreLimit.toString())
-				.setPlaceholder('10')
-				.onChange(async (value) => {
-					const numValue = parseInt(value) || 10;
-					await this.settingsService.updateSetting('loadMoreLimit', numValue);
-				}));
+			tabEl.addEventListener('click', () => {
+				this.currentTab = tab.id as 'general' | 'status' | 'quick-filters';
+				this.display(); // Re-render with new tab
+			});
+		});
 	}
 
-	private renderCheckboxSourceSettings(containerEl: HTMLElement): void {
-		const settings = this.settingsService.getSettings();
+	private renderTabContent(containerEl: HTMLElement): void {
+		const contentContainer = containerEl.createDiv();
+		contentContainer.addClass('ontask-settings-content');
 
-		// Checkbox source selection
-		const sourceSetting = new Setting(containerEl)
-			.setName('Checkbox source')
-			.setDesc('Choose where to find checkboxes from')
-			.addDropdown(dropdown => dropdown
-				.addOption('streams', 'Streams Plugin')
-				.addOption('daily-notes', 'Daily Notes')
-				.addOption('folder', 'Custom Folder')
-				.setValue(settings.checkboxSource)
-				.onChange(async (value: 'streams' | 'daily-notes' | 'folder') => {
-					await this.settingsService.updateSetting('checkboxSource', value);
-					// Trigger checkbox source change
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'checkboxSource', 
-						value 
-					});
-					// Refresh settings to show/hide folder options
-					this.display();
-				}));
-
-		// Add warning for Daily Notes if plugin is not available
-		if (settings.checkboxSource === 'daily-notes') {
-			if (!this.settingsService.isDailyNotesAvailable()) {
-				const warningEl = containerEl.createEl('div', { 
-					cls: 'setting-item-description',
-					text: '⚠️ Daily Notes plugin is not enabled. Please enable it in Settings → Community plugins.'
-				});
-				warningEl.style.color = 'var(--text-error)';
-				warningEl.style.fontWeight = 'bold';
-				warningEl.style.marginTop = '8px';
-			}
+		switch (this.currentTab) {
+			case 'general':
+				this.renderGeneralSettings(contentContainer);
+				break;
+			case 'status':
+				this.renderStatusConfiguration(contentContainer);
+				break;
+			case 'quick-filters':
+				this.renderQuickFiltersSettings(contentContainer);
+				break;
 		}
+	}
 
-		// Folder path setting (only show when folder is selected)
-		if (settings.checkboxSource === 'folder') {
-			new Setting(containerEl)
-				.setName('Folder path')
-				.setDesc('Path to the folder containing your task files')
-				.addText(text => text
-					.setPlaceholder('e.g., /My Tasks or My Tasks')
-					.setValue(settings.customFolderPath)
-					.onChange(async (value) => {
-						await this.settingsService.updateSetting('customFolderPath', value);
-						// Trigger checkbox source change
-						this.app.workspace.trigger('ontask:settings-changed', { 
-							key: 'customFolderPath', 
-							value 
-						});
-					}));
-
-			new Setting(containerEl)
-				.setName('Include subfolders')
-				.setDesc('When enabled, also search in subfolders')
-				.addToggle(toggle => toggle
-					.setValue(settings.includeSubfolders)
-					.onChange(async (value) => {
-						await this.settingsService.updateSetting('includeSubfolders', value);
-						// Trigger checkbox source change
-						this.app.workspace.trigger('ontask:settings-changed', { 
-							key: 'includeSubfolders', 
-							value 
-						});
-					}));
-		}
+	private renderGeneralSettings(containerEl: HTMLElement): void {
+		const generalSettingsView = new GeneralSettingsView(this.app, this.settingsService, containerEl);
+		generalSettingsView.render();
 	}
 
 	private renderStatusConfiguration(containerEl: HTMLElement): void {
-		// Create a container for the status configuration
-		const statusConfigContainer = containerEl.createEl('div', { cls: 'status-config-container' });
-		
-		// Initialize and render the status configuration view
-		const statusConfigView = new StatusConfigView(statusConfigContainer, this.statusConfigService, this.app);
-		statusConfigView.render();
+		const statusConfigSettingsView = new StatusConfigSettingsView(this.app, this.statusConfigService, containerEl);
+		statusConfigSettingsView.render();
 	}
+
+	private renderQuickFiltersSettings(containerEl: HTMLElement): void {
+		const quickFiltersView = new QuickFiltersView(this.app, this.dataService, this.statusConfigService, containerEl);
+		quickFiltersView.render();
+	}
+
 }

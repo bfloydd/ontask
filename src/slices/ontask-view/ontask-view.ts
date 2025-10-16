@@ -3,6 +3,7 @@ import { CheckboxFinderService } from '../checkbox-finder';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
 import { StatusConfigService } from '../settings/status-config';
+import { DataService } from '../data/data-service-interface';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -10,6 +11,7 @@ export class OnTaskView extends ItemView {
 	private checkboxFinderService: CheckboxFinderService;
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
+	private dataService: DataService;
 	private plugin: any;
 	private eventSystem: EventSystem;
 	private checkboxes: any[] = [];
@@ -53,6 +55,7 @@ export class OnTaskView extends ItemView {
 		checkboxFinderService: CheckboxFinderService, 
 		settingsService: SettingsService, 
 		statusConfigService: StatusConfigService,
+		dataService: DataService,
 		plugin: any, 
 		eventSystem: EventSystem
 	) {
@@ -60,6 +63,7 @@ export class OnTaskView extends ItemView {
 		this.checkboxFinderService = checkboxFinderService;
 		this.settingsService = settingsService;
 		this.statusConfigService = statusConfigService;
+		this.dataService = dataService;
 		this.plugin = plugin;
 		this.eventSystem = eventSystem;
 	}
@@ -1403,6 +1407,9 @@ export class OnTaskView extends ItemView {
 			});
 		}
 
+		// Create Quick Filters section
+		this.renderQuickFiltersSection(menu, checkboxElements);
+
 		// Create buttons container
 		const buttonsContainer = menu.createDiv();
 		buttonsContainer.style.display = 'flex';
@@ -1454,6 +1461,76 @@ export class OnTaskView extends ItemView {
 		// Use requestAnimationFrame to avoid immediate closure
 		requestAnimationFrame(() => {
 			document.addEventListener('click', closeMenu);
+		});
+	}
+
+	private renderQuickFiltersSection(menu: HTMLElement, checkboxElements: { [key: string]: HTMLInputElement }): void {
+		const quickFilters = this.dataService.getQuickFilters().filter(filter => filter.enabled);
+		
+		if (quickFilters.length === 0) {
+			return;
+		}
+
+		// Create separator
+		const separator = menu.createDiv();
+		separator.style.borderTop = '1px solid var(--background-modifier-border)';
+		separator.style.margin = '12px 0';
+		separator.style.paddingTop = '8px';
+
+		// Create Quick Filters header
+		const quickFiltersHeader = menu.createDiv();
+		quickFiltersHeader.createEl('h4', { text: 'Quick Filters' });
+		quickFiltersHeader.style.marginBottom = '8px';
+		quickFiltersHeader.style.fontSize = '14px';
+		quickFiltersHeader.style.fontWeight = '500';
+
+		// Create Quick Filters buttons container
+		const quickFiltersContainer = menu.createDiv();
+		quickFiltersContainer.style.display = 'flex';
+		quickFiltersContainer.style.flexWrap = 'wrap';
+		quickFiltersContainer.style.gap = '6px';
+		quickFiltersContainer.style.marginBottom = '8px';
+
+		quickFilters.forEach(filter => {
+			const button = quickFiltersContainer.createEl('button', { text: filter.name });
+			button.addClass('ontask-quick-filter-button');
+			button.style.padding = '4px 8px';
+			button.style.fontSize = '12px';
+			button.style.border = '1px solid var(--background-modifier-border)';
+			button.style.borderRadius = '4px';
+			button.style.background = 'var(--background-secondary)';
+			button.style.color = 'var(--text-normal)';
+			button.style.cursor = 'pointer';
+			button.style.transition = 'all 0.2s ease';
+
+			// Hover effects
+			button.addEventListener('mouseenter', () => {
+				button.style.background = 'var(--interactive-accent)';
+				button.style.color = 'var(--text-on-accent)';
+			});
+
+			button.addEventListener('mouseleave', () => {
+				button.style.background = 'var(--background-secondary)';
+				button.style.color = 'var(--text-normal)';
+			});
+
+			// Click handler
+			button.addEventListener('click', () => {
+				// Apply the quick filter by checking/unchecking the appropriate checkboxes
+				filter.statusSymbols.forEach(symbol => {
+					const checkbox = checkboxElements[symbol];
+					if (checkbox) {
+						checkbox.checked = true;
+					}
+				});
+
+				// Uncheck all other checkboxes
+				Object.keys(checkboxElements).forEach(symbol => {
+					if (!filter.statusSymbols.includes(symbol)) {
+						checkboxElements[symbol].checked = false;
+					}
+				});
+			});
 		});
 	}
 

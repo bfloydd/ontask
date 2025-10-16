@@ -1158,3 +1158,131 @@
 .is-phone .ontask-filter-checkbox-item label div:last-child {
 	font-size: 12px;
 }
+
+/* Quick Filters Styles */
+.ontask-quick-filter-button {
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	padding: 4px 8px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: all 0.2s ease;
+}
+
+.ontask-quick-filter-button:hover {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ontask-quick-filter-button:active {
+	transform: translateY(0);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Quick Filter Settings Styles */
+.quick-filter-item {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 12px;
+	margin-bottom: 8px;
+	transition: all 0.2s ease;
+}
+
+.quick-filter-item:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quick-filter-statuses {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 8px;
+}
+
+.quick-filter-status-badge {
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-size: 12px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+}
+
+/* Settings Tab Styles */
+.ontask-settings-tabs {
+	display: flex;
+	border-bottom: 1px solid var(--background-modifier-border);
+	margin-bottom: 16px;
+}
+
+.ontask-tab-button {
+	padding: 8px 16px;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	border-bottom: 2px solid transparent;
+	color: var(--text-muted);
+	transition: all 0.2s ease;
+}
+
+.ontask-tab-button:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+.ontask-tab-button.active {
+	color: var(--interactive-accent);
+	border-bottom-color: var(--interactive-accent);
+}
+
+.ontask-settings-content {
+	padding: 0;
+}
+
+/* Mobile responsive for Quick Filters */
+.is-mobile .ontask-quick-filter-button {
+	padding: 6px 10px;
+	font-size: 14px;
+}
+
+.is-mobile .quick-filter-item {
+	padding: 14px;
+}
+
+.is-mobile .quick-filter-status-badge {
+	padding: 3px 8px;
+	font-size: 13px;
+}
+
+.is-mobile .ontask-tab-button {
+	padding: 10px 18px;
+	font-size: 16px;
+}
+
+.is-phone .ontask-quick-filter-button {
+	padding: 5px 8px;
+	font-size: 13px;
+}
+
+.is-phone .quick-filter-item {
+	padding: 12px;
+}
+
+.is-phone .quick-filter-status-badge {
+	padding: 2px 6px;
+	font-size: 12px;
+}
+
+.is-phone .ontask-tab-button {
+	padding: 8px 16px;
+	font-size: 15px;
+}

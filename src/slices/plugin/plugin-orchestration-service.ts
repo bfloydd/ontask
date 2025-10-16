@@ -232,6 +232,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			this.dependencies.checkboxFinderService, 
 			settingsService, 
 			this.dependencies.statusConfigService,
+			this.dependencies.dataService,
 			plugin,
 			this.dependencies.eventSystem
 		));

@@ -47,7 +47,7 @@ export default class OnTask extends Plugin {
 		await this.editorIntegrationService.initialize();
 		
 		// Add settings tab
-		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService, this.statusConfigService));
+		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService, this.statusConfigService, this.dataService));
 
 		// Add test command for debugging
 		this.addCommand({

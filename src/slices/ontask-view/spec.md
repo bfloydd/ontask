@@ -78,9 +78,13 @@ trackedFiles = [
   - Handler 2: ontask-toptask-hero-content. 
   - Handler 3: Status bar top-task visual. The status bar picks that up and shows the updated top-task.
 
-## Dependencies:
-- **CheckboxFinderService**: For finding checkboxes in files
-- **SettingsService**: For plugin settings (load limits, display options, etc.)
-- **StatusConfigService**: For status configuration and filtering (manages data.json)
-- **EventSystem**: For communication with other plugin components
-- **Plugin**: For accessing Obsidian APIs and plugin context
+## Quick Filters
+- Add a new tab within Settings called Quick Filters. 
+- Quick filters are collections of Statuses that can be saved into data.json.
+- Statuses are read from data.json dynamically.
+- Any added Quick Filter include a button (user can name the button), that shows up in Filters Popup in OnTaskView.
+- Clicking on those Quick Filters in the Popup will auto-check those checkboxes that are part of the Quick Filter; nothing else.
+- Clicking Save works as normal. 
+- Each Quick Save within settings also includes a "enabled" flag that, if enabled, hides the button and visa-versa.
+- There is a default Quick Filter called "Review", which checks "Completed"
+- There is a default Quick Filter called "Lagging", which checks "To-do, Forward, Review, Blocked, Question"
