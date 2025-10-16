@@ -4,9 +4,11 @@ import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
 import { StatusConfigService } from '../settings/status-config';
 import { DataService } from '../data/data-service-interface';
-import { ContextMenuService } from './context-menu-service';
-import { TaskLoadingService } from './task-loading-service';
-import { DOMRenderingService } from './dom-rendering-service';
+import { ContextMenuService } from './services/context-menu-service';
+import { TaskLoadingService } from './services/task-loading-service';
+import { DOMRenderingService } from './services/dom-rendering-service';
+import { TopTaskProcessingService } from './services/top-task-processing-service';
+import { EventHandlingService } from './services/event-handling-service';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -20,6 +22,8 @@ export class OnTaskView extends ItemView {
 	private contextMenuService: ContextMenuService;
 	private taskLoadingService: TaskLoadingService;
 	private domRenderingService: DOMRenderingService;
+	private topTaskProcessingService: TopTaskProcessingService;
+	private eventHandlingService: EventHandlingService;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
 	private onlyTodayButton: HTMLButtonElement;
@@ -30,27 +34,6 @@ export class OnTaskView extends ItemView {
 	private lastCheckboxContent: Map<string, string> = new Map(); // Track checkbox content to detect actual changes
 	
 
-	/**
-	 * Top task configuration - easily modifiable priority order
-	 * Each entry defines: symbol, name, and regex pattern for detection
-	 */
-	private static readonly TOP_TASK_CONFIG = [
-		{
-			symbol: '/',
-			name: 'slash',
-			pattern: /^-\s*\[\/([^\]]*)\]/
-		},
-		{
-			symbol: '!',
-			name: 'exclamation', 
-			pattern: /^-\s*\[!([^\]]*)\]/
-		},
-		{
-			symbol: '+',
-			name: 'plus',
-			pattern: /^-\s*\[\+([^\]]*)\]/
-		}
-	] as const;
 
 	constructor(
 		leaf: WorkspaceLeaf, 
@@ -99,6 +82,20 @@ export class OnTaskView extends ItemView {
 			(line: string) => this.parseCheckboxLine(line),
 			(statusSymbol: string) => this.getStatusDisplayText(statusSymbol),
 			(element: HTMLElement, task: any) => this.addMobileTouchHandlers(element, task)
+		);
+		
+		// Initialize top task processing service
+		this.topTaskProcessingService = new TopTaskProcessingService(this.eventSystem);
+		
+		// Initialize event handling service
+		this.eventHandlingService = new EventHandlingService(
+			this.eventSystem,
+			this.app,
+			this.checkboxes,
+			this.isUpdatingStatus,
+			() => this.refreshCheckboxes(),
+			(contentArea: HTMLElement, checkboxes: any[]) => this.domRenderingService.updateTopTaskSection(contentArea, checkboxes),
+			(file: any) => this.scheduleDebouncedRefresh(file)
 		);
 	}
 
@@ -158,12 +155,12 @@ export class OnTaskView extends ItemView {
 		await this.refreshCheckboxes();
 		
 		// Set up event listeners
-		this.setupEventListeners();
+		this.eventHandlingService.setupEventListeners();
 	}
 
 	async onClose(): Promise<void> {
 		// Clean up event listeners
-		this.cleanupEventListeners();
+		this.eventHandlingService.cleanupEventListeners();
 		
 		// Clear refresh timeout
 		if (this.refreshTimeout) {
@@ -218,7 +215,7 @@ export class OnTaskView extends ItemView {
 			console.log('OnTask View: Loaded checkboxes:', this.checkboxes.length);
 			
 			// Process top tasks from the displayed tasks (as per spec)
-			this.processTopTasksFromDisplayedTasks();
+			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(this.checkboxes);
 			
 			console.log('OnTask View: Checkbox details after top task processing:', this.checkboxes.map(cb => ({
 				lineContent: cb.lineContent,
@@ -626,70 +623,7 @@ export class OnTaskView extends ItemView {
 		console.log(`OnTask View: Initialized content tracking for ${this.checkboxes.length} checkboxes`);
 	}
 
-	private setupEventListeners(): void {
-		console.log('OnTask View: Setting up event listeners');
-		
-		// Clean up any existing listeners first
-		this.cleanupEventListeners();
-		
-		// Listen for settings changes
-		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
-			console.log('OnTask View: Settings changed event received:', event.data.key);
-			if (event.data.key === 'onlyShowToday') {
-				console.log('OnTask View: Triggering refresh due to settings change');
-				this.refreshCheckboxes();
-			}
-		});
-		
-		// Listen for checkbox updates to update top task section immediately
-		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
-			console.log('OnTask View: Checkboxes updated event received, updating top task section');
-			// Only update the top task section without full refresh
-		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
-		if (contentArea) {
-			this.domRenderingService.updateTopTaskSection(contentArea, this.checkboxes);
-		}
-		});
-		
-		// Listen for file modifications
-		const fileModifyListener = (file: any) => {
-			// Skip refresh if we're currently updating a status ourselves
-			if (this.isUpdatingStatus) {
-				console.log('OnTask View: Skipping refresh - currently updating status');
-				return;
-			}
-			
-			// Only process markdown files
-			if (!file.path.endsWith('.md')) {
-				return;
-			}
-			
-			// Check if any of our checkboxes are in this file
-			const isRelevantFile = this.checkboxes.some(checkbox => checkbox.file?.path === file.path);
-			if (isRelevantFile) {
-				// Only process if we have checkboxes in this file
-				this.scheduleDebouncedRefresh(file);
-			}
-		};
-		
-		this.app.vault.on('modify', fileModifyListener);
-		
-		// Store cleanup functions
-		this.eventListeners = [
-			() => settingsSubscription.unsubscribe(),
-			() => checkboxUpdateSubscription.unsubscribe(),
-			() => this.app.vault.off('modify', fileModifyListener)
-		];
-	}
 
-	private cleanupEventListeners(): void {
-		if (this.eventListeners) {
-			this.eventListeners.forEach(cleanup => cleanup());
-			this.eventListeners = [];
-		}
-	}
-
-	private eventListeners: (() => void)[] = [];
 
 
 
@@ -936,68 +870,7 @@ export class OnTaskView extends ItemView {
 	 * Process top tasks from the displayed tasks (as per spec)
 	 * Uses declarative configuration for easy modification of top task priorities
 	 */
-	private processTopTasksFromDisplayedTasks(): void {
-		console.log('OnTask View: Processing top tasks from displayed tasks');
-		
-		// First, clear any existing top task markers
-		this.checkboxes.forEach(checkbox => {
-			checkbox.isTopTask = false;
-			checkbox.isTopTaskContender = false;
-		});
-		
-		// Find tasks for each priority level using declarative config
-		const taskCounts: Record<string, number> = {};
-		const tasksByType: Record<string, any[]> = {};
-		
-		OnTaskView.TOP_TASK_CONFIG.forEach(config => {
-			const matchingTasks = this.checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
-			taskCounts[config.name] = matchingTasks.length;
-			tasksByType[config.name] = matchingTasks;
-		});
-		
-		console.log('OnTask View: Found tasks:', taskCounts);
-		
-		// Find the highest priority task type that has tasks
-		let finalTopTask: any = null;
-		for (const config of OnTaskView.TOP_TASK_CONFIG) {
-			const tasks = tasksByType[config.name];
-			if (tasks.length > 0) {
-				// Sort by file modification time (most recent first)
-				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
-				finalTopTask = tasks[0];
-				finalTopTask.isTopTask = true;
-				console.log(`OnTask View: Selected ${config.name} task as top task:`, finalTopTask.lineContent);
-				break;
-			}
-		}
-		
-		if (finalTopTask) {
-			console.log('OnTask View: Top task selected:', {
-				lineContent: finalTopTask.lineContent,
-				file: finalTopTask.file?.path,
-				isTopTask: finalTopTask.isTopTask
-			});
-			
-			// Emit top task found event for other components to use
-			this.eventSystem.emit('top-task:found', {
-				topTask: finalTopTask
-			});
-		} else {
-			console.log('OnTask View: No top task found in displayed tasks');
-			
-			// Emit top task cleared event
-			this.eventSystem.emit('top-task:cleared', {});
-		}
-	}
 	
-	/**
-	 * Generic method to check if a checkbox matches a top task configuration
-	 * Uses the declarative config for pattern matching
-	 */
-	private isTopTaskByConfig(checkbox: any, config: { symbol: string; name: string; pattern: RegExp }): boolean {
-		const line = checkbox.lineContent;
-		return config.pattern.test(line);
-	}
 
 	/**
 	 * Create load more button element for optimized rendering
