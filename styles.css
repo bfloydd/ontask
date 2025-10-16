@@ -24,7 +24,7 @@
 /* OnTaskView Styles */
 .ontask-header {
 	/* border-bottom: 1px solid var(--background-modifier-border); */
-	padding-bottom: 10px;
+	padding-bottom: 15px;
 	/* margin-bottom: 15px; */
 	display: flex;
 	justify-content: space-between;
@@ -113,7 +113,7 @@
 }
 
 .ontask-file-section {
-	margin-bottom: 20px;
+	margin-bottom: 15px;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 8px;
 	overflow: hidden;
@@ -123,7 +123,7 @@
 
 .ontask-file-header {
 	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-modifier-border) 100%);
-	padding: 14px 16px;
+	padding: 8px 8px;
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -446,7 +446,7 @@
 
 /* Top Task Section Styles */
 .ontask-toptask-hero-section {
-	/* margin-bottom: 25px; */
+	margin-top: 5px;
 	border: 8px solid var(--text-error);
 	border-radius: 10px;
 	background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
@@ -568,11 +568,11 @@
 }
 
 .is-mobile .ontask-file-header {
-	padding: 12px 14px;
+	padding: 8px 8px;
 }
 
 .is-mobile .ontask-file-section {
-	margin-bottom: 16px;
+	margin-bottom: 10px;
 }
 
 .is-mobile .ontask-load-more-container {
