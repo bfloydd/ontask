@@ -1,5 +1,5 @@
-import { EventSystem } from '../events';
-import { StatusConfigService } from '../settings/status-config';
+import { EventSystem } from '../../events';
+import { StatusConfigService } from '../../settings/status-config';
 
 export interface ContextMenuServiceInterface {
 	showContextMenu(event: MouseEvent, checkbox: any): void;

@@ -9,6 +9,7 @@ import { TaskLoadingService } from './services/task-loading-service';
 import { DOMRenderingService } from './services/dom-rendering-service';
 import { TopTaskProcessingService } from './services/top-task-processing-service';
 import { EventHandlingService } from './services/event-handling-service';
+import { FileOperationsService } from './services/file-operations-service';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -24,6 +25,7 @@ export class OnTaskView extends ItemView {
 	private domRenderingService: DOMRenderingService;
 	private topTaskProcessingService: TopTaskProcessingService;
 	private eventHandlingService: EventHandlingService;
+	private fileOperationsService: FileOperationsService;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
 	private onlyTodayButton: HTMLButtonElement;
@@ -67,7 +69,7 @@ export class OnTaskView extends ItemView {
 			this.settingsService,
 			this.dataService,
 			this.contentEl,
-			(checkbox: any, newStatus: string) => this.updateCheckboxStatus(checkbox, newStatus),
+			(checkbox: any, newStatus: string) => this.fileOperationsService.updateCheckboxStatus(checkbox, newStatus),
 			() => this.refreshCheckboxes(),
 			() => this.taskLoadingService.resetTracking()
 		);
@@ -86,6 +88,15 @@ export class OnTaskView extends ItemView {
 		
 		// Initialize top task processing service
 		this.topTaskProcessingService = new TopTaskProcessingService(this.eventSystem);
+		
+		// Initialize file operations service
+		this.fileOperationsService = new FileOperationsService(
+			this.app,
+			this.eventSystem,
+			this.checkboxes,
+			this.isUpdatingStatus,
+			() => this.scheduleRefresh()
+		);
 		
 		// Initialize event handling service
 		this.eventHandlingService = new EventHandlingService(
@@ -414,55 +425,6 @@ export class OnTaskView extends ItemView {
 	}
 
 
-	private async toggleCheckbox(checkbox: any, isCompleted: boolean): Promise<void> {
-		try {
-			// Get the file
-			const file = checkbox.file;
-			if (!file) {
-				console.error('File not found in checkbox:', checkbox);
-				return;
-			}
-			
-			// Read file content
-			const content = await this.app.vault.read(file);
-			const lines = content.split('\n');
-			
-			// Update the specific line
-			const lineIndex = checkbox.lineNumber - 1;
-			if (lineIndex >= 0 && lineIndex < lines.length) {
-				const line = lines[lineIndex];
-				const updatedLine = line.replace(
-					/^(-\s*\[)([^\]]*)(\])/,
-					`$1${isCompleted ? 'x' : ' '}$3`
-				);
-				lines[lineIndex] = updatedLine;
-				
-				// Write back to file
-				await this.app.vault.modify(file, lines.join('\n'));
-				
-				// Update local state
-				checkbox.isCompleted = isCompleted;
-				
-				// Emit checkbox toggled event
-				this.eventSystem.emit('checkbox:toggled', {
-					filePath: file.path,
-					lineNumber: checkbox.lineNumber,
-					isCompleted
-				});
-				
-				// Trigger immediate status bar update
-				this.eventSystem.emit('checkboxes:updated', { 
-					count: this.checkboxes.length,
-					topTask: this.checkboxes.find(cb => cb.isTopTask)
-				});
-				
-				// Refresh the view after a short delay
-				this.scheduleRefresh();
-			}
-		} catch (error) {
-			console.error('Error toggling checkbox:', error);
-		}
-	}
 
 	private async openFile(filePath: string, lineNumber: number): Promise<void> {
 		const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
@@ -628,53 +590,6 @@ export class OnTaskView extends ItemView {
 
 
 
-	private async updateCheckboxStatus(checkbox: any, newStatus: string): Promise<void> {
-		console.log('OnTask View: Updating checkbox status', checkbox, newStatus);
-		
-		// Set flag to prevent file modification listener from triggering refresh
-		this.isUpdatingStatus = true;
-		
-		try {
-			// Get the file
-			const file = checkbox.file;
-			if (!file) {
-				console.error('OnTask View: No file found for checkbox');
-				return;
-			}
-
-			// Read the file content
-			const content = await this.app.vault.read(file);
-			const lines = content.split('\n');
-
-			// Update the specific line (lineNumber is 1-based, so subtract 1 for array index)
-			const lineIndex = checkbox.lineNumber - 1;
-			if (lineIndex >= 0 && lineIndex < lines.length) {
-				const line = lines[lineIndex];
-				// Update the checkbox status using a flexible regex pattern
-				const updatedLine = line.replace(/^(\s*)- \[[^\]]*\]/, `$1- [${newStatus}]`);
-				
-				// Log for debugging if the line wasn't updated
-				if (updatedLine === line) {
-					console.log('OnTask View: Warning - line was not updated:', JSON.stringify(line));
-					console.log('OnTask View: Expected pattern: - [status] at start of line');
-				}
-				
-				lines[lineIndex] = updatedLine;
-
-				// Write back to file
-				await this.app.vault.modify(file, lines.join('\n'));
-				
-				// Refresh the entire view to ensure UI consistency
-				// This is simpler and more reliable than trying to update individual elements
-				this.refreshCheckboxes();
-			}
-		} catch (error) {
-			console.error('OnTask View: Error updating checkbox status:', error);
-		} finally {
-			// Clear the flag to allow future file modification listeners
-			this.isUpdatingStatus = false;
-		}
-	}
 
 
 
@@ -693,7 +608,7 @@ export class OnTaskView extends ItemView {
 			});
 			
 			if (checkboxData) {
-				promises.push(this.updateCheckboxStatus(checkboxData, selectedStatus));
+				promises.push(this.fileOperationsService.updateCheckboxStatus(checkboxData, selectedStatus));
 			}
 		}
 		

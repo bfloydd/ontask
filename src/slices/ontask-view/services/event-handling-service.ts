@@ -1,4 +1,4 @@
-import { EventSystem } from '../events';
+import { EventSystem } from '../../events';
 import { ItemView } from 'obsidian';
 
 export interface EventHandlingServiceInterface {

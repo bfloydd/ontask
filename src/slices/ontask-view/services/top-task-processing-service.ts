@@ -1,4 +1,4 @@
-import { EventSystem } from '../events';
+import { EventSystem } from '../../events';
 
 export interface TopTaskProcessingServiceInterface {
 	processTopTasksFromDisplayedTasks(checkboxes: any[]): void;

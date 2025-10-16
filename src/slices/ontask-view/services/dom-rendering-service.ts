@@ -1,5 +1,5 @@
 import { TFile } from 'obsidian';
-import { StatusConfigService } from '../settings/status-config';
+import { StatusConfigService } from '../../settings/status-config';
 import { ContextMenuService } from './context-menu-service';
 
 export interface DOMRenderingServiceInterface {

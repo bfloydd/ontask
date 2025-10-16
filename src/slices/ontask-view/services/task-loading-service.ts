@@ -1,7 +1,7 @@
 import { TFile } from 'obsidian';
-import { CheckboxFinderService } from '../checkbox-finder';
-import { SettingsService } from '../settings';
-import { StatusConfigService } from '../settings/status-config';
+import { CheckboxFinderService } from '../../checkbox-finder';
+import { SettingsService } from '../../settings';
+import { StatusConfigService } from '../../settings/status-config';
 
 export interface TaskLoadingServiceInterface {
 	loadTasksWithFiltering(settings: any): Promise<any[]>;

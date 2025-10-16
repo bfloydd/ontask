@@ -10,3 +10,5 @@ export { TopTaskProcessingService } from './services/top-task-processing-service
 export type { TopTaskProcessingServiceInterface } from './services/top-task-processing-service';
 export { EventHandlingService } from './services/event-handling-service';
 export type { EventHandlingServiceInterface } from './services/event-handling-service';
+export { FileOperationsService } from './services/file-operations-service';
+export type { FileOperationsServiceInterface } from './services/file-operations-service';
