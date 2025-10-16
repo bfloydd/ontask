@@ -10,6 +10,7 @@ import { DOMRenderingService } from './services/dom-rendering-service';
 import { TopTaskProcessingService } from './services/top-task-processing-service';
 import { EventHandlingService } from './services/event-handling-service';
 import { FileOperationsService } from './services/file-operations-service';
+import { MobileTouchService } from './services/mobile-touch-service';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -26,6 +27,7 @@ export class OnTaskView extends ItemView {
 	private topTaskProcessingService: TopTaskProcessingService;
 	private eventHandlingService: EventHandlingService;
 	private fileOperationsService: FileOperationsService;
+	private mobileTouchService: MobileTouchService;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
 	private onlyTodayButton: HTMLButtonElement;
@@ -83,7 +85,7 @@ export class OnTaskView extends ItemView {
 			(filePath: string) => this.getFileName(filePath),
 			(line: string) => this.parseCheckboxLine(line),
 			(statusSymbol: string) => this.getStatusDisplayText(statusSymbol),
-			(element: HTMLElement, task: any) => this.addMobileTouchHandlers(element, task)
+			(element: HTMLElement, task: any) => this.mobileTouchService.addMobileTouchHandlers(element, task)
 		);
 		
 		// Initialize top task processing service
@@ -97,6 +99,9 @@ export class OnTaskView extends ItemView {
 			this.isUpdatingStatus,
 			() => this.scheduleRefresh()
 		);
+		
+		// Initialize mobile touch service
+		this.mobileTouchService = new MobileTouchService(this.contextMenuService);
 		
 		// Initialize event handling service
 		this.eventHandlingService = new EventHandlingService(
@@ -585,14 +590,6 @@ export class OnTaskView extends ItemView {
 		console.log(`OnTask View: Initialized content tracking for ${this.checkboxes.length} checkboxes`);
 	}
 
-
-
-
-
-
-
-
-
 	private showStatusSelectionForCheckboxes(selectedStatus: string): void {
 		console.log('OnTask View: Status selection for checkboxes', selectedStatus);
 		
@@ -701,93 +698,4 @@ export class OnTaskView extends ItemView {
 		const toDoConfig = statusConfigs.find(config => config.name === 'To-do');
 		return toDoConfig?.symbol || ' ';
 	}
-
-	/**
-	 * Adds mobile touch handlers with long-press detection for context menu
-	 * Allows normal scrolling while providing long-press for context menu
-	 */
-	private addMobileTouchHandlers(element: HTMLElement, task: any): void {
-		let touchStartTime: number = 0;
-		let touchStartX: number = 0;
-		let touchStartY: number = 0;
-		let longPressTimer: number | null = null;
-		let hasMoved: boolean = false;
-		const LONG_PRESS_DURATION = 500; // 500ms for long press
-		const MOVE_THRESHOLD = 10; // 10px movement threshold
-
-		element.addEventListener('touchstart', (e) => {
-			touchStartTime = Date.now();
-			touchStartX = e.touches[0].clientX;
-			touchStartY = e.touches[0].clientY;
-			hasMoved = false;
-
-			// Start long press timer
-			longPressTimer = window.setTimeout(() => {
-				if (!hasMoved) {
-					// Long press detected - show context menu
-					const touch = e.touches[0];
-					const mouseEvent = new MouseEvent('contextmenu', {
-						clientX: touch.clientX,
-						clientY: touch.clientY,
-						bubbles: true,
-						cancelable: true
-					});
-					this.contextMenuService.showContextMenu(mouseEvent, task);
-				}
-			}, LONG_PRESS_DURATION);
-		});
-
-		element.addEventListener('touchmove', (e) => {
-			if (longPressTimer) {
-				// Check if touch has moved significantly
-				const currentX = e.touches[0].clientX;
-				const currentY = e.touches[0].clientY;
-				const deltaX = Math.abs(currentX - touchStartX);
-				const deltaY = Math.abs(currentY - touchStartY);
-
-				if (deltaX > MOVE_THRESHOLD || deltaY > MOVE_THRESHOLD) {
-					hasMoved = true;
-					// Cancel long press timer if user is scrolling
-					if (longPressTimer) {
-						clearTimeout(longPressTimer);
-						longPressTimer = null;
-					}
-				}
-			}
-		});
-
-		element.addEventListener('touchend', (e) => {
-			// Clear long press timer on touch end
-			if (longPressTimer) {
-				clearTimeout(longPressTimer);
-				longPressTimer = null;
-			}
-		});
-
-		element.addEventListener('touchcancel', (e) => {
-			// Clear long press timer on touch cancel
-			if (longPressTimer) {
-				clearTimeout(longPressTimer);
-				longPressTimer = null;
-			}
-		});
-	}
-
-	/**
-	 * Create top task section element for optimized rendering
-	 */
-
-	/**
-	 * Create file section element for optimized rendering
-	 */
-
-	/**
-	 * Process top tasks from the displayed tasks (as per spec)
-	 * Uses declarative configuration for easy modification of top task priorities
-	 */
-	
-
-	/**
-	 * Create load more button element for optimized rendering
-	 */
 }

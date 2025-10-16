@@ -12,3 +12,5 @@ export { EventHandlingService } from './services/event-handling-service';
 export type { EventHandlingServiceInterface } from './services/event-handling-service';
 export { FileOperationsService } from './services/file-operations-service';
 export type { FileOperationsServiceInterface } from './services/file-operations-service';
+export { MobileTouchService } from './services/mobile-touch-service';
+export type { MobileTouchServiceInterface } from './services/mobile-touch-service';
