@@ -1,7 +1,7 @@
 // Status configuration UI component
 import { App, Setting, Modal } from 'obsidian';
-import { StatusConfig } from './settings-interface';
-import { StatusConfigService } from './status-config';
+import { StatusConfig } from '../settings-interface';
+import { StatusConfigService } from '../status-config';
 
 // Symbols that should not be editable (TOP_TASK_CONFIG + default to-do symbol + done symbol)
 const NON_EDITABLE_SYMBOLS = ['/', '!', '+', '.', 'x'];

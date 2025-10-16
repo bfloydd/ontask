@@ -1,7 +1,7 @@
 // Quick Filters view component for settings
 import { App, Setting, Modal } from 'obsidian';
-import { DataService, QuickFilter } from '../data/data-service-interface';
-import { StatusConfigService } from './status-config';
+import { DataService, QuickFilter } from '../../data/data-service-interface';
+import { StatusConfigService } from '../status-config';
 
 export class QuickFiltersView {
 	private app: App;
