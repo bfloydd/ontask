@@ -110,7 +110,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			// Check if status bar is enabled
 			if (!settings.showTopTaskInStatusBar) {
 				if (this.topTaskStatusBarItem) {
-					this.topTaskStatusBarItem.style.display = 'none';
+					this.topTaskStatusBarItem.addClass('hidden');
 				}
 				this.eventSystem.emit('ui:status-bar-updated', { visible: false });
 				return;
@@ -153,20 +153,20 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 				// Apply color styling
 				this.applyTopTaskColor(settings);
 				if (this.topTaskStatusBarItem) {
-					this.topTaskStatusBarItem.style.display = 'block';
+					this.topTaskStatusBarItem.removeClass('hidden');
 					console.log('OnTask: Status bar displayed');
 				}
 			} else {
 				console.log('OnTask: No top task found, hiding status bar');
 				if (this.topTaskStatusBarItem) {
-					this.topTaskStatusBarItem.style.display = 'none';
+					this.topTaskStatusBarItem.addClass('hidden');
 				}
 				this.eventSystem.emit('ui:status-bar-updated', { visible: false });
 			}
 		} catch (error) {
 			console.error('Error updating top task status bar:', error);
 			if (this.topTaskStatusBarItem) {
-				this.topTaskStatusBarItem.style.display = 'none';
+				this.topTaskStatusBarItem.addClass('hidden');
 			}
 			this.eventSystem.emit('plugin:error', { 
 				error, 
@@ -247,10 +247,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		this.topTaskStatusBarItem = plugin.addStatusBarItem();
 		console.log('OnTask: Status bar item created', this.topTaskStatusBarItem);
 		this.topTaskStatusBarItem.addClass('ontask-toptask-hero-status');
-		this.topTaskStatusBarItem.style.cursor = 'pointer';
-		this.topTaskStatusBarItem.style.opacity = '0.7';
-		this.topTaskStatusBarItem.style.pointerEvents = 'auto';
-		this.topTaskStatusBarItem.style.zIndex = '1000';
+		this.topTaskStatusBarItem.addClass('ontask-top-task-status-bar');
 		
 		// Add event listeners
 		this.topTaskStatusBarItem.addEventListener('click', () => {
@@ -350,14 +347,9 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		// Create a simple test menu first
 		const testMenu = document.createElement('div');
 		testMenu.textContent = 'TEST MENU - Right click working!';
-		testMenu.style.position = 'fixed';
+		testMenu.addClass('ontask-test-menu');
 		testMenu.style.left = `${event.clientX}px`;
 		testMenu.style.top = `${event.clientY}px`;
-		testMenu.style.zIndex = '9999';
-		testMenu.style.background = 'red';
-		testMenu.style.color = 'white';
-		testMenu.style.padding = '10px';
-		testMenu.style.border = '2px solid black';
 		document.body.appendChild(testMenu);
 		
 		// Remove test menu after 2 seconds
@@ -370,18 +362,8 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		// Create color menu
 		const menu = document.createElement('div');
 		menu.className = 'ontask-color-menu';
-		menu.style.position = 'fixed';
 		menu.style.left = `${event.clientX - 200}px`;
 		menu.style.top = `${event.clientY - 300}px`;
-		menu.style.zIndex = '1000';
-		menu.style.background = 'var(--background-primary)';
-		menu.style.border = '1px solid var(--background-modifier-border)';
-		menu.style.borderRadius = '6px';
-		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-		menu.style.padding = '8px';
-		menu.style.minWidth = '200px';
-		menu.style.maxHeight = '300px';
-		menu.style.overflowY = 'auto';
 
 		// Color options
 		const colors = [
@@ -401,23 +383,12 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		for (const color of colors) {
 			const menuItem = document.createElement('div');
 			menuItem.className = 'ontask-color-menu-item';
-			menuItem.style.padding = '8px 12px';
-			menuItem.style.cursor = 'pointer';
-			menuItem.style.display = 'flex';
-			menuItem.style.alignItems = 'center';
-			menuItem.style.gap = '8px';
-			menuItem.style.fontSize = '14px';
-			menuItem.style.color = 'var(--text-normal)';
-			menuItem.style.borderRadius = '4px';
+			// Menu item styles are now handled by CSS
 
 			// Add color preview
 			const colorPreview = document.createElement('div');
-			colorPreview.style.width = '16px';
-			colorPreview.style.height = '16px';
-			colorPreview.style.borderRadius = '50%';
-			colorPreview.style.border = '2px solid var(--background-modifier-border)';
+			colorPreview.addClass('ontask-color-preview');
 			colorPreview.style.backgroundColor = color.bg;
-			colorPreview.style.flexShrink = '0';
 
 			// Add color name
 			const colorName = document.createElement('span');
@@ -428,9 +399,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 			if (settings.topTaskColor === color.value) {
 				const checkmark = document.createElement('span');
 				checkmark.textContent = '✓';
-				checkmark.style.color = 'var(--text-accent)';
-				checkmark.style.fontWeight = 'bold';
-				checkmark.style.marginLeft = 'auto';
+				checkmark.addClass('ontask-color-checkmark');
 				menuItem.appendChild(checkmark);
 			}
 
@@ -439,10 +408,10 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 
 			// Add hover effect
 			menuItem.addEventListener('mouseenter', () => {
-				menuItem.style.background = 'var(--background-modifier-hover)';
+				// Hover effects are now handled by CSS
 			});
 			menuItem.addEventListener('mouseleave', () => {
-				menuItem.style.background = 'transparent';
+				// Hover effects are now handled by CSS
 			});
 
 			// Add click handler
@@ -493,8 +462,6 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		const color = colorMap[settings.topTaskColor] || colorMap.neutral;
 		this.topTaskStatusBarItem.style.backgroundColor = color.bg;
 		this.topTaskStatusBarItem.style.color = color.text;
-		this.topTaskStatusBarItem.style.padding = '2px 8px';
-		this.topTaskStatusBarItem.style.borderRadius = '4px';
 		this.topTaskStatusBarItem.style.border = color.bg === 'transparent' ? '1px solid var(--background-modifier-border)' : 'none';
 	}
 

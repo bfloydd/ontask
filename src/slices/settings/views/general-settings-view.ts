@@ -105,9 +105,7 @@ export class GeneralSettingsView {
 					cls: 'setting-item-description',
 					text: '⚠️ Daily Notes plugin is not enabled. Please enable it in Settings → Community plugins.'
 				});
-				warningEl.style.color = 'var(--text-error)';
-				warningEl.style.fontWeight = 'bold';
-				warningEl.style.marginTop = '8px';
+				warningEl.addClass('ontask-warning-text');
 			}
 		}
 

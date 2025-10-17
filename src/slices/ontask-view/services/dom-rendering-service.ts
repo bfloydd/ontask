@@ -149,13 +149,11 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		statusDisplay.addEventListener('click', () => {
 			this.onOpenFile(checkbox.file?.path || '', checkbox.lineNumber);
 		});
-		statusDisplay.style.cursor = 'pointer';
 		
 		// Add click handler for text (to open file)
 		textEl.addEventListener('click', () => {
 			this.onOpenFile(checkbox.file?.path || '', checkbox.lineNumber);
 		});
-		textEl.style.cursor = 'pointer';
 		
 		// Add context menu event listener to the task row
 		checkboxEl.addEventListener('contextmenu', (e) => {
@@ -194,8 +192,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
 		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
-		topTaskStatusDisplay.style.cursor = 'pointer';
-		
 		// Apply colors from status configuration
 		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
 		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
@@ -210,7 +206,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		// Top task text
 		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
 		topTaskText.textContent = remainingText || 'Top Task';
-		topTaskText.style.cursor = 'pointer';
 		topTaskText.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
 		});
@@ -218,9 +213,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		// Top task source
 		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
 		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
-		topTaskSource.style.fontSize = '12px';
-		topTaskSource.style.color = 'var(--text-muted)';
-		topTaskSource.style.marginTop = '4px';
 		
 		topTaskContent.appendChild(topTaskStatusDisplay);
 		topTaskContent.appendChild(topTaskText);
@@ -259,7 +251,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
 		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
-		topTaskStatusDisplay.style.cursor = 'pointer';
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
 		});
@@ -267,7 +258,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		// Top task text
 		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
 		topTaskText.textContent = remainingText || 'Top Task';
-		topTaskText.style.cursor = 'pointer';
 		topTaskText.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
 		});
@@ -275,9 +265,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		// Top task source
 		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
 		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
-		topTaskSource.style.fontSize = '12px';
-		topTaskSource.style.color = 'var(--text-muted)';
-		topTaskSource.style.marginTop = '4px';
 		
 		topTaskContent.appendChild(topTaskStatusDisplay);
 		topTaskContent.appendChild(topTaskText);
@@ -332,7 +319,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		existingSections.forEach(section => section.remove());
 
 		const loadMoreSection = contentArea.createDiv('ontask-load-more-section');
-		loadMoreSection.addClass('ontask-file-section');
 		
 		const newLoadMoreButton = loadMoreSection.createEl('button', {
 			text: 'Load More',
@@ -348,7 +334,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 
 	createLoadMoreButtonElement(onLoadMore: () => Promise<void>): HTMLElement {
 		const loadMoreSection = document.createElement('div');
-		loadMoreSection.className = 'ontask-load-more-section ontask-file-section';
+		loadMoreSection.className = 'ontask-load-more-section';
 		
 		// Create button using vanilla DOM methods instead of createEl
 		const loadMoreButton = document.createElement('button');

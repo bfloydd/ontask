@@ -66,9 +66,6 @@ export class StatusConfigView {
 		});
 		statusEl.style.color = config.color;
 		statusEl.style.backgroundColor = config.backgroundColor || 'transparent';
-		statusEl.style.padding = '2px 6px';
-		statusEl.style.borderRadius = '4px';
-		statusEl.style.fontWeight = 'bold';
 		
 		// Add lock icon for non-editable symbols
 		if (isNonEditableSymbol) {
@@ -77,9 +74,7 @@ export class StatusConfigView {
 				text: '🔒',
 				attr: { title: 'This symbol is read-only (used for task detection)' }
 			});
-			lockIcon.style.marginLeft = '4px';
-			lockIcon.style.fontSize = '10px';
-			lockIcon.style.opacity = '0.7';
+			// Lock icon styles are now handled by CSS
 		}
 
 		// Status info
@@ -110,9 +105,7 @@ export class StatusConfigView {
 				text: indicatorText,
 				attr: { title: tooltipText }
 			});
-			indicatorEl.style.color = 'var(--text-muted)';
-			indicatorEl.style.fontSize = '0.9em';
-			indicatorEl.style.fontStyle = 'italic';
+			indicatorEl.addClass('status-config-indicator');
 		}
 		
 		infoEl.createEl('div', { 
@@ -244,10 +237,6 @@ export class StatusConfigView {
 		});
 		previewStatus.style.color = config.color;
 		previewStatus.style.backgroundColor = config.backgroundColor || 'transparent';
-		previewStatus.style.padding = '4px 8px';
-		previewStatus.style.borderRadius = '4px';
-		previewStatus.style.fontWeight = 'bold';
-		previewStatus.style.marginRight = '8px';
 
 		// Update preview on change
 		const updatePreview = () => {

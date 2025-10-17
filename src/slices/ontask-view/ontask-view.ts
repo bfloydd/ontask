@@ -245,6 +245,9 @@ export class OnTaskView extends ItemView {
 			// Render checkboxes
 			this.domRenderingService.renderCheckboxes(contentArea, this.checkboxes, this.displayedTasksCount);
 			
+			// Always add Load More button - it will find more tasks if available
+			this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
+			
 			// Update button states
 			this.updateButtonStates();
 			

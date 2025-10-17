@@ -24,6 +24,12 @@
 	line-height: 1.4;
 }
 
+.ontask-warning-text {
+	color: var(--text-error);
+	font-weight: bold;
+	margin-top: 8px;
+}
+
 .ontask-loading {
 	text-align: center;
 	color: var(--text-muted);
@@ -172,6 +178,50 @@
 	background: var(--background-primary);
 	padding: 2px 8px;
 	border-radius: 10px;
+}
+
+/* ========================================
+   STATUS DISPLAY ELEMENTS
+   ======================================== */
+
+.ontask-status-display {
+	font-size: 12px;
+	min-width: 24px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.ontask-status-display-text-content {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+}
+
+.ontask-status-display-name {
+	font-weight: 500;
+}
+
+.ontask-status-display-description {
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+.ontask-color-preview {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	border: 2px solid var(--background-modifier-border);
+	flex-shrink: 0;
+}
+
+.ontask-color-checkmark {
+	color: var(--text-accent);
+	font-weight: bold;
+	margin-left: auto;
 }
 
 /* ========================================
@@ -519,14 +569,33 @@
 
 .ontask-color-menu {
 	font-family: var(--font-interface);
+	position: fixed;
+	z-index: 1000;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	padding: 8px;
+	min-width: 200px;
+	max-height: 300px;
+	overflow-y: auto;
 }
 
 .ontask-color-menu-item {
 	transition: all 0.2s ease;
+	padding: 8px 12px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+	color: var(--text-normal);
+	border-radius: 4px;
 }
 
 .ontask-color-menu-item:hover {
 	transform: translateX(2px);
+	background: var(--background-modifier-hover);
 }
 
 .ontask-context-menu,
@@ -534,11 +603,84 @@
 	font-family: var(--font-interface);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
+	position: fixed;
+	z-index: 1000;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	padding: 12px;
+	max-width: 400px;
+}
+
+.ontask-filters-menu h3 {
+	margin: 0 0 12px 0;
+	color: var(--text-normal);
+	font-size: 16px;
+	font-weight: 600;
+	padding-bottom: 8px;
+}
+
+.ontask-filters-checkboxes-container {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.ontask-filters-checkbox-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ontask-filters-checkbox-label {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	cursor: pointer;
+	flex: 1;
+}
+
+.ontask-filters-checkbox-name {
+	font-weight: 500;
+}
+
+.ontask-filters-checkbox-description {
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+.ontask-filters-buttons-container {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 12px;
+	border-top: 1px solid var(--background-modifier-border);
+	padding-top: 8px;
+}
+
+.ontask-filters-separator {
+	border-top: 1px solid var(--background-modifier-border);
+	margin: 12px 0;
+}
+
+.ontask-filters-quick-filters-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
 }
 
 .ontask-context-menu-item {
 	transition: all 0.15s ease;
 	border-bottom: 1px solid var(--background-modifier-border-focus);
+	padding: 6px 10px;
+	cursor: pointer;
+	font-size: 14px;
+	color: var(--text-normal);
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
 }
 
 .ontask-context-menu-item:last-child {
@@ -589,12 +731,49 @@
 }
 
 /* ========================================
+   TEST MENU (DEBUG)
+   ======================================== */
+
+.ontask-test-menu {
+	position: fixed;
+	z-index: 9999;
+	background: red;
+	color: white;
+	padding: 10px;
+	border: 2px solid black;
+}
+
+/* ========================================
    WORKSPACE LAYOUT
    ======================================== */
 
 .workspace-split.mod-vertical.mod-root > * {
 	width: auto !important;
 	height: auto !important;
+}
+
+/* ========================================
+   TOP TASK STATUS BAR
+   ======================================== */
+
+.ontask-top-task-status-bar {
+	cursor: pointer;
+	opacity: 0.7;
+	pointer-events: auto;
+	z-index: 1000;
+}
+
+.ontask-top-task-status-bar.hidden {
+	display: none;
+}
+
+.ontask-top-task-status-bar.visible {
+	display: block;
+}
+
+.ontask-top-task-status-bar {
+	padding: 2px 8px;
+	border-radius: 4px;
 }
 
 /* ========================================
@@ -769,6 +948,18 @@
 	border: 1px solid var(--background-modifier-border);
 	min-width: 24px;
 	text-align: center;
+}
+
+.status-config-symbol-lock {
+	margin-left: 4px;
+	font-size: 10px;
+	opacity: 0.7;
+}
+
+.status-config-indicator {
+	color: var(--text-muted);
+	font-size: 0.9em;
+	font-style: italic;
 }
 
 .status-config-info {
@@ -973,6 +1164,13 @@
 
 .ontask-settings-content {
 	padding: 0;
+}
+
+.ontask-button-container {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
 }
 
 /* ========================================

@@ -34,9 +34,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	private renderTabNavigation(containerEl: HTMLElement): void {
 		const tabContainer = containerEl.createDiv();
 		tabContainer.addClass('ontask-settings-tabs');
-		tabContainer.style.display = 'flex';
-		tabContainer.style.borderBottom = '1px solid var(--background-modifier-border)';
-		tabContainer.style.marginBottom = '16px';
+		// Tab container styles are now handled by CSS
 
 		const tabs = [
 			{ id: 'general', name: 'General' },
@@ -47,12 +45,10 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 		tabs.forEach(tab => {
 			const tabEl = tabContainer.createEl('button', { text: tab.name });
 			tabEl.addClass('ontask-tab-button');
-			tabEl.style.padding = '8px 16px';
-			tabEl.style.border = 'none';
-			tabEl.style.background = 'transparent';
-			tabEl.style.cursor = 'pointer';
-			tabEl.style.borderBottom = this.currentTab === tab.id ? '2px solid var(--interactive-accent)' : '2px solid transparent';
-			tabEl.style.color = this.currentTab === tab.id ? 'var(--interactive-accent)' : 'var(--text-muted)';
+			// Tab button styles are now handled by CSS
+			if (this.currentTab === tab.id) {
+				tabEl.addClass('active');
+			}
 
 			tabEl.addEventListener('click', () => {
 				this.currentTab = tab.id as 'general' | 'status' | 'quick-filters';

@@ -62,14 +62,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	private createContextMenu(checkbox: any): HTMLElement {
 		const menu = document.createElement('div');
 		menu.className = 'ontask-context-menu';
-		menu.style.position = 'fixed';
-		menu.style.zIndex = '1000';
-		menu.style.background = 'var(--background-primary)';
-		menu.style.border = '1px solid var(--background-modifier-border)';
-		menu.style.borderRadius = '6px';
-		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-		menu.style.padding = '2px';
-		menu.style.minWidth = '200px';
 
 		// Use centralized status configuration
 		const statuses = this.statusConfigService.getStatusConfigs();
@@ -86,14 +78,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	private createMenuItem(status: any, checkbox: any): HTMLElement {
 		const menuItem = document.createElement('div');
 		menuItem.className = 'ontask-context-menu-item';
-		menuItem.style.padding = '6px 10px';
-		menuItem.style.cursor = 'pointer';
-		menuItem.style.fontSize = '14px';
-		menuItem.style.color = 'var(--text-normal)';
-		menuItem.style.borderRadius = '4px';
-		menuItem.style.display = 'flex';
-		menuItem.style.alignItems = 'center';
-		menuItem.style.gap = '6px';
 
 		// Create status display with colors from configuration
 		const statusDisplay = this.createStatusDisplay(status);
@@ -121,34 +105,24 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		statusDisplay.className = 'ontask-checkbox-display';
 		statusDisplay.setAttribute('data-status', status.symbol);
 		statusDisplay.textContent = this.getStatusDisplayText(status.symbol);
-		statusDisplay.style.fontSize = '12px';
-		statusDisplay.style.minWidth = '24px';
-		statusDisplay.style.height = '20px';
-		statusDisplay.style.display = 'flex';
-		statusDisplay.style.alignItems = 'center';
-		statusDisplay.style.justifyContent = 'center';
 		statusDisplay.style.color = status.color;
 		statusDisplay.style.backgroundColor = status.backgroundColor || 'transparent';
 		statusDisplay.style.border = `1px solid ${status.color}`;
-		statusDisplay.style.borderRadius = '3px';
 
 		return statusDisplay;
 	}
 
 	private createTextContent(status: any): HTMLElement {
 		const textContent = document.createElement('div');
-		textContent.style.display = 'flex';
-		textContent.style.flexDirection = 'column';
-		textContent.style.gap = '1px';
+		textContent.className = 'ontask-status-display-text-content';
 		
 		const nameEl = document.createElement('div');
 		nameEl.textContent = status.name;
-		nameEl.style.fontWeight = '500';
+		nameEl.className = 'ontask-status-display-name';
 		
 		const descEl = document.createElement('div');
 		descEl.textContent = status.description;
-		descEl.style.fontSize = '12px';
-		descEl.style.color = 'var(--text-muted)';
+		descEl.className = 'ontask-status-display-description';
 		
 		textContent.appendChild(nameEl);
 		textContent.appendChild(descEl);
@@ -157,12 +131,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	}
 
 	private addHoverEffects(menuItem: HTMLElement): void {
-		menuItem.addEventListener('mouseenter', () => {
-			menuItem.style.background = 'var(--background-modifier-hover)';
-		});
-		menuItem.addEventListener('mouseleave', () => {
-			menuItem.style.background = 'transparent';
-		});
+		// Hover effects are now handled by CSS
 	}
 
 	private setupMenuCloseHandlers(menu: HTMLElement): void {
@@ -261,14 +230,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	private createFiltersMenu(): HTMLElement {
 		const menu = document.createElement('div');
 		menu.className = 'ontask-filters-menu';
-		menu.style.position = 'fixed';
-		menu.style.zIndex = '1000';
-		menu.style.background = 'var(--background-primary)';
-		menu.style.border = '1px solid var(--background-modifier-border)';
-		menu.style.borderRadius = '6px';
-		menu.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-		menu.style.padding = '12px';
-		menu.style.maxWidth = '400px';
+		// Menu positioning and styling is now handled by CSS classes
 
 		// Get current settings and status configs
 		const settings = this.settingsService.getSettings();
@@ -293,9 +255,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 	private createStatusCheckboxes(menu: HTMLElement, statusConfigs: any[]): HTMLElement {
 		const checkboxesContainer = menu.createDiv();
-		checkboxesContainer.style.display = 'flex';
-		checkboxesContainer.style.flexDirection = 'column';
-		checkboxesContainer.style.gap = '8px';
+		checkboxesContainer.className = 'ontask-filters-checkboxes-container';
 
 		// Track checkbox elements for save functionality
 		const checkboxElements: { [key: string]: HTMLInputElement } = {};
@@ -313,9 +273,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 	private createStatusCheckboxItem(status: any, checkboxElements: { [key: string]: HTMLInputElement }): HTMLElement {
 		const checkboxItem = document.createElement('div');
-		checkboxItem.style.display = 'flex';
-		checkboxItem.style.alignItems = 'center';
-		checkboxItem.style.gap = '8px';
+		checkboxItem.className = 'ontask-filters-checkbox-item';
 
 		// Create checkbox
 		const checkbox = document.createElement('input');
@@ -347,20 +305,15 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	private createStatusLabel(status: any, checkbox: HTMLInputElement): HTMLElement {
 		const label = document.createElement('label');
 		label.htmlFor = `filter-${status.symbol}`;
-		label.style.display = 'flex';
-		label.style.flexDirection = 'column';
-		label.style.gap = '2px';
-		label.style.cursor = 'pointer';
-		label.style.flex = '1';
+		label.className = 'ontask-filters-checkbox-label';
 
 		const nameEl = document.createElement('div');
 		nameEl.textContent = status.name;
-		nameEl.style.fontWeight = '500';
+		nameEl.className = 'ontask-filters-checkbox-name';
 
 		const descEl = document.createElement('div');
 		descEl.textContent = status.description;
-		descEl.style.fontSize = '12px';
-		descEl.style.color = 'var(--text-muted)';
+		descEl.className = 'ontask-filters-checkbox-description';
 
 		label.appendChild(nameEl);
 		label.appendChild(descEl);
@@ -370,12 +323,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 	private createFilterButtons(menu: HTMLElement, checkboxesContainer: HTMLElement): void {
 		const buttonsContainer = menu.createDiv();
-		buttonsContainer.style.display = 'flex';
-		buttonsContainer.style.justifyContent = 'center';
-		buttonsContainer.style.gap = '8px';
-		buttonsContainer.style.marginTop = '12px';
-		buttonsContainer.style.borderTop = '1px solid var(--background-modifier-border)';
-		buttonsContainer.style.paddingTop = '8px';
+		buttonsContainer.className = 'ontask-filters-buttons-container';
 
 		// Create Save button
 		const saveButton = buttonsContainer.createEl('button', { text: 'Save' });
@@ -418,8 +366,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 		// Create separator
 		const separator = menu.createDiv();
-		separator.style.borderTop = '1px solid var(--background-modifier-border)';
-		separator.style.margin = '12px 0';
+		separator.className = 'ontask-filters-separator';
 
 		// Create Quick Filters header
 		const quickFiltersHeader = menu.createDiv();
@@ -427,9 +374,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 		// Create Quick Filters buttons container
 		const quickFiltersContainer = menu.createDiv();
-		quickFiltersContainer.style.display = 'flex';
-		quickFiltersContainer.style.flexWrap = 'wrap';
-		quickFiltersContainer.style.gap = '6px';
+		quickFiltersContainer.className = 'ontask-filters-quick-filters-container';
 
 		quickFilters.forEach((filter: any) => {
 			const button = this.createQuickFilterButton(filter, checkboxesContainer);
@@ -441,25 +386,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const button = document.createElement('button');
 		button.textContent = filter.name;
 		button.className = 'ontask-quick-filter-button';
-		button.style.padding = '4px 8px';
-		button.style.fontSize = '12px';
-		button.style.border = '1px solid var(--background-modifier-border)';
-		button.style.borderRadius = '4px';
-		button.style.background = 'var(--background-secondary)';
-		button.style.color = 'var(--text-normal)';
-		button.style.cursor = 'pointer';
-		button.style.transition = 'all 0.2s ease';
-
-		// Hover effects
-		button.addEventListener('mouseenter', () => {
-			button.style.background = 'var(--interactive-accent)';
-			button.style.color = 'var(--text-on-accent)';
-		});
-
-		button.addEventListener('mouseleave', () => {
-			button.style.background = 'var(--background-secondary)';
-			button.style.color = 'var(--text-normal)';
-		});
 
 		// Click handler
 		button.addEventListener('click', () => {

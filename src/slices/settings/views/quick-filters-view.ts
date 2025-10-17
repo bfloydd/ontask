@@ -93,10 +93,7 @@ export class QuickFiltersView {
 		// Status symbols display
 		const statusDisplay = settingItem.createDiv();
 		statusDisplay.addClass('quick-filter-statuses');
-		statusDisplay.style.marginTop = '8px';
-		statusDisplay.style.display = 'flex';
-		statusDisplay.style.flexWrap = 'wrap';
-		statusDisplay.style.gap = '4px';
+		// Status display styles are now handled by CSS
 
 		filter.statusSymbols.forEach(symbol => {
 			const statusConfig = this.statusConfigService.getStatusConfig(symbol);
@@ -106,10 +103,6 @@ export class QuickFiltersView {
 				statusBadge.textContent = statusConfig.name;
 				statusBadge.style.backgroundColor = statusConfig.backgroundColor || 'transparent';
 				statusBadge.style.color = statusConfig.color;
-				statusBadge.style.padding = '2px 6px';
-				statusBadge.style.borderRadius = '3px';
-				statusBadge.style.fontSize = '12px';
-				statusBadge.style.border = '1px solid var(--background-modifier-border)';
 			}
 		});
 	}
@@ -169,10 +162,7 @@ export class QuickFiltersView {
 
 		// Buttons
 		const buttonContainer = content.createDiv();
-		buttonContainer.style.display = 'flex';
-		buttonContainer.style.justifyContent = 'flex-end';
-		buttonContainer.style.gap = '8px';
-		buttonContainer.style.marginTop = '16px';
+		buttonContainer.addClass('ontask-button-container');
 
 		const saveButton = buttonContainer.createEl('button', { text: 'Save' });
 		saveButton.addClass('mod-cta');
@@ -223,10 +213,7 @@ export class QuickFiltersView {
 		});
 
 		const buttonContainer = content.createDiv();
-		buttonContainer.style.display = 'flex';
-		buttonContainer.style.justifyContent = 'flex-end';
-		buttonContainer.style.gap = '8px';
-		buttonContainer.style.marginTop = '16px';
+		buttonContainer.addClass('ontask-button-container');
 
 		const deleteButton = buttonContainer.createEl('button', { text: 'Delete' });
 		deleteButton.addClass('mod-warning');
