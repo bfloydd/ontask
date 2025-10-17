@@ -42,27 +42,44 @@
 	align-items: center;
 }
 
-.ontask-header-button {
+/* Common button base styles */
+.ontask-header-button,
+.ontask-load-more-button,
+.status-config-edit-btn,
+.status-config-delete-btn,
+.status-config-add-btn,
+.ontask-quick-filter-button {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	border: none;
 	border-radius: 4px;
-	/* padding: 6px 12px; */
-	padding: 0px 6px 0px 6px;
 	cursor: pointer;
 	font-size: 14px;
 	transition: all 0.2s ease;
 	display: flex;
 	align-items: center;
+}
+
+.ontask-header-button {
+	padding: 0px 6px 0px 6px;
 	gap: 6px;
 	height: 25px;
 }
 
-.ontask-header-button:hover {
+/* Common button hover states */
+.ontask-header-button:hover,
+.ontask-load-more-button:hover,
+.status-config-edit-btn:hover,
+.status-config-add-btn:hover,
+.ontask-quick-filter-button:hover {
 	background: var(--interactive-accent-hover);
 }
 
-.ontask-header-button:active {
+.ontask-header-button:active,
+.ontask-load-more-button:active,
+.status-config-edit-btn:active,
+.status-config-add-btn:active,
+.ontask-quick-filter-button:active {
 	transform: translateY(1px);
 }
 
@@ -215,68 +232,67 @@
 	justify-content: center;
 }
 
+/* Common status styling for colored backgrounds */
+.ontask-checkbox-display[data-status="x"],
+.ontask-checkbox-display[data-status="!"],
+.ontask-checkbox-display[data-status="?"],
+.ontask-checkbox-display[data-status="*"],
+.ontask-checkbox-display[data-status="r"],
+.ontask-checkbox-display[data-status="b"],
+.ontask-checkbox-display[data-status="<"],
+.ontask-checkbox-display[data-status=">"],
+.ontask-checkbox-display[data-status="-"],
+.ontask-checkbox-display[data-status="/"] {
+	color: var(--text-on-accent);
+}
+
 .ontask-checkbox-display[data-status="x"] {
 	background: var(--interactive-accent);
-	color: var(--text-on-accent);
 	border-color: var(--interactive-accent);
 }
 
 .ontask-checkbox-display[data-status="!"] {
 	background: var(--text-error);
-	color: var(--text-on-accent);
 	border-color: var(--text-error);
 }
 
 .ontask-checkbox-display[data-status="?"] {
 	background: var(--text-warning);
-	color: var(--text-on-accent);
 	border-color: var(--text-warning);
 }
 
 .ontask-checkbox-display[data-status="*"] {
 	background: var(--text-accent);
-	color: var(--text-on-accent);
 	border-color: var(--text-accent);
 }
 
-
-
 .ontask-checkbox-display[data-status="r"] {
 	background: var(--text-muted);
-	color: var(--text-on-accent);
 	border-color: var(--text-muted);
 }
 
 .ontask-checkbox-display[data-status="b"] {
 	background: var(--text-accent);
-	color: var(--text-on-accent);
 	border-color: var(--text-accent);
 }
 
 .ontask-checkbox-display[data-status="<"] {
 	background: var(--text-warning);
-	color: var(--text-on-accent);
 	border-color: var(--text-warning);
 }
 
-
-
-
 .ontask-checkbox-display[data-status=">"] {
 	background: var(--text-accent);
-	color: var(--text-on-accent);
 	border-color: var(--text-accent);
 }
 
 .ontask-checkbox-display[data-status="-"] {
 	background: var(--text-error);
-	color: var(--text-on-accent);
 	border-color: var(--text-error);
 }
 
 .ontask-checkbox-display[data-status="/"] {
 	background: var(--text-warning);
-	color: var(--text-on-accent);
 	border-color: var(--text-warning);
 }
 
@@ -302,20 +318,13 @@
 }
 
 .ontask-load-more-button {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border: none;
 	border-radius: 6px;
 	padding: 10px 20px;
-	cursor: pointer;
-	font-size: 14px;
 	font-weight: 500;
-	transition: all 0.2s ease;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .ontask-load-more-button:hover {
-	background: var(--interactive-accent-hover);
 	transform: translateY(-1px);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -456,10 +465,14 @@
 	flex-wrap: wrap;
 }
 
-.is-mobile .ontask-file-header h3 {
+.is-mobile .ontask-file-header h3,
+.is-mobile .ontask-toptask-hero-header {
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 4px;
+}
+
+.is-mobile .ontask-file-header h3 {
 	font-size: 15px;
 }
 
@@ -471,11 +484,7 @@
 	margin-bottom: 10px;
 }
 
-
 .is-mobile .ontask-toptask-hero-header {
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 4px;
 	padding: 10px;
 }
 
@@ -502,7 +511,8 @@
 }
 
 /* Context Menu Styles */
-.ontask-context-menu {
+.ontask-context-menu,
+.ontask-filters-menu {
 	font-family: var(--font-interface);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
@@ -536,15 +546,14 @@
 
 .is-mobile .ontask-context-menu-item {
 	padding: 8px 12px;
-	min-height: 40px; /* Reduced from 44px */
-	/* Improve touch interaction */
+	min-height: 40px;
 	-webkit-tap-highlight-color: transparent;
 	user-select: none;
 	-webkit-user-select: none;
 }
 
 .is-mobile .ontask-context-menu-item:hover {
-	transform: none; /* Disable transform on mobile */
+	transform: none;
 }
 
 .is-mobile .ontask-context-menu-item:active {
@@ -625,7 +634,8 @@
 	min-height: 22px;
 }
 
-.is-mobile .ontask-toptask-hero-content {
+.is-mobile .ontask-toptask-hero-content,
+.is-phone .ontask-toptask-hero-content {
 	gap: 8px;
 }
 
@@ -641,10 +651,6 @@
 	padding: 2px 6px;
 	font-size: 12px;
 	min-height: 20px;
-}
-
-.is-phone .ontask-toptask-hero-content {
-	gap: 8px;
 }
 
 .is-phone .ontask-toptask-hero-icon {
@@ -767,19 +773,12 @@
 
 .status-config-edit-btn,
 .status-config-delete-btn {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border: none;
-	border-radius: 4px;
 	padding: 6px 12px;
-	cursor: pointer;
 	font-size: 12px;
 	font-weight: 500;
-	transition: all 0.2s ease;
 }
 
 .status-config-edit-btn:hover {
-	background: var(--interactive-accent-hover);
 	transform: translateY(-1px);
 }
 
@@ -794,20 +793,14 @@
 }
 
 .status-config-add-btn {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border: none;
 	border-radius: 6px;
 	padding: 10px 16px;
-	cursor: pointer;
 	font-size: 14px;
 	font-weight: 500;
-	transition: all 0.2s ease;
 	width: 100%;
 }
 
 .status-config-add-btn:hover {
-	background: var(--interactive-accent-hover);
 	transform: translateY(-1px);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -849,10 +842,8 @@
 .status-config-modal-buttons button {
 	padding: 8px 16px;
 	border-radius: 4px;
-	cursor: pointer;
 	font-size: 14px;
 	font-weight: 500;
-	transition: all 0.2s ease;
 }
 
 .status-config-modal-buttons button:not(.mod-cta) {
@@ -869,11 +860,6 @@
 
 
 /* Filter Menu Styles */
-.ontask-filters-menu {
-	font-family: var(--font-interface);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-}
 
 .ontask-filters-menu h3 {
 	margin: 0 0 12px 0;
@@ -888,11 +874,8 @@
 	background: var(--background-secondary);
 	color: var(--text-normal);
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
 	padding: 4px 8px;
-	cursor: pointer;
 	font-size: 12px;
-	transition: all 0.2s ease;
 }
 
 .ontask-quick-filter-button:hover {
