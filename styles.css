@@ -1,4 +1,7 @@
-/* Warning styles */
+/* ========================================
+   WARNING & STATUS MESSAGES
+   ======================================== */
+
 .ontask-warning {
 	background: var(--background-modifier-error);
 	border: 1px solid var(--text-error);
@@ -21,11 +24,34 @@
 	line-height: 1.4;
 }
 
-/* OnTaskView Styles */
+.ontask-loading {
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+	padding: 20px;
+}
+
+.ontask-empty {
+	text-align: center;
+	color: var(--text-muted);
+	padding: 40px 20px;
+	font-style: italic;
+}
+
+.ontask-error {
+	text-align: center;
+	color: var(--text-error);
+	padding: 20px;
+	background: var(--background-modifier-error);
+	border-radius: 4px;
+}
+
+/* ========================================
+   MAIN VIEW HEADER & CONTROLS
+   ======================================== */
+
 .ontask-header {
-	/* border-bottom: 1px solid var(--background-modifier-border); */
 	padding-bottom: 15px;
-	/* margin-bottom: 15px; */
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -42,7 +68,10 @@
 	align-items: center;
 }
 
-/* Common button base styles */
+/* ========================================
+   BUTTONS & INTERACTIVE ELEMENTS
+   ======================================== */
+
 .ontask-header-button,
 .ontask-load-more-button,
 .status-config-edit-btn,
@@ -66,7 +95,6 @@
 	height: 25px;
 }
 
-/* Common button hover states */
 .ontask-header-button:hover,
 .ontask-load-more-button:hover,
 .status-config-edit-btn:hover,
@@ -83,28 +111,9 @@
 	transform: translateY(1px);
 }
 
-
-.ontask-loading {
-	text-align: center;
-	color: var(--text-muted);
-	font-style: italic;
-	padding: 20px;
-}
-
-.ontask-empty {
-	text-align: center;
-	color: var(--text-muted);
-	padding: 40px 20px;
-	font-style: italic;
-}
-
-.ontask-error {
-	text-align: center;
-	color: var(--text-error);
-	padding: 20px;
-	background: var(--background-modifier-error);
-	border-radius: 4px;
-}
+/* ========================================
+   FILE SECTIONS & TASK CONTAINERS
+   ======================================== */
 
 .ontask-file-section {
 	margin-bottom: 15px;
@@ -165,6 +174,10 @@
 	border-radius: 10px;
 }
 
+/* ========================================
+   TASK ITEMS & CHECKBOXES
+   ======================================== */
+
 .ontask-checkboxes-list {
 	padding: 8px;
 	background: var(--background-primary);
@@ -220,7 +233,6 @@
 	border-color: var(--background-modifier-border-hover);
 }
 
-/* Status-specific styling */
 .ontask-checkbox-display[data-status=""] {
 	background: transparent;
 	color: var(--text-muted);
@@ -232,7 +244,6 @@
 	justify-content: center;
 }
 
-/* Common status styling for colored backgrounds */
 .ontask-checkbox-display[data-status="x"],
 .ontask-checkbox-display[data-status="!"],
 .ontask-checkbox-display[data-status="?"],
@@ -305,9 +316,10 @@
 	flex: 1;
 }
 
+/* ========================================
+   LOAD MORE FUNCTIONALITY
+   ======================================== */
 
-
-/* Load More Button Styles */
 .ontask-load-more-section {
 	text-align: center;
 	margin-top: 15px;
@@ -334,22 +346,10 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Mobile responsive for Load More button */
-.is-mobile .ontask-load-more-section {
-	padding: 15px;
-}
+/* ========================================
+   TOP TASK HERO SECTION
+   ======================================== */
 
-.is-mobile .ontask-load-more-button {
-	padding: 12px 24px;
-	font-size: 16px;
-}
-
-.is-phone .ontask-load-more-button {
-	padding: 10px 20px;
-	font-size: 15px;
-}
-
-/* Top Task Section Styles */
 .ontask-toptask-hero-section {
 	margin-top: 5px;
 	border: 8px solid var(--text-error);
@@ -453,7 +453,10 @@
 	opacity: 1;
 }
 
-/* Mobile responsive */
+/* ========================================
+   MOBILE RESPONSIVE STYLES
+   ======================================== */
+
 .is-mobile .ontask-header {
 	flex-direction: column;
 	gap: 10px;
@@ -496,8 +499,24 @@
 	padding: 10px;
 }
 
+.is-mobile .ontask-load-more-section {
+	padding: 15px;
+}
 
-/* Color Menu Styles */
+.is-mobile .ontask-load-more-button {
+	padding: 12px 24px;
+	font-size: 16px;
+}
+
+.is-phone .ontask-load-more-button {
+	padding: 10px 20px;
+	font-size: 15px;
+}
+
+/* ========================================
+   CONTEXT MENUS & DROPDOWNS
+   ======================================== */
+
 .ontask-color-menu {
 	font-family: var(--font-interface);
 }
@@ -510,7 +529,6 @@
 	transform: translateX(2px);
 }
 
-/* Context Menu Styles */
 .ontask-context-menu,
 .ontask-filters-menu {
 	font-family: var(--font-interface);
@@ -537,7 +555,6 @@
 	transform: translateX(1px);
 }
 
-/* Mobile responsive context menu */
 .is-mobile .ontask-context-menu {
 	min-width: 250px;
 	max-width: 90vw;
@@ -561,7 +578,6 @@
 	transform: none;
 }
 
-/* Phone specific adjustments */
 .is-phone .ontask-context-menu {
 	min-width: 200px;
 	max-width: 85vw;
@@ -572,15 +588,19 @@
 	font-size: 15px;
 }
 
-/* Override the width: 0 and height: 100% constraints on workspace children to allow proper layout */
+/* ========================================
+   WORKSPACE LAYOUT
+   ======================================== */
+
 .workspace-split.mod-vertical.mod-root > * {
 	width: auto !important;
 	height: auto !important;
 }
 
-/* Note: Workspace root positioning removed - overlay now uses sticky positioning within editor containers */
+/* ========================================
+   TOP TASK HERO OVERLAY
+   ======================================== */
 
-/* Editor Top Task Overlay Styles */
 .ontask-toptask-hero-overlay {
 	display: block;
 	width: 100%;
@@ -596,7 +616,7 @@
 	position: sticky;
 	bottom: 0;
 	z-index: 10;
-	flex-shrink: 0; /* Prevent shrinking in flex containers */
+	flex-shrink: 0;
 }
 
 .ontask-toptask-hero-overlay:hover {
@@ -627,7 +647,6 @@
 	opacity: 0.7;
 }
 
-/* Mobile responsive for editor overlay */
 .is-mobile .ontask-toptask-hero-overlay {
 	padding: 3px 8px;
 	font-size: 13px;
@@ -661,9 +680,10 @@
 	font-size: 9px;
 }
 
-/* Status Configuration UI Styles */
+/* ========================================
+   STATUS CONFIGURATION MODAL
+   ======================================== */
 
-/* Disabled symbol input for TOP_TASK_CONFIG symbols */
 .status-config-modal-symbol-disabled {
 	background: var(--background-modifier-border) !important;
 	color: var(--text-muted) !important;
@@ -689,7 +709,6 @@
 	transform: none !important;
 	box-shadow: none !important;
 }
-
 
 .status-config-list {
 	display: flex;
@@ -855,11 +874,11 @@
 .status-config-modal-buttons button:not(.mod-cta):hover {
 	background: var(--background-modifier-hover);
 	border-color: var(--background-modifier-border-hover);
-
 }
 
-
-/* Filter Menu Styles */
+/* ========================================
+   FILTERS & QUICK FILTERS
+   ======================================== */
 
 .ontask-filters-menu h3 {
 	margin: 0 0 12px 0;
@@ -869,7 +888,6 @@
 	padding-bottom: 8px;
 }
 
-/* Quick Filters Styles */
 .ontask-quick-filter-button {
 	background: var(--background-secondary);
 	color: var(--text-normal);
@@ -891,7 +909,6 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Quick Filter Settings Styles */
 .quick-filter-item {
 	background: var(--background-secondary);
 	border: 1px solid var(--background-modifier-border);
@@ -924,7 +941,10 @@
 	color: var(--text-normal);
 }
 
-/* Settings Tab Styles */
+/* ========================================
+   SETTINGS INTERFACE
+   ======================================== */
+
 .ontask-settings-tabs {
 	display: flex;
 	border-bottom: 1px solid var(--background-modifier-border);
@@ -955,7 +975,10 @@
 	padding: 0;
 }
 
-/* Mobile responsive for Quick Filters */
+/* ========================================
+   ADDITIONAL MOBILE RESPONSIVE STYLES
+   ======================================== */
+
 .is-mobile .ontask-quick-filter-button {
 	padding: 6px 10px;
 	font-size: 14px;
