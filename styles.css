@@ -42,10 +42,6 @@
 	align-items: center;
 }
 
-.ontask-refresh-btn,
-.ontask-only-today-btn,
-.ontask-configure-button,
-.ontask-filter-button,
 .ontask-header-button {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
@@ -62,33 +58,14 @@
 	height: 25px;
 }
 
-.ontask-refresh-btn:hover,
-.ontask-only-today-btn:hover,
-.ontask-configure-button:hover,
-.ontask-filter-button:hover,
 .ontask-header-button:hover {
 	background: var(--interactive-accent-hover);
 }
 
-.ontask-refresh-btn:active,
-.ontask-only-today-btn:active,
-.ontask-configure-button:active,
-.ontask-filter-button:active,
 .ontask-header-button:active {
 	transform: translateY(1px);
 }
 
-/* Active filter button styles */
-.ontask-filter-active {
-	background: var(--interactive-accent) !important;
-	color: var(--text-on-accent) !important;
-	font-weight: 600;
-	box-shadow: 0 0 0 2px var(--interactive-accent);
-}
-
-.ontask-filter-active:hover {
-	background: var(--interactive-accent-hover) !important;
-}
 
 .ontask-loading {
 	text-align: center;
@@ -312,88 +289,7 @@
 	flex: 1;
 }
 
-.ontask-line-info {
-	color: var(--text-muted);
-	font-size: 11px;
-	padding: 0;
-	text-align: right;
-	display: flex;
-	justify-content: flex-end;
-	align-items: center;
-}
 
-.ontask-line-number {
-	color: var(--text-muted);
-	font-style: italic;
-}
-
-.ontask-link-btn {
-	background: var(--background-secondary);
-	color: var(--text-muted);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 3px;
-	padding: 4px 8px;
-	cursor: pointer;
-	font-size: 11px;
-	opacity: 0;
-	transition: all 0.2s ease;
-	flex-shrink: 0;
-	margin-left: auto;
-}
-
-.ontask-checkbox-item:hover .ontask-link-btn {
-	opacity: 0.8;
-}
-
-.ontask-link-btn:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
-	border-color: var(--background-modifier-border-hover);
-	opacity: 1;
-}
-
-.ontask-link-btn:active {
-	transform: translateY(1px);
-}
-
-/* Pagination styles */
-.ontask-pagination-info {
-	text-align: center;
-	padding: 10px;
-	margin-bottom: 15px;
-	border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.ontask-pagination-text {
-	color: var(--text-muted);
-	font-size: 12px;
-}
-
-.ontask-load-more-container {
-	text-align: center;
-	padding: 20px;
-	border-top: 1px solid var(--background-modifier-border);
-	margin-top: 15px;
-}
-
-.ontask-load-more-btn {
-	background: var(--interactive-accent);
-	color: var(--text-on-accent);
-	border: none;
-	border-radius: 4px;
-	padding: 8px 16px;
-	cursor: pointer;
-	font-size: 14px;
-	font-weight: 500;
-}
-
-.ontask-load-more-btn:hover {
-	background: var(--interactive-accent-hover);
-}
-
-.ontask-load-more-btn:active {
-	transform: translateY(1px);
-}
 
 /* Load More Button Styles */
 .ontask-load-more-section {
@@ -575,14 +471,6 @@
 	margin-bottom: 10px;
 }
 
-.is-mobile .ontask-load-more-container {
-	padding: 15px;
-}
-
-.is-mobile .ontask-load-more-btn {
-	padding: 10px 20px;
-	font-size: 16px;
-}
 
 .is-mobile .ontask-toptask-hero-header {
 	flex-direction: column;
@@ -599,10 +487,6 @@
 	padding: 10px;
 }
 
-/* Status Bar Top Task Styles */
-.ontask-toptask-hero-status {
-	font-weight: 500;
-}
 
 /* Color Menu Styles */
 .ontask-color-menu {
@@ -772,9 +656,6 @@
 }
 
 /* Status Configuration UI Styles */
-.status-config-header {
-	margin-bottom: 20px;
-}
 
 /* Disabled symbol input for TOP_TASK_CONFIG symbols */
 .status-config-modal-symbol-disabled {
@@ -803,12 +684,6 @@
 	box-shadow: none !important;
 }
 
-.status-config-header h3 {
-	margin: 0 0 8px 0;
-	color: var(--text-normal);
-	font-size: 18px;
-	font-weight: 600;
-}
 
 .status-config-list {
 	display: flex;
@@ -992,71 +867,6 @@
 
 }
 
-/* Mobile responsive for status configuration */
-.is-mobile .status-config-item {
-	padding: 10px;
-	gap: 10px;
-}
-
-.is-mobile .status-config-drag-handle {
-	font-size: 16px;
-	padding: 6px;
-}
-
-.is-mobile .status-config-symbol {
-	font-size: 16px;
-	padding: 6px 10px;
-	min-width: 28px;
-}
-
-.is-mobile .status-config-name {
-	font-size: 15px;
-}
-
-.is-mobile .status-config-description {
-	font-size: 13px;
-}
-
-.is-mobile .status-config-edit-btn,
-.is-mobile .status-config-delete-btn {
-	padding: 8px 14px;
-	font-size: 14px;
-}
-
-.is-mobile .status-config-add-btn {
-	padding: 12px 20px;
-	font-size: 16px;
-}
-
-.is-phone .status-config-item {
-	padding: 8px;
-	gap: 8px;
-}
-
-.is-phone .status-config-symbol {
-	font-size: 14px;
-	padding: 4px 8px;
-	min-width: 24px;
-}
-
-.is-phone .status-config-name {
-	font-size: 14px;
-}
-
-.is-phone .status-config-description {
-	font-size: 12px;
-}
-
-.is-phone .status-config-edit-btn,
-.is-phone .status-config-delete-btn {
-	padding: 6px 12px;
-	font-size: 13px;
-}
-
-.is-phone .status-config-add-btn {
-	padding: 10px 18px;
-	font-size: 15px;
-}
 
 /* Filter Menu Styles */
 .ontask-filters-menu {
@@ -1071,93 +881,6 @@
 	font-size: 16px;
 	font-weight: 600;
 	padding-bottom: 8px;
-}
-
-.ontask-filter-checkbox-item {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px;
-	border-radius: 4px;
-	transition: all 0.15s ease;
-	cursor: pointer;
-}
-
-.ontask-filter-checkbox-item:hover {
-	background: var(--background-modifier-hover);
-}
-
-.ontask-filter-checkbox-item input[type="checkbox"] {
-	margin: 0;
-	width: 16px;
-	height: 16px;
-	cursor: pointer;
-}
-
-.ontask-filter-checkbox-item label {
-	cursor: pointer;
-	margin: 0;
-	flex: 1;
-}
-
-.ontask-filter-checkbox-item label div:first-child {
-	font-weight: 500;
-	color: var(--text-normal);
-}
-
-.ontask-filter-checkbox-item label div:last-child {
-	font-size: 12px;
-	color: var(--text-muted);
-}
-
-/* Mobile responsive for filter menu */
-.is-mobile .ontask-filters-menu {
-	min-width: 280px;
-	max-width: 95vw;
-	font-size: 16px;
-}
-
-.is-mobile .ontask-filter-checkbox-item {
-	padding: 10px;
-	gap: 10px;
-	min-height: 44px;
-}
-
-.is-mobile .ontask-filter-checkbox-item input[type="checkbox"] {
-	width: 18px;
-	height: 18px;
-}
-
-.is-mobile .ontask-filter-checkbox-item label div:first-child {
-	font-size: 15px;
-}
-
-.is-mobile .ontask-filter-checkbox-item label div:last-child {
-	font-size: 13px;
-}
-
-.is-phone .ontask-filters-menu {
-	min-width: 260px;
-	max-width: 90vw;
-}
-
-.is-phone .ontask-filter-checkbox-item {
-	padding: 8px;
-	gap: 8px;
-	min-height: 40px;
-}
-
-.is-phone .ontask-filter-checkbox-item input[type="checkbox"] {
-	width: 16px;
-	height: 16px;
-}
-
-.is-phone .ontask-filter-checkbox-item label div:first-child {
-	font-size: 14px;
-}
-
-.is-phone .ontask-filter-checkbox-item label div:last-child {
-	font-size: 12px;
 }
 
 /* Quick Filters Styles */
