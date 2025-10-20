@@ -1,5 +1,5 @@
 import { App, Plugin } from 'obsidian';
-import { OnTaskSettings, DEFAULT_SETTINGS, SettingsService, OnTaskSettingsTab } from './src/slices/settings';
+import { OnTaskSettings, SettingsService, OnTaskSettingsTab } from './src/slices/settings';
 import { PluginOrchestrator } from './src/slices/plugin';
 import { EventSystem } from './src/slices/events';
 import { EditorIntegrationService } from './src/slices/editor';
@@ -9,8 +9,6 @@ import { CheckboxFinderService } from './src/slices/checkbox-finder';
 import { OnTaskView, ONTASK_VIEW_TYPE } from './src/slices/ontask-view';
 import { DataService } from './src/slices/data';
 import { StatusConfigService } from './src/slices/settings/status-config';
-
-// On Task Plugin - Task management for Obsidian
 
 export default class OnTask extends Plugin {
 	settings: OnTaskSettings;
@@ -77,17 +75,11 @@ export default class OnTask extends Plugin {
 		}
 	}
 
-
 	// Public methods for backward compatibility
 	public async updateTopTaskStatusBar() {
 		if (this.orchestrator) {
 			await this.orchestrator.updateTopTaskStatusBar();
 		}
-	}
-
-	public configureCheckboxSource() {
-		// This is now handled by the orchestrator's event listeners
-		// But we keep this method for backward compatibility
 	}
 }
 

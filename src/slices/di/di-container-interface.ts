@@ -18,17 +18,10 @@ export interface DIContainer {
 	// Register singleton services
 	registerSingleton<T>(identifier: ServiceIdentifier<T>, factory: ServiceFactory<T>): void;
 	
-	// Register transient services
-	registerTransient<T>(identifier: ServiceIdentifier<T>, factory: ServiceFactory<T>): void;
 	
 	// Resolve services
 	resolve<T>(identifier: ServiceIdentifier<T>): T;
 	
-	// Check if service is registered
-	isRegistered(identifier: ServiceIdentifier): boolean;
-	
-	// Get all registered service identifiers
-	getRegisteredServices(): ServiceIdentifier[];
 	
 	// Clear all registrations
 	clear(): void;

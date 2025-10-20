@@ -47,26 +47,6 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		}
 	}
 
-	getSettingsService(): SettingsService {
-		return this.dependencies.settingsService;
-	}
-
-	getCheckboxFinderService(): CheckboxFinderService {
-		return this.dependencies.checkboxFinderService;
-	}
-
-	getStreamsService(): StreamsService {
-		return this.dependencies.streamsService;
-	}
-
-	getDataService(): DataService {
-		return this.dependencies.dataService;
-	}
-
-	getStatusConfigService(): StatusConfigService {
-		return this.dependencies.statusConfigService;
-	}
-
 	async openOnTaskView(): Promise<void> {
 		const { app } = this.dependencies;
 		

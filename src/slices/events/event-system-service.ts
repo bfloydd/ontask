@@ -125,22 +125,11 @@ export class EventSystemServiceImpl implements EventSystem {
 		await Promise.all(promises);
 	}
 
-	off(eventName: string): void {
-		this.listeners.delete(eventName);
-	}
 
 	clear(): void {
 		this.listeners.clear();
 	}
 
-	listenerCount(eventName: string): number {
-		const listeners = this.listeners.get(eventName);
-		return listeners ? listeners.length : 0;
-	}
-
-	getEventNames(): string[] {
-		return Array.from(this.listeners.keys());
-	}
 
 	private generateListenerId(): string {
 		return `listener_${++this.listenerIdCounter}`;

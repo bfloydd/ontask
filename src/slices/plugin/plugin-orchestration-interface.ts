@@ -13,13 +13,6 @@ export interface PluginOrchestrator {
 	initialize(): Promise<void>;
 	shutdown(): Promise<void>;
 	
-	// Service management
-	getSettingsService(): SettingsService;
-	getCheckboxFinderService(): CheckboxFinderService;
-	getStreamsService(): StreamsService;
-	getDataService(): DataService;
-	getStatusConfigService(): StatusConfigService;
-	
 	// UI management
 	openOnTaskView(): Promise<void>;
 	refreshOnTaskViews(): Promise<void>;
@@ -41,10 +34,3 @@ export interface PluginDependencies {
 	statusConfigService: StatusConfigService;
 }
 
-export interface PluginLifecycleEvents {
-	'onload': () => void;
-	'onunload': () => void;
-	'settings-changed': (event: any) => void;
-	'streams-ready': () => void;
-	'file-modified': () => void;
-}

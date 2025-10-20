@@ -16,9 +16,6 @@ export class DIContainerImpl implements DIContainer {
 		this.register(identifier, factory, true);
 	}
 
-	registerTransient<T>(identifier: ServiceIdentifier<T>, factory: ServiceFactory<T>): void {
-		this.register(identifier, factory, false);
-	}
 
 	resolve<T>(identifier: ServiceIdentifier<T>): T {
 		const registration = this.registrations.get(identifier);
@@ -42,13 +39,6 @@ export class DIContainerImpl implements DIContainer {
 		}
 	}
 
-	isRegistered(identifier: ServiceIdentifier): boolean {
-		return this.registrations.has(identifier);
-	}
-
-	getRegisteredServices(): ServiceIdentifier[] {
-		return Array.from(this.registrations.keys());
-	}
 
 	clear(): void {
 		this.registrations.clear();

@@ -19,17 +19,10 @@ export interface EventSystem {
 	// Emit events asynchronously
 	emitAsync<T = any>(eventName: string, data?: T): Promise<void>;
 	
-	// Remove all listeners for an event
-	off(eventName: string): void;
 	
 	// Remove all listeners
 	clear(): void;
 	
-	// Get listener count for an event
-	listenerCount(eventName: string): number;
-	
-	// Get all event names
-	getEventNames(): string[];
 }
 
 export interface EventData {
