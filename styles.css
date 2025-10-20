@@ -1117,11 +1117,20 @@
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.quick-filter-statuses {
+.quick-filter-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 40px;
+}
+
+.quick-filter-item .quick-filter-statuses {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
-	margin-top: 8px;
+	margin-left: auto;
+	flex: 1;
+	justify-content: flex-end;
 }
 
 .quick-filter-status-badge {
