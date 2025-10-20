@@ -9,6 +9,7 @@ import { CheckboxFinderService } from './src/slices/checkbox-finder';
 import { OnTaskView, ONTASK_VIEW_TYPE } from './src/slices/ontask-view';
 import { DataService } from './src/slices/data';
 import { StatusConfigService } from './src/slices/settings/status-config';
+import { LoggingService } from './src/slices/logging';
 
 export default class OnTask extends Plugin {
 	settings: OnTaskSettings;
@@ -21,6 +22,7 @@ export default class OnTask extends Plugin {
 	private editorIntegrationService: EditorIntegrationService;
 	private dataService: DataService;
 	private statusConfigService: StatusConfigService;
+	private loggingService: LoggingService;
 
 	async onload() {
 		// Initialize dependency injection container
@@ -36,11 +38,13 @@ export default class OnTask extends Plugin {
 		this.editorIntegrationService = this.container.resolve<EditorIntegrationService>(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE);
 		this.dataService = this.container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
 		this.statusConfigService = this.container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
+		this.loggingService = this.container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
 
 		// Initialize services
 		await this.dataService.initialize();
 		await this.settingsService.initialize();
 		this.settings = this.settingsService.getSettings();
+		await this.loggingService.initialize();
 		await this.orchestrator.initialize();
 		await this.editorIntegrationService.initialize();
 		

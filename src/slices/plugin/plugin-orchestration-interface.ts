@@ -7,6 +7,7 @@ import { StreamsService } from '../streams';
 import { EventSystem } from '../events';
 import { DataService } from '../data';
 import { StatusConfigService } from '../settings/status-config';
+import { LoggingService } from '../logging';
 
 export interface PluginOrchestrator {
 	// Lifecycle management
@@ -32,5 +33,6 @@ export interface PluginDependencies {
 	eventSystem: EventSystem;
 	dataService: DataService;
 	statusConfigService: StatusConfigService;
+	loggingService: LoggingService;
 }
 

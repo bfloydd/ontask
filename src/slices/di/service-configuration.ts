@@ -8,6 +8,7 @@ import { PluginOrchestrator, PluginOrchestrationServiceImpl, PluginDependencies 
 import { EditorIntegrationService, EditorIntegrationServiceImpl } from '../editor';
 import { DataService, DataServiceImpl } from '../data';
 import { StatusConfigService } from '../settings/status-config';
+import { LoggingService, LoggingServiceImpl } from '../logging';
 import { App, Plugin } from 'obsidian';
 
 export class ServiceConfiguration {
@@ -64,6 +65,13 @@ export class ServiceConfiguration {
 			return new EditorIntegrationServiceImpl(app, settingsService, checkboxFinderService, eventSystem);
 		});
 
+		// Register logging service
+		container.registerSingleton(SERVICE_IDS.LOGGING_SERVICE, (container) => {
+			const app = container.resolve<App>(SERVICE_IDS.APP);
+			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
+			return new LoggingServiceImpl({ app, plugin });
+		});
+
 		// Register plugin orchestrator
 		container.registerSingleton(SERVICE_IDS.PLUGIN_ORCHESTRATOR, (container) => {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
@@ -74,6 +82,7 @@ export class ServiceConfiguration {
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
 			const dataService = container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
 			const statusConfigService = container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
+			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
 
 			const dependencies: PluginDependencies = {
 				app,
@@ -83,7 +92,8 @@ export class ServiceConfiguration {
 				streamsService,
 				eventSystem,
 				dataService,
-				statusConfigService
+				statusConfigService,
+				loggingService
 			};
 
 			return new PluginOrchestrationServiceImpl(dependencies, eventSystem);

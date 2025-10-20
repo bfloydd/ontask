@@ -38,6 +38,7 @@ export const SERVICE_IDS = {
 	EDITOR_INTEGRATION_SERVICE: Symbol('EditorIntegrationService'),
 	DATA_SERVICE: Symbol('DataService'),
 	STATUS_CONFIG_SERVICE: Symbol('StatusConfigService'),
+	LOGGING_SERVICE: Symbol('LoggingService'),
 	
 	// App dependencies
 	APP: Symbol('App'),

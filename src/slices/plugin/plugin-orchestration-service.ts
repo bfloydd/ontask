@@ -8,6 +8,7 @@ import { OnTaskView, ONTASK_VIEW_TYPE } from '../ontask-view';
 import { EventSystem } from '../events';
 import { DataService } from '../data';
 import { StatusConfigService } from '../settings/status-config';
+import { LoggingService } from '../logging';
 
 export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 	private dependencies: PluginDependencies;
