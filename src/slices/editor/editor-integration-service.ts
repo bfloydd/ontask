@@ -1,17 +1,17 @@
 // Editor integration slice - Service implementation
-import { App, MarkdownView, WorkspaceLeaf, Editor, TFile } from 'obsidian';
+import { App, MarkdownView, WorkspaceLeaf, Editor, TFile, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './editor-integration-interface';
 import { SettingsService } from '../settings/settings-interface';
 import { CheckboxFinderService } from '../checkbox-finder';
 import { EventSystem } from '../events/event-system-interface';
+import { PluginAwareSliceService } from '../../shared/base-slice';
 
-export class EditorIntegrationServiceImpl implements EditorIntegrationService {
+export class EditorIntegrationServiceImpl extends PluginAwareSliceService implements EditorIntegrationService {
 	private app: App;
 	private settingsService: SettingsService;
 	private checkboxFinderService: CheckboxFinderService;
 	private eventSystem: EventSystem;
 	private topTaskOverlays: Map<string, HTMLElement> = new Map();
-	private isInitialized: boolean = false;
 	private currentTopTask: any = null;
 	private pendingDecorationUpdate: boolean = false;
 	private updateRequestId: number | null = null;
@@ -21,16 +21,19 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 		app: App,
 		settingsService: SettingsService,
 		checkboxFinderService: CheckboxFinderService,
-		eventSystem: EventSystem
+		eventSystem: EventSystem,
+		plugin: Plugin
 	) {
+		super();
 		this.app = app;
 		this.settingsService = settingsService;
 		this.checkboxFinderService = checkboxFinderService;
 		this.eventSystem = eventSystem;
+		this.setPlugin(plugin);
 	}
 
 	async initialize(): Promise<void> {
-		if (this.isInitialized) return;
+		if (this.initialized) return;
 
 		// Listen for settings changes
 		this.eventSystem.on('settings:changed', (event) => {
@@ -87,7 +90,7 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 
 		// Note: Plugin initialization listener removed - we now rely on top-task events from OnTask View
 
-		this.isInitialized = true;
+		this.initialized = true;
 		console.log('OnTask Editor: Editor integration initialized, waiting for top-task events from OnTask View');
 	}
 
@@ -301,6 +304,8 @@ export class EditorIntegrationServiceImpl implements EditorIntegrationService {
 				overlay.remove();
 			});
 		});
+		
+		this.initialized = false;
 	}
 
 	isEnabled(): boolean {

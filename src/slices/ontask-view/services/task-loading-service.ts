@@ -56,8 +56,6 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			const filePath = this.trackedFiles[fileIndex];
 			const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
 			
-			console.log(`TaskLoadingService: Processing file ${fileIndex + 1}/${this.trackedFiles.length}: ${filePath}`);
-			
 			if (!file) {
 				console.log(`TaskLoadingService: File not found: ${filePath}`);
 				continue;
@@ -88,20 +86,22 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 				const startTaskIndex = (fileIndex === this.currentFileIndex) ? this.currentTaskIndex : 0;
 				const tasksToAdd = fileTasks.slice(startTaskIndex);
 				
-				console.log(`TaskLoadingService: Found ${fileTasks.length} tasks in ${filePath}, adding ${tasksToAdd.length} (start from index ${startTaskIndex})`);
-				
 				// Add tasks until we reach the target
 				for (const task of tasksToAdd) {
+					loadedTasks.push(task);
+					
+					// Check immediately after adding each task
 					if (loadedTasks.length >= targetTasks) {
 						// We've reached our target, remember where we stopped
 						this.currentFileIndex = fileIndex;
 						this.currentTaskIndex = fileTasks.indexOf(task);
-						console.log(`TaskLoadingService: Stopped at file ${fileIndex} (${filePath}), task ${this.currentTaskIndex} of ${fileTasks.length}`);
+						console.log(`TaskLoadingService: Stopped at file ${fileIndex} (${filePath}), task ${this.currentTaskIndex} of ${fileTasks.length} - Final Progress: ${loadedTasks.length}/${targetTasks}`);
 						return loadedTasks;
 					}
-					
-					loadedTasks.push(task);
 				}
+				
+				// Log after adding tasks to show correct progress (only if we didn't reach target)
+				console.log(`TaskLoadingService: Processing file ${fileIndex + 1}/${this.trackedFiles.length}: ${filePath} - Found ${fileTasks.length} tasks, added ${tasksToAdd.length} (start from index ${startTaskIndex}) - Progress: ${loadedTasks.length}/${targetTasks}`);
 				
 				// Update tracking for next file (only if we didn't reach target)
 				if (loadedTasks.length < targetTasks) {

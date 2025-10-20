@@ -3,14 +3,16 @@ import { App, Plugin, WorkspaceLeaf } from 'obsidian';
 import { PluginOrchestrator, PluginDependencies } from './plugin-orchestration-interface';
 import { SettingsService } from '../settings';
 import { CheckboxFinderService } from '../checkbox-finder';
+import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { StreamsService } from '../streams';
 import { OnTaskView, ONTASK_VIEW_TYPE } from '../ontask-view';
 import { EventSystem } from '../events';
 import { DataService } from '../data';
 import { StatusConfigService } from '../settings/status-config';
 import { LoggingService } from '../logging';
+import { SettingsAwareSliceService } from '../../shared/base-slice';
 
-export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
+export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService implements PluginOrchestrator {
 	private dependencies: PluginDependencies;
 	private topTaskStatusBarItem: HTMLElement | null = null;
 	private isTopTaskVisible: boolean = true;
@@ -18,11 +20,15 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 	private eventSystem: EventSystem;
 
 	constructor(dependencies: PluginDependencies, eventSystem: EventSystem) {
+		super();
 		this.dependencies = dependencies;
 		this.eventSystem = eventSystem;
+		this.setPlugin(dependencies.plugin);
 	}
 
 	async initialize(): Promise<void> {
+		if (this.initialized) return;
+		
 		const { app, plugin, settingsService, checkboxFinderService, streamsService, dataService, statusConfigService } = this.dependencies;
 		
 		// Set up UI elements
@@ -36,6 +42,8 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		
 		// Initialize top task status bar
 		await this.updateTopTaskStatusBar();
+		
+		this.initialized = true;
 	}
 
 	async shutdown(): Promise<void> {
@@ -46,6 +54,14 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 		if (this.topTaskStatusBarItem) {
 			this.topTaskStatusBarItem.remove();
 		}
+		
+		this.cleanup();
+	}
+
+	cleanup(): void {
+		this.eventListeners = [];
+		this.topTaskStatusBarItem = null;
+		this.initialized = false;
 	}
 
 	async openOnTaskView(): Promise<void> {
@@ -83,7 +99,7 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 	}
 
 	async updateTopTaskStatusBar(): Promise<void> {
-		const { app, settingsService, checkboxFinderService } = this.dependencies;
+		const { app, settingsService, taskLoadingService } = this.dependencies;
 		
 		try {
 			const settings = settingsService.getSettings();
@@ -97,7 +113,9 @@ export class PluginOrchestrationServiceImpl implements PluginOrchestrator {
 				return;
 			}
 
-			const checkboxes = await checkboxFinderService.findAllCheckboxes(settings.onlyShowToday);
+			// Initialize file tracking for efficient task loading
+			await taskLoadingService.initializeFileTracking(settings.onlyShowToday);
+			const checkboxes = await taskLoadingService.loadTasksWithFiltering(settings);
 			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
 			
 			// Emit checkboxes found event

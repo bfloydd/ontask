@@ -24,7 +24,9 @@ SettingsService
     ↓
 StreamsService
     ↓
-CheckboxFinderService
+CheckboxFinderService (Utility)
+    ↓
+TaskLoadingService (Primary Task Loading)
     ↓
 EditorIntegrationService, PluginOrchestrator
 ```

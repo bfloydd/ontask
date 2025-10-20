@@ -1,12 +1,13 @@
-import { App, TFile } from 'obsidian';
+import { App, TFile, Plugin } from 'obsidian';
 import { CheckboxItem, CheckboxFinderContext, CheckboxFinderStrategy } from './interfaces';
 import { CheckboxFinderFactoryImpl } from './checkbox-finder-factory';
 import { StreamsService } from '../streams';
+import { PluginAwareSliceService } from '../../shared/base-slice';
 
 // Re-export CheckboxItem for backward compatibility
 export type { CheckboxItem } from './interfaces';
 
-export class CheckboxFinderService {
+export class CheckboxFinderService extends PluginAwareSliceService {
 	private app: App;
 	private factory: CheckboxFinderFactoryImpl;
 	private activeStrategies: string[] = ['streams']; // Default to streams strategy
@@ -18,9 +19,25 @@ export class CheckboxFinderService {
 	private scannedFiles: Set<string> = new Set();
 	private allAvailableFiles: string[] = []; // Cache of all files we could potentially scan
 
-	constructor(app: App, streamsService: StreamsService) {
+	constructor(app: App, streamsService: StreamsService, plugin: Plugin) {
+		super();
 		this.app = app;
 		this.factory = new CheckboxFinderFactoryImpl(app, streamsService);
+		this.setPlugin(plugin);
+	}
+
+	async initialize(): Promise<void> {
+		if (this.initialized) return;
+		
+		// Initialize any required setup
+		this.initialized = true;
+	}
+
+	cleanup(): void {
+		this.fileContentCache.clear();
+		this.scannedFiles.clear();
+		this.allAvailableFiles = [];
+		this.initialized = false;
 	}
 
 	/**
@@ -75,10 +92,12 @@ export class CheckboxFinderService {
 	}
 
 	/**
-	 * Find all checkboxes with proper file tracking for performance
-	 * Gets all files from strategy, sorts Z-A by filename, scans until 10 tasks found
+	 * @deprecated Use TaskLoadingService.loadTasksWithFiltering() instead
+	 * This method is kept for backward compatibility but should not be used for new code
 	 */
 	public async findAllCheckboxes(onlyShowToday: boolean = false, limit?: number): Promise<CheckboxItem[]> {
+		console.warn('OnTask: findAllCheckboxes() is deprecated. Use TaskLoadingService.loadTasksWithFiltering() instead.');
+		
 		// Initialize file list if not done yet
 		if (this.allAvailableFiles.length === 0) {
 			await this.initializeFileList(onlyShowToday);
@@ -153,10 +172,12 @@ export class CheckboxFinderService {
 	}
 
 	/**
+	 * @deprecated Use TaskLoadingService.loadTasksWithFiltering() instead
 	 * Find more checkboxes for Load More functionality
 	 * Continues from where we left off using file tracking
 	 */
 	public async findMoreCheckboxes(onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+		console.warn('OnTask: findMoreCheckboxes() is deprecated. Use TaskLoadingService.loadTasksWithFiltering() instead.');
 		// Continue from where we left off using file tracking
 		return this.findAllCheckboxes(onlyShowToday, 10);
 	}
@@ -184,17 +205,21 @@ export class CheckboxFinderService {
 	}
 
 	/**
+	 * @deprecated Use TaskLoadingService.loadTasksWithFiltering() instead
 	 * Get checkboxes by source name
 	 */
 	public async getCheckboxesBySource(sourceName: string, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+		console.warn('OnTask: getCheckboxesBySource() is deprecated. Use TaskLoadingService.loadTasksWithFiltering() instead.');
 		const allCheckboxes = await this.findAllCheckboxes(onlyShowToday);
 		return allCheckboxes.filter(checkbox => checkbox.sourceName === sourceName);
 	}
 
 	/**
+	 * @deprecated Use TaskLoadingService.loadTasksWithFiltering() instead
 	 * Get checkboxes by file
 	 */
 	public async getCheckboxesByFile(filePath: string, onlyShowToday: boolean = false): Promise<CheckboxItem[]> {
+		console.warn('OnTask: getCheckboxesByFile() is deprecated. Use TaskLoadingService.loadTasksWithFiltering() instead.');
 		const allCheckboxes = await this.findAllCheckboxes(onlyShowToday);
 		return allCheckboxes.filter(checkbox => checkbox.file.path === filePath);
 	}
@@ -591,7 +616,7 @@ export class CheckboxFinderService {
 				file: finalTopTask.file?.path,
 				isTopTask: finalTopTask.isTopTask
 			});
-		} else {
+	} else {
 			console.log('OnTask CheckboxFinder: No top task found in checkboxes');
 		}
 	}

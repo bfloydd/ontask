@@ -3,18 +3,21 @@
 import { App, Plugin } from 'obsidian';
 import { DataService, StatusConfig, QuickFilter } from './data-service-interface';
 import { DEFAULT_STATUS_CONFIGS } from '../settings/settings-interface';
+import { PluginAwareSliceService } from '../../shared/base-slice';
 
-export class DataServiceImpl implements DataService {
+export class DataServiceImpl extends PluginAwareSliceService implements DataService {
 	private app: App;
-	private plugin: Plugin;
 	private data: any = {};
 
 	constructor(app: App, plugin: Plugin) {
+		super();
 		this.app = app;
-		this.plugin = plugin;
+		this.setPlugin(plugin);
 	}
 
 	async initialize(): Promise<void> {
+		if (this.initialized) return;
+		
 		// Load data from data.json
 		this.data = await this.loadData();
 		
@@ -39,14 +42,21 @@ export class DataServiceImpl implements DataService {
 					statusSymbols: ['.', '>', 'r', 'b', '?'],
 					enabled: true
 				}
-			];
-			await this.saveData();
-		}
+		];
+		await this.saveData();
 	}
+	
+	this.initialized = true;
+}
+
+cleanup(): void {
+	this.data = {};
+	this.initialized = false;
+}
 
 	async loadData(): Promise<any> {
 		try {
-			return await this.plugin.loadData() || {};
+			return await this.getPlugin()!.loadData() || {};
 		} catch (error) {
 			console.error('OnTask: Error loading data:', error);
 			return {};
@@ -55,7 +65,7 @@ export class DataServiceImpl implements DataService {
 
 	async saveData(): Promise<void> {
 		try {
-			await this.plugin.saveData(this.data);
+			await this.getPlugin()!.saveData(this.data);
 		} catch (error) {
 			console.error('OnTask: Error saving data:', error);
 		}

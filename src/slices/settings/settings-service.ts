@@ -2,28 +2,33 @@
 import { App, Plugin } from 'obsidian';
 import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './settings-interface';
 import { EventSystem } from '../events';
+import { SettingsAwareSliceService } from '../../shared/base-slice';
 
-export class SettingsServiceImpl implements SettingsService {
+export class SettingsServiceImpl extends SettingsAwareSliceService implements SettingsService {
 	private app: App;
-	private plugin: Plugin;
 	private settings: OnTaskSettings;
 	private changeListeners: ((event: SettingsChangeEvent) => void)[] = [];
 	private eventSystem: EventSystem;
 
 	constructor(app: App, plugin: Plugin, eventSystem: EventSystem) {
+		super();
 		this.app = app;
-		this.plugin = plugin;
 		this.eventSystem = eventSystem;
 		this.settings = { ...DEFAULT_SETTINGS };
+		this.setPlugin(plugin);
 	}
 
 	async initialize(): Promise<void> {
+		if (this.initialized) return;
+		
 		// Load settings from plugin data
-		const loadedSettings = await this.plugin.loadData();
+		const loadedSettings = await this.getPlugin()!.loadData();
 		this.settings = { ...DEFAULT_SETTINGS, ...loadedSettings };
 		
 		// Migrate from old statusFilters structure if needed
 		await this.migrateFromOldStructure(loadedSettings);
+		
+		this.initialized = true;
 	}
 
 	private async migrateFromOldStructure(loadedSettings: any): Promise<void> {
@@ -40,7 +45,7 @@ export class SettingsServiceImpl implements SettingsService {
 		this.settings[key] = value;
 		
 		// Save to plugin data
-		await this.plugin.saveData(this.settings);
+		await this.getPlugin()!.saveData(this.settings);
 		
 		// Notify listeners
 		this.notifyChange({ key, value, oldValue });
@@ -58,7 +63,7 @@ export class SettingsServiceImpl implements SettingsService {
 		}
 		
 		// Save to plugin data
-		await this.plugin.saveData(this.settings);
+		await this.getPlugin()!.saveData(this.settings);
 		
 		// Notify listeners for all changes
 		changes.forEach(change => this.notifyChange(change));
@@ -69,7 +74,7 @@ export class SettingsServiceImpl implements SettingsService {
 		this.settings = { ...DEFAULT_SETTINGS };
 		
 		// Save to plugin data
-		await this.plugin.saveData(this.settings);
+		await this.getPlugin()!.saveData(this.settings);
 		
 		// Notify listeners for all changes
 		for (const [key, value] of Object.entries(this.settings)) {
@@ -101,6 +106,16 @@ export class SettingsServiceImpl implements SettingsService {
 		const hasDailyNotesCore = dailyNotesCore && dailyNotesCore.enabled;
 		
 		return hasDailyNotesPlugin || hasDailyNotesCore;
+	}
+
+	cleanup(): void {
+		this.changeListeners = [];
+		this.initialized = false;
+	}
+
+	onSettingsChanged(settings: any): void {
+		// This method is called by the base class when settings change
+		// We can use this for any additional settings change handling if needed
 	}
 
 	private notifyChange(event: SettingsChangeEvent): void {

@@ -4,6 +4,7 @@ import { EventSystem, EventSystemServiceImpl } from '../events';
 import { SettingsService, SettingsServiceImpl } from '../settings';
 import { StreamsService, StreamsServiceImpl } from '../streams';
 import { CheckboxFinderService } from '../checkbox-finder';
+import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { PluginOrchestrator, PluginOrchestrationServiceImpl, PluginDependencies } from '../plugin';
 import { EditorIntegrationService, EditorIntegrationServiceImpl } from '../editor';
 import { DataService, DataServiceImpl } from '../data';
@@ -32,7 +33,8 @@ export class ServiceConfiguration {
 		// Register status config service
 		container.registerSingleton(SERVICE_IDS.STATUS_CONFIG_SERVICE, (container) => {
 			const dataService = container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
-			return new StatusConfigService(dataService);
+			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
+			return new StatusConfigService(dataService, plugin);
 		});
 
 		// Register settings service
@@ -52,17 +54,29 @@ export class ServiceConfiguration {
 		// Register checkbox finder service
 		container.registerSingleton(SERVICE_IDS.CHECKBOX_FINDER_SERVICE, (container) => {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
+			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
 			const streamsService = container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
-			return new CheckboxFinderService(app, streamsService);
+			return new CheckboxFinderService(app, streamsService, plugin);
+		});
+
+		// Register task loading service
+		container.registerSingleton(SERVICE_IDS.TASK_LOADING_SERVICE, (container) => {
+			const app = container.resolve<App>(SERVICE_IDS.APP);
+			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
+			const checkboxFinderService = container.resolve<CheckboxFinderService>(SERVICE_IDS.CHECKBOX_FINDER_SERVICE);
+			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
+			const statusConfigService = container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
+			return new TaskLoadingService(checkboxFinderService, settingsService, statusConfigService, app);
 		});
 
 		// Register editor integration service
 		container.registerSingleton(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE, (container) => {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
+			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
 			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 			const checkboxFinderService = container.resolve<CheckboxFinderService>(SERVICE_IDS.CHECKBOX_FINDER_SERVICE);
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
-			return new EditorIntegrationServiceImpl(app, settingsService, checkboxFinderService, eventSystem);
+			return new EditorIntegrationServiceImpl(app, settingsService, checkboxFinderService, eventSystem, plugin);
 		});
 
 		// Register logging service
@@ -79,6 +93,7 @@ export class ServiceConfiguration {
 			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 			const streamsService = container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
 			const checkboxFinderService = container.resolve<CheckboxFinderService>(SERVICE_IDS.CHECKBOX_FINDER_SERVICE);
+			const taskLoadingService = container.resolve<TaskLoadingService>(SERVICE_IDS.TASK_LOADING_SERVICE);
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
 			const dataService = container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
 			const statusConfigService = container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
@@ -89,6 +104,7 @@ export class ServiceConfiguration {
 				plugin,
 				settingsService,
 				checkboxFinderService,
+				taskLoadingService,
 				streamsService,
 				eventSystem,
 				dataService,

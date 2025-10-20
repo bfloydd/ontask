@@ -1,16 +1,30 @@
 // Status configuration with hex colors
 import { StatusConfig } from './settings-interface';
 import { DataService } from '../data/data-service-interface';
+import { PluginAwareSliceService } from '../../shared/base-slice';
 
 // Re-export the interface for backward compatibility
 export type { StatusConfig };
 
 // Service class to handle status configuration
-export class StatusConfigService {
+export class StatusConfigService extends PluginAwareSliceService {
 	private dataService: DataService;
 
-	constructor(dataService: DataService) {
+	constructor(dataService: DataService, plugin: any) {
+		super();
 		this.dataService = dataService;
+		this.setPlugin(plugin);
+	}
+
+	async initialize(): Promise<void> {
+		if (this.initialized) return;
+		
+		// Initialize any required setup
+		this.initialized = true;
+	}
+
+	cleanup(): void {
+		this.initialized = false;
 	}
 
 	getStatusConfigs(): StatusConfig[] {

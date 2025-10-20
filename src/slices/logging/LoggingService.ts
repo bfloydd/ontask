@@ -4,16 +4,18 @@ import { Logger, LogLevel } from './Logger';
 import { ToggleLoggingCommand } from './ToggleLoggingCommand';
 import { Command } from '../../shared/interfaces';
 import { centralizedLogger } from '../../shared/centralized-logger';
+import { SettingsAwareSliceService } from '../../shared/base-slice';
 
-export class LoggingServiceImpl implements ILoggingService {
+export class LoggingServiceImpl extends SettingsAwareSliceService implements ILoggingService {
     private dependencies: LoggingDependencies;
     private logger: Logger;
     private toggleCommand: ToggleLoggingCommand | null = null;
-    private initialized: boolean = false;
 
     constructor(dependencies: LoggingDependencies) {
+        super();
         this.dependencies = dependencies;
         this.logger = new Logger('OnTask');
+        this.setPlugin(dependencies.plugin);
     }
 
     async initialize(): Promise<void> {
@@ -76,7 +78,7 @@ export class LoggingServiceImpl implements ILoggingService {
         }
     }
 
-    private getSettings(): any {
+    protected getSettings(): any {
         return (this.dependencies.plugin as any).settings || {};
     }
 }

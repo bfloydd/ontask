@@ -34,6 +34,7 @@ export const SERVICE_IDS = {
 	SETTINGS_SERVICE: Symbol('SettingsService'),
 	STREAMS_SERVICE: Symbol('StreamsService'),
 	CHECKBOX_FINDER_SERVICE: Symbol('CheckboxFinderService'),
+	TASK_LOADING_SERVICE: Symbol('TaskLoadingService'),
 	PLUGIN_ORCHESTRATOR: Symbol('PluginOrchestrator'),
 	EDITOR_INTEGRATION_SERVICE: Symbol('EditorIntegrationService'),
 	DATA_SERVICE: Symbol('DataService'),
