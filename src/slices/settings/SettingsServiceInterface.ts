@@ -18,6 +18,7 @@ export interface OnTaskSettings {
 	includeSubfolders: boolean;
 	loadMoreLimit: number;
 	hideCompletedTasks: boolean;
+	debugLoggingEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: OnTaskSettings = {
@@ -28,7 +29,8 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	customFolderPath: '',
 	includeSubfolders: true,
 	loadMoreLimit: 10,
-	hideCompletedTasks: false
+	hideCompletedTasks: false,
+	debugLoggingEnabled: false
 };
 
 // Default status configurations - used only for initialization

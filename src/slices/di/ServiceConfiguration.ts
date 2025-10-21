@@ -74,7 +74,8 @@ export class ServiceConfiguration {
 		container.registerSingleton(SERVICE_IDS.LOGGING_SERVICE, (container) => {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
 			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
-			return new LoggingServiceImpl({ app, plugin });
+			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
+			return new LoggingServiceImpl({ app, plugin }, eventSystem);
 		});
 
 		// Register plugin orchestrator

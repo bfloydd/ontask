@@ -88,6 +88,9 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 				case 'showTopTaskInEditor':
 					// Editor integration handles this
 					break;
+				case 'debugLoggingEnabled':
+					// Logging service handles this
+					break;
 			}
 		});
 		this.eventListeners.push(() => settingsSubscription.unsubscribe());

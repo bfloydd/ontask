@@ -59,6 +59,20 @@ export class GeneralSettingsView {
 					const numValue = parseInt(value) || 10;
 					await this.settingsService.updateSetting('loadMoreLimit', numValue);
 				}));
+
+		new Setting(this.containerEl)
+			.setName('Debug logging')
+			.setDesc('Enable debug logging for troubleshooting. When enabled, detailed logs will be written to the console.')
+			.addToggle(toggle => toggle
+				.setValue(settings.debugLoggingEnabled)
+				.onChange(async (value) => {
+					await this.settingsService.updateSetting('debugLoggingEnabled', value);
+					// Trigger logging service update
+					this.app.workspace.trigger('ontask:settings-changed', { 
+						key: 'debugLoggingEnabled', 
+						value 
+					});
+				}));
 	}
 
 	private renderCheckboxSourceSettings(): void {

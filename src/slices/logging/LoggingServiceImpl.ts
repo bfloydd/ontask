@@ -3,16 +3,20 @@ import { Command } from '../commands';
 import { Logger, LogLevel } from './Logger';
 import { ToggleLoggingCommandImpl } from './ToggleLoggingCommandImpl';
 import { SettingsAwareSliceService } from '../../shared/base-slice';
+import { EventSystem } from '../events';
 
 export class LoggingServiceImpl extends SettingsAwareSliceService implements ILoggingService {
     private dependencies: LoggingDependencies;
     private logger: Logger;
     private toggleCommand: ToggleLoggingCommandImpl | null = null;
+    private eventSystem?: EventSystem;
+    private eventListeners: (() => void)[] = [];
 
-    constructor(dependencies: LoggingDependencies) {
+    constructor(dependencies: LoggingDependencies, eventSystem?: EventSystem) {
         super();
         this.dependencies = dependencies;
         this.logger = new Logger('[OnTask] ');
+        this.eventSystem = eventSystem;
         this.setPlugin(dependencies.plugin);
     }
 
@@ -26,11 +30,15 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
             this.logger.off();
         }
 
+        // Set up event listeners for settings changes
+        this.setupEventListeners();
+
         this.initialized = true;
     }
 
     cleanup(): void {
         this.toggleCommand = null;
+        this.cleanupEventListeners();
         this.initialized = false;
     }
 
@@ -76,5 +84,25 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
 
     protected getSettings(): any {
         return (this.dependencies.plugin as any).settings || {};
+    }
+
+    private setupEventListeners(): void {
+        if (!this.eventSystem) return;
+
+        const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
+            if (event.data.key === 'debugLoggingEnabled') {
+                if (event.data.value) {
+                    this.logger.on(LogLevel.DEBUG);
+                } else {
+                    this.logger.off();
+                }
+            }
+        });
+        this.eventListeners.push(() => settingsSubscription.unsubscribe());
+    }
+
+    private cleanupEventListeners(): void {
+        this.eventListeners.forEach(cleanup => cleanup());
+        this.eventListeners = [];
     }
 }
