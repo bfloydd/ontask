@@ -3,17 +3,20 @@ import { App, Plugin } from 'obsidian';
 import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './SettingsServiceInterface';
 import { EventSystem } from '../events';
 import { SettingsAwareSliceService } from '../../shared/base-slice';
+import { Logger } from '../logging/Logger';
 
 export class SettingsServiceImpl extends SettingsAwareSliceService implements SettingsService {
 	private app: App;
 	private settings: OnTaskSettings;
 	private changeListeners: ((event: SettingsChangeEvent) => void)[] = [];
 	private eventSystem: EventSystem;
+	private logger: Logger;
 
-	constructor(app: App, plugin: Plugin, eventSystem: EventSystem) {
+	constructor(app: App, plugin: Plugin, eventSystem: EventSystem, logger: Logger) {
 		super();
 		this.app = app;
 		this.eventSystem = eventSystem;
+		this.logger = logger;
 		this.settings = { ...DEFAULT_SETTINGS };
 		this.setPlugin(plugin);
 	}
@@ -110,6 +113,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 			}
 		});
 
+		this.logger.debug('[OnTask Settings] Emitting settings:changed event for', event.key, ':', event.oldValue, '->', event.value);
 		this.eventSystem.emit('settings:changed', {
 			key: event.key,
 			value: event.value,

@@ -12,6 +12,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	private settingsService: SettingsService;
 	private taskLoadingService: TaskLoadingService;
 	private eventSystem: EventSystem;
+	private logger: Logger;
 	private topTaskOverlays: Map<string, HTMLElement> = new Map();
 	private currentTopTask: any = null;
 	private pendingDecorationUpdate: boolean = false;
@@ -23,13 +24,15 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		settingsService: SettingsService,
 		taskLoadingService: TaskLoadingService,
 		eventSystem: EventSystem,
-		plugin: Plugin
+		plugin: Plugin,
+		logger: Logger
 	) {
 		super();
 		this.app = app;
 		this.settingsService = settingsService;
 		this.taskLoadingService = taskLoadingService;
 		this.eventSystem = eventSystem;
+		this.logger = logger;
 		this.setPlugin(plugin);
 	}
 
@@ -38,31 +41,45 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 
 		// Listen for settings changes
 		this.eventSystem.on('settings:changed', (event) => {
+			this.logger.debug('[OnTask Editor] Settings changed event received:', event.data);
 			if (event.data.key === 'showTopTaskInEditor') {
+				this.logger.debug('[OnTask Editor] showTopTaskInEditor setting changed, scheduling decoration update');
 				this.scheduleDecorationUpdate();
 			}
 		});
 
 		// Listen for top task found event from OnTask View
 		this.eventSystem.on('top-task:found', (event) => {
+			this.logger.debug('[OnTask Editor] Top task found event received:', event.data);
 			this.topTaskMemory = event.data.topTask;
 			if (this.isEnabled()) {
+				this.logger.debug('[OnTask Editor] Editor integration enabled, scheduling decoration update');
 				this.scheduleDecorationUpdate();
+			} else {
+				this.logger.debug('[OnTask Editor] Editor integration disabled, ignoring top task found event');
 			}
 		});
 
 		// Listen for top task cleared event from OnTask View
 		this.eventSystem.on('top-task:cleared', () => {
+			this.logger.debug('[OnTask Editor] Top task cleared event received');
 			this.topTaskMemory = null;
 			if (this.isEnabled()) {
+				this.logger.debug('[OnTask Editor] Editor integration enabled, scheduling decoration update');
 				this.scheduleDecorationUpdate();
+			} else {
+				this.logger.debug('[OnTask Editor] Editor integration disabled, ignoring top task cleared event');
 			}
 		});
 
 		// Listen for checkbox updates to update decorations (fallback)
 		this.eventSystem.on('checkboxes:updated', () => {
+			this.logger.debug('[OnTask Editor] Checkboxes updated event received');
 			if (this.isEnabled()) {
+				this.logger.debug('[OnTask Editor] Editor integration enabled, scheduling decoration update');
 				this.scheduleDecorationUpdate();
+			} else {
+				this.logger.debug('[OnTask Editor] Editor integration disabled, ignoring checkboxes updated event');
 			}
 		});
 

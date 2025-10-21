@@ -19,7 +19,8 @@ export class ServiceConfiguration {
 
 		// Register event system
 		container.registerSingleton(SERVICE_IDS.EVENT_SYSTEM, (container) => {
-			return new EventSystemServiceImpl();
+			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
+			return new EventSystemServiceImpl(loggingService.getLogger());
 		});
 
 		// Register data service
@@ -41,7 +42,8 @@ export class ServiceConfiguration {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
 			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
-			return new SettingsServiceImpl(app, plugin, eventSystem);
+			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
+			return new SettingsServiceImpl(app, plugin, eventSystem, loggingService.getLogger());
 		});
 
 		// Register streams service
@@ -67,7 +69,8 @@ export class ServiceConfiguration {
 			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 			const taskLoadingService = container.resolve<TaskLoadingService>(SERVICE_IDS.TASK_LOADING_SERVICE);
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
-			return new EditorIntegrationServiceImpl(app, settingsService, taskLoadingService, eventSystem, plugin);
+			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
+			return new EditorIntegrationServiceImpl(app, settingsService, taskLoadingService, eventSystem, plugin, loggingService.getLogger());
 		});
 
 		// Register logging service

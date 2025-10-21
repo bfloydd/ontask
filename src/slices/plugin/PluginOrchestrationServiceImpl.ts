@@ -9,17 +9,20 @@ import { EventSystem } from '../events';
 import { DataService } from '../data';
 import { StatusConfigService } from '../settings/status-config';
 import { LoggingService } from '../logging';
+import { Logger } from '../logging/Logger';
 import { SettingsAwareSliceService } from '../../shared/base-slice';
 
 export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService implements PluginOrchestrator {
 	private dependencies: PluginDependencies;
 	private eventListeners: (() => void)[] = [];
 	private eventSystem: EventSystem;
+	private logger: Logger;
 
 	constructor(dependencies: PluginDependencies, eventSystem: EventSystem) {
 		super();
 		this.dependencies = dependencies;
 		this.eventSystem = eventSystem;
+		this.logger = dependencies.loggingService.getLogger();
 		this.setPlugin(dependencies.plugin);
 	}
 
@@ -60,6 +63,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 			}
 		}
 		
+		this.logger.debug('[OnTask Orchestrator] Emitting ui:view-opened event for', ONTASK_VIEW_TYPE);
 		this.eventSystem.emit('ui:view-opened', { viewType: ONTASK_VIEW_TYPE });
 	}
 
@@ -79,16 +83,20 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		const { app, settingsService } = this.dependencies;
 		
 		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
+			this.logger.debug('[OnTask Orchestrator] Settings changed event received:', event.data);
 			switch (event.data.key) {
 				case 'checkboxSource':
 				case 'customFolderPath':
 				case 'includeSubfolders':
+					this.logger.debug('[OnTask Orchestrator] Checkbox source settings changed, reconfiguring');
 					this.configureCheckboxSource();
 					break;
 				case 'showTopTaskInEditor':
+					this.logger.debug('[OnTask Orchestrator] showTopTaskInEditor setting changed, delegating to editor integration');
 					// Editor integration handles this
 					break;
 				case 'debugLoggingEnabled':
+					this.logger.debug('[OnTask Orchestrator] debugLoggingEnabled setting changed, delegating to logging service');
 					// Logging service handles this
 					break;
 			}
@@ -96,16 +104,19 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		this.eventListeners.push(() => settingsSubscription.unsubscribe());
 
 		const streamsSubscription = this.eventSystem.on('streams:ready', () => {
+			this.logger.debug('[OnTask Orchestrator] Streams ready event received, refreshing OnTask views');
 			this.refreshOnTaskViews();
 		});
 		this.eventListeners.push(() => streamsSubscription.unsubscribe());
 
+		this.logger.debug('[OnTask Orchestrator] Emitting plugin:initialized event');
 		this.eventSystem.emit('plugin:initialized', {});
 	}
 
 	cleanupEventListeners(): void {
 		this.eventListeners.forEach(cleanup => cleanup());
 		this.eventListeners = [];
+		this.logger.debug('[OnTask Orchestrator] Emitting plugin:shutdown event');
 		this.eventSystem.emit('plugin:shutdown', {});
 	}
 

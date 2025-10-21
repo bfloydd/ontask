@@ -9,6 +9,7 @@ export interface TopTaskProcessingServiceInterface {
 
 export class TopTaskProcessingService implements TopTaskProcessingServiceInterface {
 	private eventSystem: EventSystem;
+	private logger: Logger;
 
 	/**
 	 * Top task configuration - easily modifiable priority order
@@ -32,8 +33,9 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 		}
 	] as const;
 
-	constructor(eventSystem: EventSystem) {
+	constructor(eventSystem: EventSystem, logger: Logger) {
 		this.eventSystem = eventSystem;
+		this.logger = logger;
 	}
 
 	processTopTasksFromDisplayedTasks(checkboxes: any[]): void {
@@ -69,13 +71,13 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 		}
 		
 		if (finalTopTask) {
-			
+			this.logger.debug('[OnTask TopTask] Emitting top-task:found event for', finalTopTask.file.name, 'line', finalTopTask.lineNumber);
 			// Emit top task found event for other components to use
 			this.eventSystem.emit('top-task:found', {
 				topTask: finalTopTask
 			});
 		} else {
-			
+			this.logger.debug('[OnTask TopTask] Emitting top-task:cleared event - no top task found');
 			// Emit top task cleared event
 			this.eventSystem.emit('top-task:cleared', {});
 		}

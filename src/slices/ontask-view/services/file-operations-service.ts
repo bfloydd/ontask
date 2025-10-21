@@ -13,19 +13,22 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 	private checkboxes: any[];
 	private isUpdatingStatus: boolean;
 	private scheduleRefreshCallback: () => void;
+	private logger: Logger;
 
 	constructor(
 		app: App,
 		eventSystem: EventSystem,
 		checkboxes: any[],
 		isUpdatingStatus: boolean,
-		scheduleRefreshCallback: () => void
+		scheduleRefreshCallback: () => void,
+		logger: Logger
 	) {
 		this.app = app;
 		this.eventSystem = eventSystem;
 		this.checkboxes = checkboxes;
 		this.isUpdatingStatus = isUpdatingStatus;
 		this.scheduleRefreshCallback = scheduleRefreshCallback;
+		this.logger = logger;
 	}
 
 	async toggleCheckbox(checkbox: any, isCompleted: boolean): Promise<void> {
@@ -58,6 +61,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 				checkbox.isCompleted = isCompleted;
 				
 				// Emit checkbox toggled event
+				this.logger.debug('[OnTask FileOps] Emitting checkbox:toggled event for', file.path, 'line', checkbox.lineNumber, 'completed:', isCompleted);
 				this.eventSystem.emit('checkbox:toggled', {
 					filePath: file.path,
 					lineNumber: checkbox.lineNumber,
@@ -65,6 +69,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 				});
 				
 				// Trigger immediate checkbox update
+				this.logger.debug('[OnTask FileOps] Emitting checkboxes:updated event with', this.checkboxes.length, 'checkboxes');
 				this.eventSystem.emit('checkboxes:updated', { 
 					count: this.checkboxes.length,
 					topTask: this.checkboxes.find(cb => cb.isTopTask)

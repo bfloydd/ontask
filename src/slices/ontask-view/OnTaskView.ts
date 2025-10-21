@@ -81,14 +81,15 @@ export class OnTaskViewImpl extends ItemView {
 			(element: HTMLElement, task: any) => this.mobileTouchService.addMobileTouchHandlers(element, task)
 		);
 		
-		this.topTaskProcessingService = new TopTaskProcessingService(this.eventSystem);
+		this.topTaskProcessingService = new TopTaskProcessingService(this.eventSystem, this.logger);
 		
 		this.fileOperationsService = new FileOperationsService(
 			this.app,
 			this.eventSystem,
 			this.checkboxes,
 			this.isUpdatingStatus,
-			() => this.scheduleRefresh()
+			() => this.scheduleRefresh(),
+			this.logger
 		);
 		
 		this.mobileTouchService = new MobileTouchService(this.contextMenuService);
@@ -100,7 +101,8 @@ export class OnTaskViewImpl extends ItemView {
 			this.isUpdatingStatus,
 			() => this.refreshCheckboxes(),
 			(contentArea: HTMLElement, checkboxes: any[]) => this.domRenderingService.updateTopTaskSection(contentArea, checkboxes),
-			(file: any) => this.scheduleDebouncedRefresh(file)
+			(file: any) => this.scheduleDebouncedRefresh(file),
+			this.logger
 		);
 	}
 
@@ -196,6 +198,7 @@ export class OnTaskViewImpl extends ItemView {
 			this.updateButtonStates();
 			this.initializeCheckboxContentTracking();
 			
+			this.logger.debug('[OnTask View] Emitting view:refreshed event with', this.checkboxes.length, 'checkboxes');
 			this.eventSystem.emit('view:refreshed', { 
 				viewType: ONTASK_VIEW_TYPE,
 				checkboxCount: this.checkboxes.length 
@@ -468,6 +471,7 @@ export class OnTaskViewImpl extends ItemView {
 			}
 			
 			if (hasCheckboxChanges) {
+				this.logger.debug('[OnTask View] Emitting file:modified event for', file.path);
 				this.eventSystem.emit('file:modified', { path: file.path });
 				this.refreshCheckboxes();
 			}
@@ -543,6 +547,7 @@ export class OnTaskViewImpl extends ItemView {
 	}
 
 	private toggleTopTaskVisibility(): void {
+		this.logger.debug('[OnTask View] Emitting ui:toggle-top-task-visibility event');
 		this.eventSystem.emit('ui:toggle-top-task-visibility', {});
 	}
 

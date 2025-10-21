@@ -16,6 +16,7 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 	private onUpdateTopTaskSection: (contentArea: HTMLElement, checkboxes: any[]) => void;
 	private onScheduleDebouncedRefresh: (file: any) => void;
 	private eventListeners: (() => void)[] = [];
+	private logger: Logger;
 
 	constructor(
 		eventSystem: EventSystem,
@@ -24,7 +25,8 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 		isUpdatingStatus: boolean,
 		onRefreshCheckboxes: () => Promise<void>,
 		onUpdateTopTaskSection: (contentArea: HTMLElement, checkboxes: any[]) => void,
-		onScheduleDebouncedRefresh: (file: any) => void
+		onScheduleDebouncedRefresh: (file: any) => void,
+		logger: Logger
 	) {
 		this.eventSystem = eventSystem;
 		this.app = app;
@@ -33,6 +35,7 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 		this.onRefreshCheckboxes = onRefreshCheckboxes;
 		this.onUpdateTopTaskSection = onUpdateTopTaskSection;
 		this.onScheduleDebouncedRefresh = onScheduleDebouncedRefresh;
+		this.logger = logger;
 	}
 
 	setupEventListeners(): void {
@@ -42,17 +45,23 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 		
 		// Listen for settings changes
 		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
+			this.logger.debug('[OnTask EventHandling] Settings changed event received:', event.data);
 			if (event.data.key === 'onlyShowToday') {
+				this.logger.debug('[OnTask EventHandling] onlyShowToday setting changed, refreshing checkboxes');
 				this.onRefreshCheckboxes();
 			}
 		});
 		
 		// Listen for checkbox updates to update top task section immediately
 		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
+			this.logger.debug('[OnTask EventHandling] Checkboxes updated event received:', event.data);
 			// Only update the top task section without full refresh
 			const contentArea = this.app.workspace.getActiveViewOfType(ItemView)?.contentEl?.querySelector('.ontask-content') as HTMLElement;
 			if (contentArea) {
+				this.logger.debug('[OnTask EventHandling] Updating top task section');
 				this.onUpdateTopTaskSection(contentArea, this.checkboxes);
+			} else {
+				this.logger.debug('[OnTask EventHandling] No content area found for top task section update');
 			}
 		});
 		
