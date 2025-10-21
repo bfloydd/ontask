@@ -1,5 +1,5 @@
 import { App, Notice } from 'obsidian';
-import { Command } from '../../shared/interfaces';
+import { Command } from '../commands';
 import { Logger, LogLevel } from './Logger';
 
 export class ToggleLoggingCommandImpl implements Command {

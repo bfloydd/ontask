@@ -1,6 +1,6 @@
 import { App, Plugin } from 'obsidian';
 import { Logger, LogLevel } from './Logger';
-import { Command } from '../../shared/interfaces';
+import { Command } from '../commands';
 
 export interface LoggingService {
     initialize(): Promise<void>;

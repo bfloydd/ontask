@@ -1,7 +1,7 @@
 import { LoggingService as ILoggingService, LoggingDependencies } from './LoggingServiceInterface';
+import { Command } from '../commands';
 import { Logger, LogLevel } from './Logger';
 import { ToggleLoggingCommandImpl } from './ToggleLoggingCommandImpl';
-import { Command } from '../../shared/interfaces';
 import { SettingsAwareSliceService } from '../../shared/base-slice';
 
 export class LoggingServiceImpl extends SettingsAwareSliceService implements ILoggingService {
