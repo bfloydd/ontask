@@ -1,4 +1,4 @@
-import { TaskFinderFactoryImpl } from '../task-finder-factory';
+import { TaskFinderFactoryImpl } from '../TaskFinderFactoryImpl';
 import { StreamsService } from '../../streams';
 
 // Mock dependencies

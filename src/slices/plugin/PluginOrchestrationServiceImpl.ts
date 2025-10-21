@@ -1,10 +1,10 @@
 // Plugin orchestration slice - Service implementation
 import { App, Plugin, WorkspaceLeaf } from 'obsidian';
-import { PluginOrchestrator, PluginDependencies } from './plugin-orchestration-interface';
+import { PluginOrchestrator, PluginDependencies } from './PluginOrchestratorInterface';
 import { SettingsService } from '../settings';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { StreamsService } from '../streams';
-import { OnTaskView, ONTASK_VIEW_TYPE } from '../ontask-view';
+import { OnTaskViewImpl, ONTASK_VIEW_TYPE } from '../ontask-view';
 import { EventSystem } from '../events';
 import { DataService } from '../data';
 import { StatusConfigService } from '../settings/status-config';
@@ -82,9 +82,9 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		const leaves = app.workspace.getLeavesOfType(ONTASK_VIEW_TYPE);
 		
 		for (const leaf of leaves) {
-			if (leaf.view instanceof OnTaskView) {
+			if (leaf.view instanceof OnTaskViewImpl) {
 				// Trigger a refresh of the view
-				await (leaf.view as OnTaskView).refreshCheckboxes();
+				await (leaf.view as OnTaskViewImpl).refreshCheckboxes();
 			}
 		}
 	}
@@ -133,7 +133,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 
 	private async setupUI(app: App, plugin: Plugin, settingsService: SettingsService): Promise<void> {
 		// Register the OnTaskView
-		plugin.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(
+		plugin.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskViewImpl(
 			leaf, 
 			this.dependencies.taskLoadingService, 
 			settingsService, 

@@ -1,7 +1,7 @@
-import { TaskFinderFactoryImpl } from '../task-finder-factory';
-import { DailyNotesTaskStrategy } from '../strategies/daily-notes-task-strategy';
-import { FolderTaskStrategy } from '../strategies/folder-task-strategy';
-import { StreamsTaskStrategy } from '../strategies/streams-task-strategy';
+import { TaskFinderFactoryImpl } from '../TaskFinderFactoryImpl';
+import { DailyNotesTaskStrategy } from '../strategies/DailyNotesTaskStrategy';
+import { FolderTaskStrategy } from '../strategies/FolderTaskStrategy';
+import { StreamsTaskStrategy } from '../strategies/StreamsTaskStrategy';
 import { StreamsService } from '../../streams';
 
 // Mock dependencies

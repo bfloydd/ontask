@@ -1,4 +1,4 @@
-import { StreamsTaskStrategy } from '../strategies/streams-task-strategy';
+import { StreamsTaskStrategy } from '../strategies/StreamsTaskStrategy';
 import { StreamsService } from '../../streams';
 
 const mockStreamsService = {

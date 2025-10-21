@@ -1,5 +1,5 @@
 // Dependency Injection slice - Service implementation
-import { DIContainer, ServiceIdentifier, ServiceFactory, ServiceRegistration } from './di-container-interface';
+import { DIContainer, ServiceIdentifier, ServiceFactory, ServiceRegistration } from './DIContainerInterface';
 
 export class DIContainerImpl implements DIContainer {
 	private registrations: Map<ServiceIdentifier, ServiceRegistration> = new Map();

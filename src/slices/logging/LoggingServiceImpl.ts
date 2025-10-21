@@ -1,15 +1,15 @@
 import { App, Plugin } from 'obsidian';
-import { LoggingService as ILoggingService, LoggingDependencies } from './logging-interface';
+import { LoggingService as ILoggingService, LoggingDependencies } from './LoggingServiceInterface';
 import { Logger, LogLevel } from './Logger';
-import { ToggleLoggingCommand } from './ToggleLoggingCommand';
+import { ToggleLoggingCommandImpl } from './ToggleLoggingCommandImpl';
 import { Command } from '../../shared/interfaces';
-import { centralizedLogger } from '../../shared/centralized-logger';
+import { logger } from '../../shared/Logger';
 import { SettingsAwareSliceService } from '../../shared/base-slice';
 
 export class LoggingServiceImpl extends SettingsAwareSliceService implements ILoggingService {
     private dependencies: LoggingDependencies;
     private logger: Logger;
-    private toggleCommand: ToggleLoggingCommand | null = null;
+    private toggleCommand: ToggleLoggingCommandImpl | null = null;
 
     constructor(dependencies: LoggingDependencies) {
         super();
@@ -25,9 +25,9 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
         
         const settings = this.getSettings();
         if (settings.debugLoggingEnabled) {
-            centralizedLogger.enable(LogLevel.DEBUG);
+            logger.enable(LogLevel.DEBUG);
         } else {
-            centralizedLogger.disable();
+            logger.disable();
         }
 
         this.initialized = true;
@@ -40,9 +40,9 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
 
     onSettingsChanged(settings: any): void {
         if (settings.debugLoggingEnabled) {
-            centralizedLogger.enable(LogLevel.DEBUG);
+            logger.enable(LogLevel.DEBUG);
         } else {
-            centralizedLogger.disable();
+            logger.disable();
         }
     }
 
@@ -52,7 +52,7 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
 
     createToggleCommand(): Command {
         if (!this.toggleCommand) {
-            this.toggleCommand = new ToggleLoggingCommand(
+            this.toggleCommand = new ToggleLoggingCommandImpl(
                 this.dependencies.app,
                 this.logger,
                 (enabled: boolean) => {
@@ -65,14 +65,14 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
     }
 
     enableDebug(): void {
-        centralizedLogger.enable(LogLevel.DEBUG);
+        logger.enable(LogLevel.DEBUG);
         if ((this.dependencies.plugin as any).settings) {
             (this.dependencies.plugin as any).settings.debugLoggingEnabled = true;
         }
     }
 
     disableDebug(): void {
-        centralizedLogger.enable(LogLevel.INFO);
+        logger.enable(LogLevel.INFO);
         if ((this.dependencies.plugin as any).settings) {
             (this.dependencies.plugin as any).settings.debugLoggingEnabled = false;
         }

@@ -1,6 +1,6 @@
 // Status configuration with hex colors
-import { StatusConfig } from './settings-interface';
-import { DataService } from '../data/data-service-interface';
+import { StatusConfig } from './SettingsServiceInterface';
+import { DataService } from '../data/DataServiceInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
 
 // Re-export the interface for backward compatibility

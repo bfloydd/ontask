@@ -1,6 +1,6 @@
 // General Settings view component for settings
 import { App, Setting } from 'obsidian';
-import { SettingsService } from '../settings-interface';
+import { SettingsService } from '../SettingsServiceInterface';
 
 export class GeneralSettingsView {
 	private app: App;

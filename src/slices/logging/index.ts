@@ -1,4 +1,4 @@
 export * from './Logger';
-export * from './logging-interface';
-export * from './LoggingService';
-export * from './ToggleLoggingCommand';
+export * from './LoggingServiceInterface';
+export * from './LoggingServiceImpl';
+export * from './ToggleLoggingCommandImpl';

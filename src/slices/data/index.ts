@@ -1,4 +1,4 @@
 // Data slice exports
 
-export * from './data-service-interface';
-export * from './data-service';
+export * from './DataServiceInterface';
+export * from './DataServiceImpl';

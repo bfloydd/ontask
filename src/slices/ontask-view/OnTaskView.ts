@@ -2,7 +2,7 @@ import { ItemView, WorkspaceLeaf, TFile, MarkdownView } from 'obsidian';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
 import { StatusConfigService } from '../settings/status-config';
-import { DataService } from '../data/data-service-interface';
+import { DataService } from '../data/DataServiceInterface';
 import { ContextMenuService } from './services/context-menu-service';
 import { TaskLoadingService } from './services/task-loading-service';
 import { DOMRenderingService } from './services/dom-rendering-service';
@@ -13,7 +13,7 @@ import { MobileTouchService } from './services/mobile-touch-service';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
-export class OnTaskView extends ItemView {
+export class OnTaskViewImpl extends ItemView {
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
 	private dataService: DataService;

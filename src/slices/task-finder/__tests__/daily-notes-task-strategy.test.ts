@@ -1,4 +1,4 @@
-import { DailyNotesTaskStrategy } from '../strategies/daily-notes-task-strategy';
+import { DailyNotesTaskStrategy } from '../strategies/DailyNotesTaskStrategy';
 
 const mockApp = {
 	vault: {

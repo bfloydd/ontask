@@ -1,2 +1,2 @@
-export type { StreamsService, Stream } from './streams-interface';
-export { StreamsServiceImpl } from './streams-service';
+export type { StreamsService, Stream } from './StreamsServiceInterface';
+export { StreamsServiceImpl } from './StreamsServiceImpl';

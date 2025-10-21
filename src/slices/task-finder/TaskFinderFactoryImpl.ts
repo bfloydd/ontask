@@ -1,8 +1,8 @@
 import { App } from 'obsidian';
-import { TaskFinderStrategy, TaskFinderFactory } from './interfaces';
-import { StreamsTaskStrategy } from './strategies/streams-task-strategy';
-import { DailyNotesTaskStrategy } from './strategies/daily-notes-task-strategy';
-import { FolderTaskStrategy, FolderStrategyConfig } from './strategies/folder-task-strategy';
+import { TaskFinderStrategy, TaskFinderFactory } from './TaskFinderInterfaces';
+import { StreamsTaskStrategy } from './strategies/StreamsTaskStrategy';
+import { DailyNotesTaskStrategy } from './strategies/DailyNotesTaskStrategy';
+import { FolderTaskStrategy, FolderStrategyConfig } from './strategies/FolderTaskStrategy';
 import { StreamsService } from '../streams';
 
 export class TaskFinderFactoryImpl implements TaskFinderFactory {

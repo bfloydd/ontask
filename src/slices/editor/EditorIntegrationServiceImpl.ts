@@ -1,9 +1,9 @@
 // Editor integration slice - Service implementation
 import { App, MarkdownView, WorkspaceLeaf, Editor, TFile, Plugin } from 'obsidian';
-import { EditorIntegrationService } from './editor-integration-interface';
-import { SettingsService } from '../settings/settings-interface';
+import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
+import { SettingsService } from '../settings/SettingsServiceInterface';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
-import { EventSystem } from '../events/event-system-interface';
+import { EventSystem } from '../events/EventSystemInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
 
 export class EditorIntegrationServiceImpl extends PluginAwareSliceService implements EditorIntegrationService {

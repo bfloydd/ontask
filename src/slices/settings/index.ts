@@ -1,4 +1,4 @@
 // Settings slice - Public API
-export * from './settings-interface';
-export * from './settings-service';
+export * from './SettingsServiceInterface';
+export * from './SettingsServiceImpl';
 export * from './views/settings-view';

@@ -1,6 +1,6 @@
 import { LogLevel } from '../slices/logging/Logger';
 
-class CentralizedLogger {
+class Logger {
     private enabled: boolean = false;
     private level: LogLevel = LogLevel.INFO;
 
@@ -27,4 +27,4 @@ class CentralizedLogger {
     }
 }
 
-export const centralizedLogger = new CentralizedLogger();
+export const logger = new Logger();

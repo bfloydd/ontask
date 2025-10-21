@@ -1,9 +1,9 @@
 import { App, Notice } from 'obsidian';
 import { Command } from '../../shared/interfaces';
 import { Logger, LogLevel } from './Logger';
-import { centralizedLogger } from '../../shared/centralized-logger';
+import { logger } from '../../shared/Logger';
 
-export class ToggleLoggingCommand implements Command {
+export class ToggleLoggingCommandImpl implements Command {
     constructor(
         private app: App,
         private logger: Logger,
@@ -13,12 +13,12 @@ export class ToggleLoggingCommand implements Command {
 
     async execute(): Promise<void> {
         // Toggle between DEBUG and INFO
-        if (centralizedLogger.isEnabled()) {
-            centralizedLogger.enable(LogLevel.INFO);
+        if (logger.isEnabled()) {
+            logger.enable(LogLevel.INFO);
             this.updateSetting(false);
             new Notice('Streams logging set to INFO level');
         } else {
-            centralizedLogger.enable(LogLevel.DEBUG);
+            logger.enable(LogLevel.DEBUG);
             this.updateSetting(true);
             new Notice('Streams logging enabled (DEBUG level)');
         }

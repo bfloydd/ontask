@@ -1,6 +1,6 @@
 // Streams slice - Service implementation
 import { App, Plugin } from 'obsidian';
-import { StreamsService, Stream } from './streams-interface';
+import { StreamsService, Stream } from './StreamsServiceInterface';
 
 // Type for the streams plugin
 interface StreamsPlugin extends Plugin {

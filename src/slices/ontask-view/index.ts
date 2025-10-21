@@ -1,4 +1,5 @@
-export { OnTaskView, ONTASK_VIEW_TYPE } from './ontask-view';
+export { OnTaskViewImpl, ONTASK_VIEW_TYPE } from './OnTaskView';
+export type { OnTaskViewInterface } from './OnTaskViewInterface';
 export { ContextMenuService } from './services/context-menu-service';
 export { TaskLoadingService } from './services/task-loading-service';
 export { DOMRenderingService } from './services/dom-rendering-service';

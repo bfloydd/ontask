@@ -1,4 +1,4 @@
-import { FolderTaskStrategy, FolderStrategyConfig } from '../strategies/folder-task-strategy';
+import { FolderTaskStrategy, FolderStrategyConfig } from '../strategies/FolderTaskStrategy';
 
 const mockApp = {
 	vault: {

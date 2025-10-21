@@ -1,6 +1,6 @@
 // Settings slice - Service implementation
 import { App, Plugin } from 'obsidian';
-import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './settings-interface';
+import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './SettingsServiceInterface';
 import { EventSystem } from '../events';
 import { SettingsAwareSliceService } from '../../shared/base-slice';
 

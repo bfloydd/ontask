@@ -1,5 +1,5 @@
 // Dependency Injection slice - Service configuration
-import { DIContainer, SERVICE_IDS } from './di-container-interface';
+import { DIContainer, SERVICE_IDS } from './DIContainerInterface';
 import { EventSystem, EventSystemServiceImpl } from '../events';
 import { SettingsService, SettingsServiceImpl } from '../settings';
 import { StreamsService, StreamsServiceImpl } from '../streams';

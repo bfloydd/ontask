@@ -1,8 +1,8 @@
 // Data service implementation for handling data.json operations
 
 import { App, Plugin } from 'obsidian';
-import { DataService, StatusConfig, QuickFilter } from './data-service-interface';
-import { DEFAULT_STATUS_CONFIGS } from '../settings/settings-interface';
+import { DataService, StatusConfig, QuickFilter } from './DataServiceInterface';
+import { DEFAULT_STATUS_CONFIGS } from '../settings/SettingsServiceInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
 
 export class DataServiceImpl extends PluginAwareSliceService implements DataService {

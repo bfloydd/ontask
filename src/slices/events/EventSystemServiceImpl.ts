@@ -1,5 +1,5 @@
 // Event system slice - Service implementation
-import { EventSystem, EventCallback, EventSubscription, EventData } from './event-system-interface';
+import { EventSystem, EventCallback, EventSubscription, EventData } from './EventSystemInterface';
 
 interface EventListener {
 	id: string;

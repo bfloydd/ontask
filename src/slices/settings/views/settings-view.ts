@@ -1,8 +1,8 @@
 // Settings slice - UI view implementation
 import { App, PluginSettingTab } from 'obsidian';
-import { SettingsService } from '../settings-interface';
+import { SettingsService } from '../SettingsServiceInterface';
 import { StatusConfigService } from '../status-config';
-import { DataService } from '../../data/data-service-interface';
+import { DataService } from '../../data/DataServiceInterface';
 import { GeneralSettingsView } from './general-settings-view';
 import { StatusConfigSettingsView } from './status-config-settings-view';
 import { QuickFiltersView } from './quick-filters-view';
