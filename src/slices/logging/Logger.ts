@@ -6,14 +6,22 @@ export enum LogLevel {
     NONE = 4
 }
 
-// Usage: app.plugins.plugins.streams.log.on() or .off()
+// Singleton Logger implementation
 export class Logger {
+    private static instance: Logger;
     private enabled: boolean = false;
     private level: LogLevel = LogLevel.INFO;
-    private prefix: string;
+    private prefix: string = '[OnTask] ';
 
-    constructor(prefix?: string) {
-        this.prefix = prefix ? `[${prefix}] ` : '';
+    private constructor() {
+        // Private constructor to prevent direct instantiation
+    }
+
+    public static getInstance(): Logger {
+        if (!Logger.instance) {
+            Logger.instance = new Logger();
+        }
+        return Logger.instance;
     }
 
     isEnabled(): boolean {

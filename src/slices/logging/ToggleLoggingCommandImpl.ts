@@ -5,10 +5,13 @@ import { Logger, LogLevel } from './Logger';
 export class ToggleLoggingCommandImpl implements Command {
     constructor(
         private app: App,
-        private logger: Logger,
         private updateSetting: (enabled: boolean) => void,
         private saveSettings: () => Promise<void>
     ) {}
+
+    private get logger(): Logger {
+        return Logger.getInstance();
+    }
 
     async execute(): Promise<void> {
         // Toggle between DEBUG and INFO

@@ -1,5 +1,6 @@
 import { EventSystem } from '../../events';
 import { StatusConfigService } from '../../settings/status-config';
+import { Logger } from '../../logging/Logger';
 
 export interface ContextMenuServiceInterface {
 	showContextMenu(event: MouseEvent, checkbox: any): void;
@@ -37,7 +38,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	}
 
 	showContextMenu(event: MouseEvent, checkbox: any): void {
-		console.log('Context Menu Service: Context menu triggered', event, checkbox);
+		Logger.getInstance().debug('Context Menu Service: Context menu triggered', event, checkbox);
 		
 		// Remove any existing context menu
 		const existingMenu = document.querySelector('.ontask-context-menu');
@@ -53,7 +54,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 		// Smart positioning to prevent off-screen display
 		this.positionContextMenu(menu, event);
-		console.log('Context Menu Service: Context menu added to DOM', menu);
+		Logger.getInstance().debug('Context Menu Service: Context menu added to DOM', menu);
 
 		// Close menu when clicking outside, scrolling, or right-clicking anywhere
 		this.setupMenuCloseHandlers(menu);

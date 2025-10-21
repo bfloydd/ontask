@@ -12,14 +12,14 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
     constructor(dependencies: LoggingDependencies) {
         super();
         this.dependencies = dependencies;
-        this.logger = new Logger('OnTask');
+        this.logger = Logger.getInstance();
         this.setPlugin(dependencies.plugin);
     }
 
     async initialize(): Promise<void> {
         if (this.initialized) return;
 
-        this.logger = new Logger('OnTask');
+        this.logger = Logger.getInstance();
         
         const settings = this.getSettings();
         if (settings.debugLoggingEnabled) {
@@ -52,7 +52,6 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
         if (!this.toggleCommand) {
             this.toggleCommand = new ToggleLoggingCommandImpl(
                 this.dependencies.app,
-                this.logger,
                 (enabled: boolean) => {
                     (this.dependencies.plugin as any).settings.debugLoggingEnabled = enabled;
                 },

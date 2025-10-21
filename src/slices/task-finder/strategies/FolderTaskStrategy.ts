@@ -1,4 +1,5 @@
 import { App, TFile } from 'obsidian';
+import { Logger } from '../../logging/Logger';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 
 export interface FolderStrategyConfig {
@@ -80,7 +81,7 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		}
 
 		// Return checkboxes without top task processing (handled at view level)
-		console.log(`Folder Strategy: Found ${checkboxes.length} checkboxes`);
+		Logger.getInstance().debug(`Folder Strategy: Found ${checkboxes.length} checkboxes`);
 		return checkboxes;
 	}
 

@@ -1,5 +1,6 @@
 import { EventSystem } from '../../events';
 import { App } from 'obsidian';
+import { Logger } from '../../logging/Logger';
 
 export interface FileOperationsServiceInterface {
 	toggleCheckbox(checkbox: any, isCompleted: boolean): Promise<void>;
@@ -78,7 +79,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 	}
 
 	async updateCheckboxStatus(checkbox: any, newStatus: string): Promise<void> {
-		console.log('File Operations Service: Updating checkbox status', checkbox, newStatus);
+		Logger.getInstance().debug('File Operations Service: Updating checkbox status', checkbox, newStatus);
 		
 		// Set flag to prevent file modification listener from triggering refresh
 		this.isUpdatingStatus = true;
@@ -104,8 +105,8 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 				
 				// Log for debugging if the line wasn't updated
 				if (updatedLine === line) {
-					console.log('File Operations Service: Warning - line was not updated:', JSON.stringify(line));
-					console.log('File Operations Service: Expected pattern: - [status] at start of line');
+					Logger.getInstance().warn('File Operations Service: Warning - line was not updated:', JSON.stringify(line));
+					Logger.getInstance().warn('File Operations Service: Expected pattern: - [status] at start of line');
 				}
 				
 				lines[lineIndex] = updatedLine;

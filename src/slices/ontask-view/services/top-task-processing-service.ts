@@ -1,4 +1,5 @@
 import { EventSystem } from '../../events';
+import { Logger } from '../../logging/Logger';
 
 export interface TopTaskProcessingServiceInterface {
 	processTopTasksFromDisplayedTasks(checkboxes: any[]): void;
@@ -36,7 +37,7 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 	}
 
 	processTopTasksFromDisplayedTasks(checkboxes: any[]): void {
-		console.log('TopTaskProcessingService: Processing top tasks from displayed tasks');
+		Logger.getInstance().debug('TopTaskProcessingService: Processing top tasks from displayed tasks');
 		
 		// First, clear any existing top task markers
 		checkboxes.forEach(checkbox => {
@@ -54,7 +55,7 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 			tasksByType[config.name] = matchingTasks;
 		});
 		
-		console.log('TopTaskProcessingService: Found tasks:', taskCounts);
+		Logger.getInstance().debug('TopTaskProcessingService: Found tasks:', taskCounts);
 		
 		// Find the highest priority task type that has tasks
 		let finalTopTask: any = null;
@@ -65,13 +66,13 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
 				finalTopTask = tasks[0];
 				finalTopTask.isTopTask = true;
-				console.log(`TopTaskProcessingService: Selected ${config.name} task as top task:`, finalTopTask.lineContent);
+				Logger.getInstance().debug(`TopTaskProcessingService: Selected ${config.name} task as top task:`, finalTopTask.lineContent);
 				break;
 			}
 		}
 		
 		if (finalTopTask) {
-			console.log('TopTaskProcessingService: Top task selected:', {
+			Logger.getInstance().debug('TopTaskProcessingService: Top task selected:', {
 				lineContent: finalTopTask.lineContent,
 				file: finalTopTask.file?.path,
 				isTopTask: finalTopTask.isTopTask
@@ -82,7 +83,7 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 				topTask: finalTopTask
 			});
 		} else {
-			console.log('TopTaskProcessingService: No top task found in displayed tasks');
+			Logger.getInstance().debug('TopTaskProcessingService: No top task found in displayed tasks');
 			
 			// Emit top task cleared event
 			this.eventSystem.emit('top-task:cleared', {});

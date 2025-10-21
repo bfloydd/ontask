@@ -5,6 +5,7 @@ import { SettingsService } from '../settings/SettingsServiceInterface';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { EventSystem } from '../events/EventSystemInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
+import { Logger } from '../logging/Logger';
 
 export class EditorIntegrationServiceImpl extends PluginAwareSliceService implements EditorIntegrationService {
 	private app: App;
@@ -100,15 +101,15 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	 * This prevents multiple rapid updates and batches them into a single update
 	 */
 	private scheduleDecorationUpdate(): void {
-		console.log('OnTask Editor: scheduleDecorationUpdate called, pending:', this.pendingDecorationUpdate);
+		Logger.getInstance().debug('OnTask Editor: scheduleDecorationUpdate called, pending:', this.pendingDecorationUpdate);
 		
 		if (this.pendingDecorationUpdate) {
-			console.log('OnTask Editor: Update already pending, skipping');
+			Logger.getInstance().debug('OnTask Editor: Update already pending, skipping');
 			return; // Already scheduled
 		}
 
 		this.pendingDecorationUpdate = true;
-		console.log('OnTask Editor: Scheduling decoration update');
+		Logger.getInstance().debug('OnTask Editor: Scheduling decoration update');
 		
 		// Cancel any existing request
 		if (this.updateRequestId !== null) {
@@ -116,7 +117,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 
 		this.updateRequestId = requestAnimationFrame(() => {
-			console.log('OnTask Editor: Executing scheduled decoration update');
+			Logger.getInstance().debug('OnTask Editor: Executing scheduled decoration update');
 			this.pendingDecorationUpdate = false;
 			this.updateRequestId = null;
 			this.updateEditorDecorations();
@@ -270,7 +271,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		// Remove all stored overlays
 		this.topTaskOverlays.forEach((overlay, key) => {
 			if (overlay && overlay.parentNode) {
-				console.log('OnTask Editor: Removing stored overlay for key:', key);
+				Logger.getInstance().debug('OnTask Editor: Removing stored overlay for key:', key);
 				overlay.remove();
 			}
 		});

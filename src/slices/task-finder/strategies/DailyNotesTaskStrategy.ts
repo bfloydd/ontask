@@ -1,4 +1,5 @@
 import { App, TFile } from 'obsidian';
+import { Logger } from '../../logging/Logger';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 
 export class DailyNotesTaskStrategy implements TaskFinderStrategy {
@@ -81,7 +82,7 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		}
 
 		// Return checkboxes without top task processing (handled at view level)
-		console.log(`Daily Notes Strategy: Found ${checkboxes.length} checkboxes`);
+		Logger.getInstance().debug(`Daily Notes Strategy: Found ${checkboxes.length} checkboxes`);
 		return checkboxes;
 	}
 
@@ -207,7 +208,7 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		// Check both filename and full path for date patterns
 		for (const dateFormat of todayFormats) {
 			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
-				console.log(`OnTask: Found today's file: ${file.name} (matches date: ${dateFormat})`);
+				Logger.getInstance().debug(`OnTask: Found today's file: ${file.name} (matches date: ${dateFormat})`);
 				return true;
 			}
 		}
@@ -216,7 +217,7 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		const datePatterns = this.getDatePatterns(today);
 		for (const pattern of datePatterns) {
 			if (pattern.test(fileName) || pattern.test(filePath)) {
-				console.log(`OnTask: Found today's file: ${file.name} (matches pattern: ${pattern})`);
+				Logger.getInstance().debug(`OnTask: Found today's file: ${file.name} (matches pattern: ${pattern})`);
 				return true;
 			}
 		}

@@ -1,5 +1,6 @@
 import { EventSystem } from '../../events';
 import { ItemView } from 'obsidian';
+import { Logger } from '../../logging/Logger';
 
 export interface EventHandlingServiceInterface {
 	setupEventListeners(): void;
@@ -35,23 +36,23 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 	}
 
 	setupEventListeners(): void {
-		console.log('EventHandlingService: Setting up event listeners');
+		Logger.getInstance().debug('EventHandlingService: Setting up event listeners');
 		
 		// Clean up any existing listeners first
 		this.cleanupEventListeners();
 		
 		// Listen for settings changes
 		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
-			console.log('EventHandlingService: Settings changed event received:', event.data.key);
+			Logger.getInstance().debug('EventHandlingService: Settings changed event received:', event.data.key);
 			if (event.data.key === 'onlyShowToday') {
-				console.log('EventHandlingService: Triggering refresh due to settings change');
+				Logger.getInstance().debug('EventHandlingService: Triggering refresh due to settings change');
 				this.onRefreshCheckboxes();
 			}
 		});
 		
 		// Listen for checkbox updates to update top task section immediately
 		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
-			console.log('EventHandlingService: Checkboxes updated event received, updating top task section');
+			Logger.getInstance().debug('EventHandlingService: Checkboxes updated event received, updating top task section');
 			// Only update the top task section without full refresh
 			const contentArea = this.app.workspace.getActiveViewOfType(ItemView)?.contentEl?.querySelector('.ontask-content') as HTMLElement;
 			if (contentArea) {
@@ -63,7 +64,7 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 		const fileModifyListener = (file: any) => {
 			// Skip refresh if we're currently updating a status ourselves
 			if (this.isUpdatingStatus) {
-				console.log('EventHandlingService: Skipping refresh - currently updating status');
+				Logger.getInstance().debug('EventHandlingService: Skipping refresh - currently updating status');
 				return;
 			}
 			

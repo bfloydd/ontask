@@ -1,3 +1,15 @@
+// Mock Logger before imports
+jest.mock('../../../logging/Logger', () => ({
+	Logger: {
+		getInstance: jest.fn(() => ({
+			debug: jest.fn(),
+			warn: jest.fn(),
+			info: jest.fn(),
+			error: jest.fn()
+		}))
+	}
+}));
+
 import { TaskLoadingService } from '../task-loading-service';
 import { TaskFinderFactoryImpl } from '../../../task-finder/TaskFinderFactoryImpl';
 import { SettingsService } from '../../../settings';
