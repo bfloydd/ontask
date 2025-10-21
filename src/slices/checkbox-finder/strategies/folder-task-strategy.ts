@@ -1,99 +1,120 @@
 import { App, TFile } from 'obsidian';
-import { CheckboxFinderStrategy, CheckboxItem, CheckboxFinderContext } from '../interfaces';
-import { StreamsService } from '../../streams';
+import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../interfaces';
 
-export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
+export interface FolderStrategyConfig {
+	folderPath: string;
+	recursive: boolean;
+	includeSubfolders: boolean;
+}
+
+export class FolderTaskStrategy implements TaskFinderStrategy {
 	private app: App;
-	private streamsService: StreamsService;
+	private config: FolderStrategyConfig;
 
-	constructor(app: App, streamsService: StreamsService) {
+	constructor(app: App, config: FolderStrategyConfig) {
 		this.app = app;
-		this.streamsService = streamsService;
+		this.config = config;
 	}
 
 	getName(): string {
-		return 'streams';
+		return 'folder';
 	}
 
 	isAvailable(): boolean {
-		return this.streamsService.isStreamsPluginAvailable();
+		// Check if the configured folder exists
+		const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
+		return folder !== null;
 	}
 
-	async findCheckboxes(context: CheckboxFinderContext): Promise<CheckboxItem[]> {
-		const allCheckboxes: CheckboxItem[] = [];
-		
-		// If specific files are provided, scan only those files for performance
-		if (context.filePaths && context.filePaths.length > 0) {
-			for (const filePath of context.filePaths) {
-				const file = this.app.vault.getAbstractFileByPath(filePath);
-				if (file && file instanceof TFile) {
-					const fileCheckboxes = await this.findCheckboxesInFile(file, { name: 'stream', folder: '' }, context);
-					allCheckboxes.push(...fileCheckboxes);
-				}
-			}
-		} else {
-			// Fallback to original behavior if no specific files provided
-			const allStreams = this.streamsService.getAllStreams();
-			const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');
-			const limit = context.limit;
+	getConfiguration(): Record<string, any> {
+		return {
+			folderPath: this.config.folderPath,
+			recursive: this.config.recursive,
+			includeSubfolders: this.config.includeSubfolders
+		};
+	}
 
-			for (const stream of streams) {
-				const streamCheckboxes = await this.findCheckboxesInStream(stream, context);
-				allCheckboxes.push(...streamCheckboxes);
+	async findCheckboxes(context: TaskFinderContext): Promise<TaskItem[]> {
+		const checkboxes: TaskItem[] = [];
+		
+		try {
+			// If specific files are provided, scan only those files for performance
+			if (context.filePaths && context.filePaths.length > 0) {
+				for (const filePath of context.filePaths) {
+					const file = this.app.vault.getAbstractFileByPath(filePath);
+					if (file && file instanceof TFile) {
+						const fileCheckboxes = await this.findCheckboxesInFile(file, context);
+						checkboxes.push(...fileCheckboxes);
+					}
+				}
+			} else {
+				// Fallback to original behavior if no specific files provided
+				const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
+				if (!folder) {
+					return checkboxes;
+				}
+
+				// Get all markdown files in the folder
+				const files = this.getFilesInFolder(folder);
 				
-				// Early termination if limit is reached
-				if (limit && allCheckboxes.length >= limit) {
-					break;
+				// Performance optimization: Filter files by today before reading their content
+				let filesToProcess = files;
+				if (context.onlyShowToday) {
+					filesToProcess = files.filter(file => this.isTodayFile(file));
+				}
+				
+				// Process files sequentially with early termination for performance
+				for (const file of filesToProcess) {
+					const fileCheckboxes = await this.findCheckboxesInFile(file, context);
+					checkboxes.push(...fileCheckboxes);
+					
+					// Early termination if limit is reached
+					if (context.limit && checkboxes.length >= context.limit) {
+						break;
+					}
 				}
 			}
+
+		} catch (error) {
+			console.error(`Error finding checkboxes in folder ${this.config.folderPath}:`, error);
 		}
 
 		// Return checkboxes without top task processing (handled at view level)
-		console.log(`Streams Strategy: Found ${allCheckboxes.length} checkboxes`);
-		return allCheckboxes;
-	}
-
-	private async findCheckboxesInStream(stream: { name: string; folder: string }, context: CheckboxFinderContext): Promise<CheckboxItem[]> {
-		const checkboxes: CheckboxItem[] = [];
-		
-		try {
-			// Get all files in the stream directory
-			const streamFolder = this.app.vault.getAbstractFileByPath(stream.folder);
-			
-			if (!streamFolder || !(streamFolder instanceof TFile)) {
-				// If it's not a file, try to get files from the directory
-				let files = this.app.vault.getMarkdownFiles().filter(file => 
-					file.path.startsWith(stream.folder)
-				);
-				
-				// Performance optimization: Filter files by today before reading their content
-				if (context.onlyShowToday) {
-					files = files.filter(file => this.isTodayFile(file));
-				}
-				
-			// Process files sequentially for now to avoid complexity
-			for (const file of files) {
-				const fileCheckboxes = await this.findCheckboxesInFile(file, stream, context);
-				checkboxes.push(...fileCheckboxes);
-			}
-			} else {
-				// If it's a single file, check if it's from today before processing
-				if (context.onlyShowToday && !this.isTodayFile(streamFolder)) {
-					return checkboxes; // Skip this file entirely if it's not from today
-				}
-				
-				const fileCheckboxes = await this.findCheckboxesInFile(streamFolder, stream, context);
-				checkboxes.push(...fileCheckboxes);
-			}
-		} catch (error) {
-			console.error(`Error searching stream ${stream.name}:`, error);
-		}
-
+		console.log(`Folder Strategy: Found ${checkboxes.length} checkboxes`);
 		return checkboxes;
 	}
 
-	private async findCheckboxesInFile(file: TFile, stream: { name: string; folder: string }, context: CheckboxFinderContext): Promise<CheckboxItem[]> {
-		const checkboxes: CheckboxItem[] = [];
+	public getFilesInFolder(folder: any): TFile[] {
+		const files: TFile[] = [];
+		
+		if (folder instanceof TFile) {
+			// If it's a single file, return it
+			files.push(folder);
+		} else {
+			// If it's a folder, get all markdown files
+			const allFiles = this.app.vault.getMarkdownFiles();
+			
+			for (const file of allFiles) {
+				if (this.config.recursive) {
+					// Include files in subfolders
+					if (file.path.startsWith(this.config.folderPath)) {
+						files.push(file);
+					}
+				} else {
+					// Only include files directly in the folder
+					const relativePath = file.path.substring(this.config.folderPath.length + 1);
+					if (!relativePath.includes('/') && file.path.startsWith(this.config.folderPath)) {
+						files.push(file);
+					}
+				}
+			}
+		}
+		
+		return files;
+	}
+
+	private async findCheckboxesInFile(file: TFile, context: TaskFinderContext): Promise<TaskItem[]> {
+		const checkboxes: TaskItem[] = [];
 		
 		try {
 			const content = await this.app.vault.read(file);
@@ -106,12 +127,17 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 				if (checkboxMatch) {
 					checkboxes.push({
 						file: file,
-						lineNumber: i + 1, // 1-based line numbers
+						lineNumber: i + 1,
 						lineContent: line.trim(),
 						checkboxText: line.trim(),
-						sourceName: 'Streams',
-						sourcePath: stream.folder
+						sourceName: `Folder: ${this.config.folderPath}`,
+						sourcePath: this.config.folderPath
 					});
+					
+					// Early termination if limit is reached
+					if (context.limit && checkboxes.length >= context.limit) {
+						break;
+					}
 				}
 			}
 		} catch (error) {
@@ -149,7 +175,7 @@ export class StreamsCheckboxStrategy implements CheckboxFinderStrategy {
 		return checkboxContent === 'x' || checkboxContent === 'checked';
 	}
 
-	private isTodayFile(file: TFile): boolean {
+	public isTodayFile(file: TFile): boolean {
 		const today = new Date();
 		
 		// Generate multiple date formats that might be used in filenames

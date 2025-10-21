@@ -1,7 +1,8 @@
 import { TFile } from 'obsidian';
-import { CheckboxFinderService } from '../../checkbox-finder';
+import { TaskFinderFactoryImpl } from '../../checkbox-finder/task-finder-factory';
 import { SettingsService } from '../../settings';
 import { StatusConfigService } from '../../settings/status-config';
+import { StreamsService } from '../../streams';
 
 export interface TaskLoadingServiceInterface {
 	loadTasksWithFiltering(settings: any): Promise<any[]>;
@@ -15,9 +16,10 @@ export interface TaskLoadingServiceInterface {
 }
 
 export class TaskLoadingService implements TaskLoadingServiceInterface {
-	private checkboxFinderService: CheckboxFinderService;
+	private taskFinderFactory: TaskFinderFactoryImpl;
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
+	private streamsService: StreamsService;
 	private app: any;
 	
 	// File tracking for precise Load More functionality
@@ -26,15 +28,20 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 	private trackedFiles: string[] = []; // Sorted array of all files (Z-A by filename)
 
 	constructor(
-		checkboxFinderService: CheckboxFinderService,
+		streamsService: StreamsService,
 		settingsService: SettingsService,
 		statusConfigService: StatusConfigService,
 		app: any
 	) {
-		this.checkboxFinderService = checkboxFinderService;
+		this.streamsService = streamsService;
+		this.taskFinderFactory = new TaskFinderFactoryImpl(app, streamsService);
 		this.settingsService = settingsService;
 		this.statusConfigService = statusConfigService;
 		this.app = app;
+	}
+
+	getStreamsService(): StreamsService {
+		return this.streamsService;
 	}
 
 	async loadTasksWithFiltering(settings: any): Promise<any[]> {
@@ -124,7 +131,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		const allFiles: string[] = [];
 		
 		// Get files from streams strategy
-		const streamsService = this.checkboxFinderService.getStreamsService();
+		const streamsService = this.taskFinderFactory.getStreamsService();
 		if (streamsService && streamsService.isStreamsPluginAvailable()) {
 			const allStreams = streamsService.getAllStreams();
 			const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');

@@ -2,14 +2,14 @@
 import { App, MarkdownView, WorkspaceLeaf, Editor, TFile, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './editor-integration-interface';
 import { SettingsService } from '../settings/settings-interface';
-import { CheckboxFinderService } from '../checkbox-finder';
+import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { EventSystem } from '../events/event-system-interface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
 
 export class EditorIntegrationServiceImpl extends PluginAwareSliceService implements EditorIntegrationService {
 	private app: App;
 	private settingsService: SettingsService;
-	private checkboxFinderService: CheckboxFinderService;
+	private taskLoadingService: TaskLoadingService;
 	private eventSystem: EventSystem;
 	private topTaskOverlays: Map<string, HTMLElement> = new Map();
 	private currentTopTask: any = null;
@@ -20,14 +20,14 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	constructor(
 		app: App,
 		settingsService: SettingsService,
-		checkboxFinderService: CheckboxFinderService,
+		taskLoadingService: TaskLoadingService,
 		eventSystem: EventSystem,
 		plugin: Plugin
 	) {
 		super();
 		this.app = app;
 		this.settingsService = settingsService;
-		this.checkboxFinderService = checkboxFinderService;
+		this.taskLoadingService = taskLoadingService;
 		this.eventSystem = eventSystem;
 		this.setPlugin(plugin);
 	}

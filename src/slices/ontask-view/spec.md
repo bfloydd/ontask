@@ -61,6 +61,7 @@ trackedFiles = [
 - Begin where we left off, file index in trackedFiles array and the task number within the file.
 - Filters are applied and unchecked items are not counted in totals and skipped totally.
 - Looks through as many files as necessary to reach the configured load more limit tasks, again and always ignoring filtered out statuses.
+- **CRITICAL**: Stop immediately when the target number of tasks is reached. Do not process any additional files or tasks beyond the limit.
 - Append the unfiltered tasks to the OnTaskView page.
 
 ## Finding tasks:

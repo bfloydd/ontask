@@ -24,9 +24,9 @@ SettingsService
     ↓
 StreamsService
     ↓
-CheckboxFinderService (Utility)
-    ↓
 TaskLoadingService (Primary Task Loading)
+    ├── Creates TaskFinderFactory internally
+    └── Manages all task finding strategies
     ↓
 EditorIntegrationService, PluginOrchestrator
 ```

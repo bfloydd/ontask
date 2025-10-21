@@ -1,7 +1,7 @@
 import { App, TFile } from 'obsidian';
-import { CheckboxFinderStrategy, CheckboxItem, CheckboxFinderContext } from '../interfaces';
+import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../interfaces';
 
-export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
+export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 	private app: App;
 
 	constructor(app: App) {
@@ -19,22 +19,13 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 		
 		// Check if Daily Notes core feature is enabled
 		const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
-		const hasDailyNotesCore = dailyNotesCore && dailyNotesCore.enabled;
-		
-		console.log('OnTask: Daily Notes availability check:', {
-			plugin: dailyNotesPlugin,
-			hasPlugin: hasDailyNotesPlugin,
-			corePlugin: dailyNotesCore,
-			hasCore: hasDailyNotesCore,
-			coreEnabled: dailyNotesCore?.enabled,
-			corePlugins: Object.keys((this.app as any).internalPlugins?.plugins || {})
-		});
+		const hasDailyNotesCore = !!(dailyNotesCore && dailyNotesCore.enabled);
 		
 		return hasDailyNotesPlugin || hasDailyNotesCore;
 	}
 
-	async findCheckboxes(context: CheckboxFinderContext): Promise<CheckboxItem[]> {
-		const checkboxes: CheckboxItem[] = [];
+	async findCheckboxes(context: TaskFinderContext): Promise<TaskItem[]> {
+		const checkboxes: TaskItem[] = [];
 		
 		try {
 			// If specific files are provided, scan only those files for performance
@@ -140,8 +131,8 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 		return notes;
 	}
 
-	private async findCheckboxesInFile(file: TFile, context: CheckboxFinderContext): Promise<CheckboxItem[]> {
-		const checkboxes: CheckboxItem[] = [];
+	private async findCheckboxesInFile(file: TFile, context: TaskFinderContext): Promise<TaskItem[]> {
+		const checkboxes: TaskItem[] = [];
 		
 		try {
 			const content = await this.app.vault.read(file);
@@ -160,6 +151,11 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 						sourceName: 'Daily Notes',
 						sourcePath: file.path
 					});
+					
+					// Early termination if limit is reached
+					if (context.limit && checkboxes.length >= context.limit) {
+						break;
+					}
 				}
 			}
 		} catch (error) {
@@ -198,7 +194,7 @@ export class DailyNotesCheckboxStrategy implements CheckboxFinderStrategy {
 	}
 
 
-	private isTodayFile(file: TFile): boolean {
+	public isTodayFile(file: TFile): boolean {
 		const today = new Date();
 		
 		// Generate multiple date formats that might be used in filenames

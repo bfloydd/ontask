@@ -2,7 +2,6 @@
 import { App, Plugin, WorkspaceLeaf } from 'obsidian';
 import { PluginOrchestrator, PluginDependencies } from './plugin-orchestration-interface';
 import { SettingsService } from '../settings';
-import { CheckboxFinderService } from '../checkbox-finder';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { StreamsService } from '../streams';
 import { OnTaskView, ONTASK_VIEW_TYPE } from '../ontask-view';
@@ -29,7 +28,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 	async initialize(): Promise<void> {
 		if (this.initialized) return;
 		
-		const { app, plugin, settingsService, checkboxFinderService, streamsService, dataService, statusConfigService } = this.dependencies;
+		const { app, plugin, settingsService, taskLoadingService, streamsService, dataService, statusConfigService } = this.dependencies;
 		
 		// Set up UI elements
 		await this.setupUI(app, plugin, settingsService);
@@ -228,7 +227,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		// Register the OnTaskView
 		plugin.registerView(ONTASK_VIEW_TYPE, (leaf) => new OnTaskView(
 			leaf, 
-			this.dependencies.checkboxFinderService, 
+			this.dependencies.taskLoadingService, 
 			settingsService, 
 			this.dependencies.statusConfigService,
 			this.dependencies.dataService,
@@ -303,29 +302,10 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 	}
 
 	private configureCheckboxSource(): void {
-		const { settingsService, checkboxFinderService } = this.dependencies;
-		const settings = settingsService.getSettings();
-		const strategies: string[] = [];
-		
-		switch (settings.checkboxSource) {
-			case 'streams':
-				strategies.push('streams');
-				break;
-			case 'daily-notes':
-				strategies.push('daily-notes');
-				break;
-			case 'folder':
-				// Create and register folder strategy if not already registered
-				const folderStrategy = checkboxFinderService.createFolderStrategy(
-					settings.customFolderPath,
-					settings.includeSubfolders
-				);
-				checkboxFinderService.registerStrategy('custom-folder', folderStrategy);
-				strategies.push('custom-folder');
-				break;
-		}
-		
-		checkboxFinderService.setActiveStrategies(strategies);
+		// Checkbox source configuration is now handled internally by TaskLoadingService
+		// The TaskLoadingService uses CheckboxFinderFactory internally and handles
+		// different sources (streams, daily-notes, folder) based on settings
+		// No additional configuration needed here
 	}
 
 	private toggleTopTaskVisibility(): void {

@@ -1,6 +1,6 @@
 import { TFile } from 'obsidian';
 
-export interface CheckboxItem {
+export interface TaskItem {
 	file: TFile;
 	lineNumber: number;
 	lineContent: string;
@@ -11,17 +11,23 @@ export interface CheckboxItem {
 	isTopTaskContender?: boolean;
 }
 
-export interface CheckboxFinderContext {
+// Keep CheckboxItem for backward compatibility
+export type CheckboxItem = TaskItem;
+
+export interface TaskFinderContext {
 	onlyShowToday: boolean;
 	limit?: number; // Optional limit for lazy loading
 	filePaths?: string[]; // Specific files to scan (for performance)
 }
 
-export interface CheckboxFinderStrategy {
+// Keep CheckboxFinderContext for backward compatibility
+export type CheckboxFinderContext = TaskFinderContext;
+
+export interface TaskFinderStrategy {
 	/**
-	 * Find all checkboxes using this strategy
+	 * Find all tasks using this strategy
 	 */
-	findCheckboxes(context: CheckboxFinderContext): Promise<CheckboxItem[]>;
+	findCheckboxes(context: TaskFinderContext): Promise<TaskItem[]>;
 	
 	/**
 	 * Get the name of this strategy
@@ -39,11 +45,14 @@ export interface CheckboxFinderStrategy {
 	getConfiguration?(): Record<string, any>;
 }
 
-export interface CheckboxFinderFactory {
+// Keep CheckboxFinderStrategy for backward compatibility
+export type CheckboxFinderStrategy = TaskFinderStrategy;
+
+export interface TaskFinderFactory {
 	/**
 	 * Create a strategy instance
 	 */
-	createStrategy(strategyName: string): CheckboxFinderStrategy | null;
+	createStrategy(strategyName: string): TaskFinderStrategy | null;
 	
 	/**
 	 * Get all available strategy names
@@ -53,5 +62,8 @@ export interface CheckboxFinderFactory {
 	/**
 	 * Register a new strategy
 	 */
-	registerStrategy(name: string, strategy: CheckboxFinderStrategy): void;
+	registerStrategy(name: string, strategy: TaskFinderStrategy): void;
 }
+
+// Keep CheckboxFinderFactory for backward compatibility
+export type CheckboxFinderFactory = TaskFinderFactory;

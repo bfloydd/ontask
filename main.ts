@@ -5,7 +5,6 @@ import { EventSystem } from './src/slices/events';
 import { EditorIntegrationService } from './src/slices/editor';
 import { DIContainer, DIContainerImpl, ServiceConfiguration, SERVICE_IDS } from './src/slices/di';
 import { StreamsService } from './src/slices/streams';
-import { CheckboxFinderService } from './src/slices/checkbox-finder';
 import { OnTaskView, ONTASK_VIEW_TYPE } from './src/slices/ontask-view';
 import { DataService } from './src/slices/data';
 import { StatusConfigService } from './src/slices/settings/status-config';
@@ -16,7 +15,7 @@ export default class OnTask extends Plugin {
 	private container: DIContainer;
 	private settingsService: SettingsService;
 	private streamsService: StreamsService;
-	private checkboxFinder: CheckboxFinderService;
+	// CheckboxFinderService removed - now using TaskFinderFactory directly in TaskLoadingService
 	private orchestrator: PluginOrchestrator;
 	private eventSystem: EventSystem;
 	private editorIntegrationService: EditorIntegrationService;
@@ -33,7 +32,7 @@ export default class OnTask extends Plugin {
 		this.eventSystem = this.container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
 		this.settingsService = this.container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 		this.streamsService = this.container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
-		this.checkboxFinder = this.container.resolve<CheckboxFinderService>(SERVICE_IDS.CHECKBOX_FINDER_SERVICE);
+		// CheckboxFinderService removed - now using TaskFinderFactory directly in TaskLoadingService
 		this.orchestrator = this.container.resolve<PluginOrchestrator>(SERVICE_IDS.PLUGIN_ORCHESTRATOR);
 		this.editorIntegrationService = this.container.resolve<EditorIntegrationService>(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE);
 		this.dataService = this.container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);

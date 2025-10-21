@@ -2,7 +2,6 @@
 
 import { App, Plugin } from 'obsidian';
 import { SettingsService } from '../settings';
-import { CheckboxFinderService } from '../checkbox-finder';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { StreamsService } from '../streams';
 import { EventSystem } from '../events';
@@ -29,7 +28,6 @@ export interface PluginDependencies {
 	app: App;
 	plugin: Plugin;
 	settingsService: SettingsService;
-	checkboxFinderService: CheckboxFinderService;
 	taskLoadingService: TaskLoadingService;
 	streamsService: StreamsService;
 	eventSystem: EventSystem;

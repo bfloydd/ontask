@@ -1,5 +1,4 @@
 import { ItemView, WorkspaceLeaf, TFile, MarkdownView } from 'obsidian';
-import { CheckboxFinderService } from '../checkbox-finder';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
 import { StatusConfigService } from '../settings/status-config';
@@ -15,7 +14,6 @@ import { MobileTouchService } from './services/mobile-touch-service';
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
 export class OnTaskView extends ItemView {
-	private checkboxFinderService: CheckboxFinderService;
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
 	private dataService: DataService;
@@ -41,7 +39,7 @@ export class OnTaskView extends ItemView {
 
 	constructor(
 		leaf: WorkspaceLeaf, 
-		checkboxFinderService: CheckboxFinderService, 
+		taskLoadingService: TaskLoadingService, 
 		settingsService: SettingsService, 
 		statusConfigService: StatusConfigService,
 		dataService: DataService,
@@ -49,20 +47,12 @@ export class OnTaskView extends ItemView {
 		eventSystem: EventSystem
 	) {
 		super(leaf);
-		this.checkboxFinderService = checkboxFinderService;
+		this.taskLoadingService = taskLoadingService;
 		this.settingsService = settingsService;
 		this.statusConfigService = statusConfigService;
 		this.dataService = dataService;
 		this.plugin = plugin;
 		this.eventSystem = eventSystem;
-		
-		// Initialize task loading service
-		this.taskLoadingService = new TaskLoadingService(
-			this.checkboxFinderService,
-			this.settingsService,
-			this.statusConfigService,
-			this.app
-		);
 		
 		// Initialize context menu service
 		this.contextMenuService = new ContextMenuService(
@@ -214,7 +204,7 @@ export class OnTaskView extends ItemView {
 			this.loadMoreButton = null;
 			
 			// Reset file tracking for fresh start
-			this.checkboxFinderService.resetFileTracking();
+			// checkboxFinderService removed - now using TaskLoadingService directly
 			
 			// Reset our tracking variables for fresh start
 			this.taskLoadingService.resetTracking();
@@ -478,8 +468,8 @@ export class OnTaskView extends ItemView {
 				return;
 			}
 
-			// Get the streams service from the plugin orchestration
-			const streamsService = this.checkboxFinderService.getStreamsService();
+			// Get the streams service from the task loading service
+			const streamsService = this.taskLoadingService.getStreamsService();
 			
 			if (!streamsService || !streamsService.isStreamsPluginAvailable()) {
 				console.log('OnTask: Streams plugin not available, skipping stream detection');

@@ -1,13 +1,13 @@
 import { App } from 'obsidian';
-import { CheckboxFinderStrategy, CheckboxFinderFactory } from './interfaces';
-import { StreamsCheckboxStrategy } from './strategies/streams-strategy';
-import { DailyNotesCheckboxStrategy } from './strategies/daily-notes-strategy';
-import { FolderCheckboxStrategy, FolderStrategyConfig } from './strategies/folder-strategy';
+import { TaskFinderStrategy, TaskFinderFactory } from './interfaces';
+import { StreamsTaskStrategy } from './strategies/streams-task-strategy';
+import { DailyNotesTaskStrategy } from './strategies/daily-notes-task-strategy';
+import { FolderTaskStrategy, FolderStrategyConfig } from './strategies/folder-task-strategy';
 import { StreamsService } from '../streams';
 
-export class CheckboxFinderFactoryImpl implements CheckboxFinderFactory {
+export class TaskFinderFactoryImpl implements TaskFinderFactory {
 	private app: App;
-	private strategies: Map<string, CheckboxFinderStrategy> = new Map();
+	private strategies: Map<string, TaskFinderStrategy> = new Map();
 	private streamsService: StreamsService;
 
 	constructor(app: App, streamsService: StreamsService) {
@@ -18,15 +18,15 @@ export class CheckboxFinderFactoryImpl implements CheckboxFinderFactory {
 
 	private initializeDefaultStrategies(): void {
 		// Register the streams strategy
-		const streamsStrategy = new StreamsCheckboxStrategy(this.app, this.streamsService);
+		const streamsStrategy = new StreamsTaskStrategy(this.app, this.streamsService);
 		this.registerStrategy('streams', streamsStrategy);
 
 		// Register the daily notes strategy
-		const dailyNotesStrategy = new DailyNotesCheckboxStrategy(this.app);
+		const dailyNotesStrategy = new DailyNotesTaskStrategy(this.app);
 		this.registerStrategy('daily-notes', dailyNotesStrategy);
 	}
 
-	createStrategy(strategyName: string): CheckboxFinderStrategy | null {
+	createStrategy(strategyName: string): TaskFinderStrategy | null {
 		return this.strategies.get(strategyName) || null;
 	}
 
@@ -34,21 +34,21 @@ export class CheckboxFinderFactoryImpl implements CheckboxFinderFactory {
 		return Array.from(this.strategies.keys());
 	}
 
-	registerStrategy(name: string, strategy: CheckboxFinderStrategy): void {
+	registerStrategy(name: string, strategy: TaskFinderStrategy): void {
 		this.strategies.set(name, strategy);
 	}
 
 	/**
 	 * Create a folder strategy with specific configuration
 	 */
-	createFolderStrategy(config: FolderStrategyConfig): CheckboxFinderStrategy {
-		return new FolderCheckboxStrategy(this.app, config);
+	createFolderStrategy(config: FolderStrategyConfig): TaskFinderStrategy {
+		return new FolderTaskStrategy(this.app, config);
 	}
 
 	/**
 	 * Get all available strategies that are ready to use
 	 */
-	getReadyStrategies(): CheckboxFinderStrategy[] {
+	getReadyStrategies(): TaskFinderStrategy[] {
 		return Array.from(this.strategies.values()).filter(strategy => strategy.isAvailable());
 	}
 
@@ -57,5 +57,12 @@ export class CheckboxFinderFactoryImpl implements CheckboxFinderFactory {
 	 */
 	getReadyStrategyNames(): string[] {
 		return this.getReadyStrategies().map(strategy => strategy.getName());
+	}
+
+	/**
+	 * Get the streams service for direct access
+	 */
+	getStreamsService(): StreamsService {
+		return this.streamsService;
 	}
 }
