@@ -66,25 +66,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			}
 		});
 
-		// Add fallback: Listen for file modifications to detect top tasks independently
-		this.app.vault.on('modify', (file) => {
-			if (this.isEnabled() && file.path.endsWith('.md')) {
-				// Small delay to ensure file is fully written
-				setTimeout(() => {
-					this.findTopTaskIndependently();
-				}, 500);
-			}
-		});
-
-		// Add fallback: Listen for active leaf changes to update when switching files
-		this.app.workspace.on('active-leaf-change', (leaf) => {
-			if (this.isEnabled() && leaf?.view instanceof MarkdownView) {
-				// Small delay to ensure view is fully loaded
-				setTimeout(() => {
-					this.findTopTaskIndependently();
-				}, 300);
-			}
-		});
+		// Editor events disabled - no longer listening for file modifications or active leaf changes
 
 		this.initialized = true;
 		

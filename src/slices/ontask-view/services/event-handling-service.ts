@@ -56,33 +56,12 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 			}
 		});
 		
-		// Listen for file modifications
-		const fileModifyListener = (file: any) => {
-			// Skip refresh if we're currently updating a status ourselves
-			if (this.isUpdatingStatus) {
-				return;
-			}
-			
-			// Only process markdown files
-			if (!file.path.endsWith('.md')) {
-				return;
-			}
-			
-			// Check if any of our checkboxes are in this file
-			const isRelevantFile = this.checkboxes.some(checkbox => checkbox.file?.path === file.path);
-			if (isRelevantFile) {
-				// Only process if we have checkboxes in this file
-				this.onScheduleDebouncedRefresh(file);
-			}
-		};
-		
-		this.app.vault.on('modify', fileModifyListener);
+		// Editor events disabled - no longer listening for file modifications
 		
 		// Store cleanup functions
 		this.eventListeners = [
 			() => settingsSubscription.unsubscribe(),
-			() => checkboxUpdateSubscription.unsubscribe(),
-			() => this.app.vault.off('modify', fileModifyListener)
+			() => checkboxUpdateSubscription.unsubscribe()
 		];
 	}
 
