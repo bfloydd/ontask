@@ -37,61 +37,62 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 
 		// Listen for settings changes
 		this.eventSystem.on('settings:changed', (event) => {
-			console.log('OnTask Editor: Settings changed event:', event.data.key);
 			if (event.data.key === 'showTopTaskInEditor') {
-				console.log('OnTask Editor: showTopTaskInEditor setting changed, scheduling update');
 				this.scheduleDecorationUpdate();
 			}
 		});
 
 		// Listen for top task found event from OnTask View
 		this.eventSystem.on('top-task:found', (event) => {
-			console.log('OnTask Editor: Top task found event received:', event.data.topTask);
 			this.topTaskMemory = event.data.topTask;
 			if (this.isEnabled()) {
-				console.log('OnTask Editor: Editor enabled, scheduling update with top task from memory');
 				this.scheduleDecorationUpdate();
-			} else {
-				console.log('OnTask Editor: Editor disabled, skipping update');
 			}
 		});
 
 		// Listen for top task cleared event from OnTask View
 		this.eventSystem.on('top-task:cleared', () => {
-			console.log('OnTask Editor: Top task cleared event received');
 			this.topTaskMemory = null;
 			if (this.isEnabled()) {
-				console.log('OnTask Editor: Editor enabled, scheduling cleanup');
 				this.scheduleDecorationUpdate();
-			} else {
-				console.log('OnTask Editor: Editor disabled, skipping update');
 			}
 		});
 
 		// Listen for checkbox updates to update decorations (fallback)
 		this.eventSystem.on('checkboxes:updated', () => {
-			console.log('OnTask Editor: Checkboxes updated event received');
 			if (this.isEnabled()) {
-				console.log('OnTask Editor: Editor enabled, scheduling update');
 				this.scheduleDecorationUpdate();
-			} else {
-				console.log('OnTask Editor: Editor disabled, skipping update');
 			}
 		});
 
-		// Note: File modification events are no longer needed since we use event-driven approach
-		// The OnTask View will emit top-task:found or top-task:cleared events when needed
+		// Add fallback: Listen for file modifications to detect top tasks independently
+		this.app.vault.on('modify', (file) => {
+			if (this.isEnabled() && file.path.endsWith('.md')) {
+				// Small delay to ensure file is fully written
+				setTimeout(() => {
+					this.findTopTaskIndependently();
+				}, 500);
+			}
+		});
 
-		// Note: Disabled active-leaf-change listener to prevent excessive updates
-		// Editor decorations will be updated via file:modified events when checkboxes change
-
-		// Note: Disabled file-open listener - editor decorations should only update
-		// when checkbox content actually changes, not just because a file was opened
-
-		// Note: Plugin initialization listener removed - we now rely on top-task events from OnTask View
+		// Add fallback: Listen for active leaf changes to update when switching files
+		this.app.workspace.on('active-leaf-change', (leaf) => {
+			if (this.isEnabled() && leaf?.view instanceof MarkdownView) {
+				// Small delay to ensure view is fully loaded
+				setTimeout(() => {
+					this.findTopTaskIndependently();
+				}, 300);
+			}
+		});
 
 		this.initialized = true;
-		console.log('OnTask Editor: Editor integration initialized, waiting for top-task events from OnTask View');
+		
+		// Initial check for top task if editor is enabled
+		if (this.isEnabled()) {
+			setTimeout(() => {
+				this.findTopTaskIndependently();
+			}, 1000);
+		}
 	}
 
 	/**
@@ -123,9 +124,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	}
 
 	async updateEditorDecorations(): Promise<void> {
-		console.log('OnTask Editor: updateEditorDecorations called, isEnabled:', this.isEnabled());
 		if (!this.isEnabled()) {
-			console.log('OnTask Editor: Editor integration disabled, cleaning up');
 			this.cleanup();
 			return;
 		}
@@ -133,7 +132,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		try {
 			// Use in-memory top task instead of re-scanning files
 			const topTask = this.topTaskMemory;
-			console.log('OnTask Editor: Using top task from memory:', !!topTask, topTask ? topTask.lineContent : 'none');
 			
 			// Check if we need to update
 			const needsUpdate = !this.currentTopTask || 
@@ -152,17 +150,24 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 				return;
 			}
 
-			console.log('OnTask Editor: Cleaning up existing overlays before adding new ones');
 			// Clean up existing overlays before adding new ones
 			this.cleanup();
 
 			// Get all markdown views and add overlay to each one
 			const markdownLeaves = this.app.workspace.getLeavesOfType('markdown');
-			console.log('OnTask Editor: Found', markdownLeaves.length, 'markdown leaves');
+			
+			if (markdownLeaves.length === 0) {
+				// Schedule a retry after a short delay
+				setTimeout(() => {
+					this.scheduleDecorationUpdate();
+				}, 1000);
+				return;
+			}
 			
 			for (const leaf of markdownLeaves) {
 				if (leaf.view instanceof MarkdownView) {
-					console.log('OnTask Editor: Adding overlay to markdown view:', (leaf.view as any)?.file?.path);
+					// Add a small delay to ensure the view is fully rendered
+					await new Promise(resolve => setTimeout(resolve, 100));
 					await this.addTopTaskOverlay(leaf.view, topTask);
 				}
 			}
@@ -177,49 +182,28 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			return;
 		}
 
-		// Find the editor container within the markdown view
-		const editorContainer = view.containerEl.querySelector('.markdown-source-view, .markdown-preview-view');
-		if (!editorContainer) {
-			console.log('OnTask Editor: No editor container found in markdown view, trying alternative selectors');
-			// Try alternative selectors
-			const altContainer = view.containerEl.querySelector('.cm-editor, .markdown-preview-section');
-			if (altContainer) {
-				console.log('OnTask Editor: Found alternative container:', altContainer.className);
-				// Use the alternative container
-				const topTaskBar = altContainer.createEl('div', {
-					cls: 'ontask-toptask-hero-overlay',
-					attr: {
-						'data-top-task': 'true'
-					}
-				});
-				
-				const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
-				const displayText = remainingText || 'Top Task';
-				
-				topTaskBar.innerHTML = `
-					<div class="ontask-toptask-hero-content">
-						<span class="ontask-toptask-hero-icon">🔥</span>
-						<span class="ontask-toptask-hero-text">${displayText}</span>
-						<span class="ontask-toptask-hero-source">From: ${topTask.file.name}</span>
-					</div>
-				`;
-				
-				altContainer.appendChild(topTaskBar);
-				
-				const overlayKey = view.file?.path || 'unknown';
-				this.topTaskOverlays.set(overlayKey, topTaskBar);
-				
-				topTaskBar.addEventListener('click', () => {
-					editor.focus();
-				});
-				return;
-			} else {
-				console.log('OnTask Editor: No suitable container found');
-				return;
+		// Try multiple container selectors in order of preference
+		const containerSelectors = [
+			'.markdown-source-view',
+			'.markdown-preview-view', 
+			'.cm-editor',
+			'.markdown-preview-section',
+			'.workspace-leaf-content',
+			'.view-content'
+		];
+
+		let editorContainer: HTMLElement | null = null;
+
+		for (const selector of containerSelectors) {
+			editorContainer = view.containerEl.querySelector(selector);
+			if (editorContainer) {
+				break;
 			}
 		}
 
-		console.log('OnTask Editor: Editor container found:', editorContainer);
+		if (!editorContainer) {
+			return;
+		}
 
 		// Check if overlay already exists in this editor
 		const existingOverlay = editorContainer.querySelector('.ontask-toptask-hero-overlay');
@@ -247,13 +231,9 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			</div>
 		`;
 
-		console.log('OnTask Editor: Set innerHTML, topTaskBar children count:', topTaskBar.children.length);
-
 		// Insert at the bottom of the editor container
-		console.log('OnTask Editor: Inserting overlay at bottom of editor container');
 		editorContainer.appendChild(topTaskBar);
-
-		console.log('OnTask Editor: After insertion - topTaskBar parent:', topTaskBar.parentElement);
+		
 		// Store overlay for cleanup using view path as key
 		const overlayKey = view.file?.path || 'unknown';
 		this.topTaskOverlays.set(overlayKey, topTaskBar);
@@ -310,30 +290,83 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 
 	isEnabled(): boolean {
 		const settings = this.settingsService.getSettings();
-		const enabled = settings.showTopTaskInEditor;
-		console.log('OnTask Editor: isEnabled check - showTopTaskInEditor:', enabled);
-		return enabled;
+		return settings.showTopTaskInEditor;
 	}
 
-	// Test method to manually trigger overlay creation
-	async testOverlayCreation(): Promise<void> {
-		
-		// Create a test top task
-		const testTopTask = {
-			lineContent: '- [ ] Test task for debugging',
-			file: { name: 'test.md', path: 'test.md' },
-			isTopTask: true,
-			isCompleted: false
-		};
-
-		// Get the active leaf
-		const activeLeaf = this.app.workspace.activeLeaf;
-		if (!activeLeaf || !(activeLeaf.view instanceof MarkdownView)) {
-			console.log('OnTask Editor: TEST - No active markdown view found');
-			return;
+	/**
+	 * Find top task independently without relying on OnTask View
+	 */
+	private async findTopTaskIndependently(): Promise<void> {
+		try {
+			const settings = this.settingsService.getSettings();
+			
+			// Initialize file tracking for efficient task loading
+			await this.taskLoadingService.initializeFileTracking(settings.onlyShowToday);
+			const checkboxes = await this.taskLoadingService.loadTasksWithFiltering(settings);
+			
+			// Process top tasks using the same logic as OnTask View
+			// We need to manually process the top tasks since we're not going through OnTask View
+			this.processTopTasks(checkboxes);
+			
+			// Find the top task after processing
+			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
+			
+			if (topTask) {
+				this.topTaskMemory = topTask;
+				this.scheduleDecorationUpdate();
+			} else {
+				this.topTaskMemory = null;
+				this.scheduleDecorationUpdate();
+			}
+		} catch (error) {
+			console.error('OnTask Editor: Error finding top task independently:', error);
 		}
-
-		console.log('OnTask Editor: TEST - Found active markdown view, creating overlay');
-		await this.addTopTaskOverlay(activeLeaf.view as MarkdownView, testTopTask);
 	}
+
+	/**
+	 * Process top tasks using the same logic as TopTaskProcessingService
+	 */
+	private processTopTasks(checkboxes: any[]): void {
+		// First, clear any existing top task markers
+		checkboxes.forEach(checkbox => {
+			checkbox.isTopTask = false;
+			checkbox.isTopTaskContender = false;
+		});
+		
+		// Top task configuration - same as TopTaskProcessingService
+		const TOP_TASK_CONFIG = [
+			{ symbol: '/', name: 'In Progress', pattern: /^\s*-\s*\[\/\]\s.*/ },
+			{ symbol: '!', name: 'Important', pattern: /^\s*-\s*\[!\]\s.*/ },
+			{ symbol: '+', name: 'Next', pattern: /^\s*-\s*\[\+\]\s.*/ }
+		];
+		
+		// Find tasks for each priority level
+		const tasksByType: Record<string, any[]> = {};
+		
+		TOP_TASK_CONFIG.forEach(config => {
+			const matchingTasks = checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
+			tasksByType[config.name] = matchingTasks;
+		});
+		
+		// Find the highest priority task type that has tasks
+		let finalTopTask: any = null;
+		for (const config of TOP_TASK_CONFIG) {
+			const tasks = tasksByType[config.name];
+			if (tasks.length > 0) {
+				// Sort by file modification time (most recent first)
+				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+				finalTopTask = tasks[0];
+				finalTopTask.isTopTask = true;
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Check if a checkbox matches the top task configuration
+	 */
+	private isTopTaskByConfig(checkbox: any, config: { symbol: string; name: string; pattern: RegExp }): boolean {
+		return config.pattern.test(checkbox.lineContent);
+	}
+
 }

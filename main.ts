@@ -15,7 +15,6 @@ export default class OnTask extends Plugin {
 	private container: DIContainer;
 	private settingsService: SettingsService;
 	private streamsService: StreamsService;
-	// CheckboxFinderService removed - now using TaskFinderFactory directly in TaskLoadingService
 	private orchestrator: PluginOrchestrator;
 	private eventSystem: EventSystem;
 	private editorIntegrationService: EditorIntegrationService;
@@ -32,7 +31,6 @@ export default class OnTask extends Plugin {
 		this.eventSystem = this.container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
 		this.settingsService = this.container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 		this.streamsService = this.container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
-		// CheckboxFinderService removed - now using TaskFinderFactory directly in TaskLoadingService
 		this.orchestrator = this.container.resolve<PluginOrchestrator>(SERVICE_IDS.PLUGIN_ORCHESTRATOR);
 		this.editorIntegrationService = this.container.resolve<EditorIntegrationService>(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE);
 		this.dataService = this.container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
@@ -49,18 +47,6 @@ export default class OnTask extends Plugin {
 		
 		// Add settings tab
 		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService, this.statusConfigService, this.dataService));
-
-		// Add test command for debugging
-		this.addCommand({
-			id: 'test-editor-overlay',
-			name: 'Test Editor Overlay (Debug)',
-			callback: () => {
-				console.log('OnTask: Test command triggered');
-				if (this.editorIntegrationService) {
-					(this.editorIntegrationService as any).testOverlayCreation();
-				}
-			}
-		});
 	}
 
 	async onunload() {
@@ -72,13 +58,8 @@ export default class OnTask extends Plugin {
 			this.editorIntegrationService.cleanup();
 		}
 		
-		// Clear DI container
 		if (this.container) {
 			this.container.clear();
 		}
 	}
-
-	// Public methods for backward compatibility
 }
-
-
