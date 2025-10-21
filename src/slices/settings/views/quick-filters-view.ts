@@ -123,20 +123,23 @@ export class QuickFiltersView {
 		const content = modal.contentEl;
 		content.empty();
 
+		// Local variables to track form state
+		let filterName = existingFilter?.name || '';
+		const selectedStatuses = new Set(existingFilter?.statusSymbols || []);
+
 		// Name input
 		const nameSetting = new Setting(content)
 			.setName('Filter Name')
 			.setDesc('The name that will appear on the button')
 			.addText(text => text
 				.setPlaceholder('Enter filter name')
-				.setValue(existingFilter?.name || '')
+				.setValue(filterName)
 				.onChange(value => {
-					(modal as any).filterName = value;
+					filterName = value;
 				}));
 
 		// Status selection
 		const statusConfigs = this.statusConfigService.getStatusConfigs();
-		const selectedStatuses = new Set(existingFilter?.statusSymbols || []);
 
 		content.createEl('h4', { text: 'Select Statuses' });
 		content.createEl('p', { 
@@ -167,32 +170,61 @@ export class QuickFiltersView {
 		const saveButton = buttonContainer.createEl('button', { text: 'Save' });
 		saveButton.addClass('mod-cta');
 		saveButton.addEventListener('click', async () => {
-			const filterName = (modal as any).filterName?.trim();
-			if (!filterName) {
-				// Show error
+			const trimmedName = filterName.trim();
+			if (!trimmedName) {
+				// Show error message
+				const errorEl = content.querySelector('.ontask-error-message');
+				if (errorEl) errorEl.remove();
+				
+				const errorMessage = content.createDiv();
+				errorMessage.addClass('ontask-error-message');
+				errorMessage.textContent = 'Please enter a filter name.';
+				errorMessage.style.color = 'var(--text-error)';
+				errorMessage.style.marginTop = '8px';
 				return;
 			}
 
 			if (selectedStatuses.size === 0) {
-				// Show error
+				// Show error message
+				const errorEl = content.querySelector('.ontask-error-message');
+				if (errorEl) errorEl.remove();
+				
+				const errorMessage = content.createDiv();
+				errorMessage.addClass('ontask-error-message');
+				errorMessage.textContent = 'Please select at least one status.';
+				errorMessage.style.color = 'var(--text-error)';
+				errorMessage.style.marginTop = '8px';
 				return;
 			}
 
-			const quickFilter: QuickFilter = {
-				id: existingFilter?.id || this.generateId(),
-				name: filterName,
-				statusSymbols: Array.from(selectedStatuses),
-				enabled: existingFilter?.enabled ?? true
-			};
+			try {
+				const quickFilter: QuickFilter = {
+					id: existingFilter?.id || this.generateId(),
+					name: trimmedName,
+					statusSymbols: Array.from(selectedStatuses),
+					enabled: existingFilter?.enabled ?? true
+				};
 
-			if (existingFilter) {
-				await this.dataService.updateQuickFilter(existingFilter.id, quickFilter);
-			} else {
-				await this.dataService.addQuickFilter(quickFilter);
+				if (existingFilter) {
+					await this.dataService.updateQuickFilter(existingFilter.id, quickFilter);
+				} else {
+					await this.dataService.addQuickFilter(quickFilter);
+				}
+
+				modal.close();
+				this.render(); // Re-render the view
+			} catch (error) {
+				console.error('OnTask: Error saving quick filter:', error);
+				// Show error message
+				const errorEl = content.querySelector('.ontask-error-message');
+				if (errorEl) errorEl.remove();
+				
+				const errorMessage = content.createDiv();
+				errorMessage.addClass('ontask-error-message');
+				errorMessage.textContent = 'Failed to save quick filter. Please try again.';
+				errorMessage.style.color = 'var(--text-error)';
+				errorMessage.style.marginTop = '8px';
 			}
-
-			modal.close();
-			this.render(); // Re-render the view
 		});
 
 		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });

@@ -1143,6 +1143,28 @@
 }
 
 /* ========================================
+   ERROR MESSAGES
+   ======================================== */
+
+.ontask-error-message {
+	color: var(--text-error);
+	font-size: 14px;
+	margin-top: 8px;
+	padding: 8px 12px;
+	background: var(--background-modifier-error);
+	border: 1px solid var(--text-error);
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ontask-error-message::before {
+	content: "⚠️";
+	font-size: 16px;
+}
+
+/* ========================================
    SETTINGS INTERFACE
    ======================================== */
 
