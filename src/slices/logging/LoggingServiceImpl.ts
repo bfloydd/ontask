@@ -1,4 +1,3 @@
-import { App, Plugin } from 'obsidian';
 import { LoggingService as ILoggingService, LoggingDependencies } from './LoggingServiceInterface';
 import { Logger, LogLevel } from './Logger';
 import { ToggleLoggingCommandImpl } from './ToggleLoggingCommandImpl';

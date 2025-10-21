@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../interfaces';
+import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 import { StreamsService } from '../../streams';
 
 export class StreamsTaskStrategy implements TaskFinderStrategy {

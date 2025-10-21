@@ -1,5 +1,5 @@
 // Plugin orchestration slice - Service implementation
-import { App, Plugin, WorkspaceLeaf } from 'obsidian';
+import { App, Plugin } from 'obsidian';
 import { PluginOrchestrator, PluginDependencies } from './PluginOrchestratorInterface';
 import { SettingsService } from '../settings';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
