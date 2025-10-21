@@ -57,10 +57,6 @@ export interface OnTaskEvents {
 	'ui:view-closed': {
 		viewType: string;
 	};
-	'ui:status-bar-updated': {
-		visible: boolean;
-		text?: string;
-	};
 	
 	// Plugin events
 	'plugin:initialized': {};

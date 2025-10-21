@@ -21,7 +21,6 @@ Manages plugin configuration settings. Separate from status configuration (handl
 interface OnTaskSettings {
   onlyShowToday: boolean;
   topTaskColor: string;
-  showTopTaskInStatusBar: boolean;
   showTopTaskInEditor: boolean;
   checkboxSource: 'streams' | 'daily-notes' | 'folder';
   customFolderPath: string;
@@ -33,7 +32,7 @@ interface OnTaskSettings {
 
 ## Settings Categories
 - **Display**: `onlyShowToday`, `topTaskColor`, `hideCompletedTasks`
-- **UI Integration**: `showTopTaskInStatusBar`, `showTopTaskInEditor`
+- **UI Integration**: `showTopTaskInEditor`
 - **Data Source**: `checkboxSource`, `customFolderPath`, `includeSubfolders`
 - **Performance**: `loadMoreLimit`
 

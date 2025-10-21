@@ -36,20 +36,6 @@ export class GeneralSettingsView {
 				}));
 
 		new Setting(this.containerEl)
-			.setName('Show top task in status bar')
-			.setDesc('When enabled, the current top task will be displayed in the status bar')
-			.addToggle(toggle => toggle
-				.setValue(settings.showTopTaskInStatusBar)
-				.onChange(async (value) => {
-					await this.settingsService.updateSetting('showTopTaskInStatusBar', value);
-					// Trigger status bar update
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'showTopTaskInStatusBar', 
-						value 
-					});
-				}));
-
-		new Setting(this.containerEl)
 			.setName('Show top task in editor')
 			.setDesc('When enabled, the current top task will be displayed at the top of every editor page below the heading')
 			.addToggle(toggle => toggle

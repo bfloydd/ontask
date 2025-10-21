@@ -76,8 +76,7 @@ trackedFiles = [
 - `/`, but fallback to `!`, then fallback to `+` are special tasks and immutable in settings.
 - When a top task is found, it emits an event that is caught by other handlers in the plugin; handlers listed here:
   - Handler 1: Hero section in OnTaskView. The Hero section (ontask-toptask-hero-section) shows the top task but it also remains in the task list.
-  - Handler 2: ontask-toptask-hero-content. 
-  - Handler 3: Status bar top-task visual. The status bar picks that up and shows the updated top-task.
+  - Handler 2: ontask-toptask-hero-content.
 
 ## Quick Filters
 - Add a new tab within Settings called Quick Filters. 

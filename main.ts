@@ -79,11 +79,6 @@ export default class OnTask extends Plugin {
 	}
 
 	// Public methods for backward compatibility
-	public async updateTopTaskStatusBar() {
-		if (this.orchestrator) {
-			await this.orchestrator.updateTopTaskStatusBar();
-		}
-	}
 }
 
 

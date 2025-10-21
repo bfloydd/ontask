@@ -63,7 +63,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 					isCompleted
 				});
 				
-				// Trigger immediate status bar update
+				// Trigger immediate checkbox update
 				this.eventSystem.emit('checkboxes:updated', { 
 					count: this.checkboxes.length,
 					topTask: this.checkboxes.find(cb => cb.isTopTask)

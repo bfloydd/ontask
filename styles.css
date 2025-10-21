@@ -754,30 +754,6 @@
 }
 
 /* ========================================
-   TOP TASK STATUS BAR
-   ======================================== */
-
-.ontask-top-task-status-bar {
-	cursor: pointer;
-	opacity: 0.7;
-	pointer-events: auto;
-	z-index: 1000;
-}
-
-.ontask-top-task-status-bar.hidden {
-	display: none;
-}
-
-.ontask-top-task-status-bar.visible {
-	display: block;
-}
-
-.ontask-top-task-status-bar {
-	padding: 2px 8px;
-	border-radius: 4px;
-}
-
-/* ========================================
    TOP TASK HERO OVERLAY
    ======================================== */
 

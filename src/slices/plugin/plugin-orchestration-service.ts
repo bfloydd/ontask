@@ -13,8 +13,6 @@ import { SettingsAwareSliceService } from '../../shared/base-slice';
 
 export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService implements PluginOrchestrator {
 	private dependencies: PluginDependencies;
-	private topTaskStatusBarItem: HTMLElement | null = null;
-	private isTopTaskVisible: boolean = true;
 	private eventListeners: (() => void)[] = [];
 	private eventSystem: EventSystem;
 
@@ -39,8 +37,6 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		// Set up streams ready callback
 		this.setupStreamsReadyCallback(app, streamsService);
 		
-		// Initialize top task status bar
-		await this.updateTopTaskStatusBar();
 		
 		this.initialized = true;
 	}
@@ -50,16 +46,12 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		this.cleanupEventListeners();
 		
 		// Clean up UI elements
-		if (this.topTaskStatusBarItem) {
-			this.topTaskStatusBarItem.remove();
-		}
 		
 		this.cleanup();
 	}
 
 	cleanup(): void {
 		this.eventListeners = [];
-		this.topTaskStatusBarItem = null;
 		this.initialized = false;
 	}
 
@@ -97,81 +89,6 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		}
 	}
 
-	async updateTopTaskStatusBar(): Promise<void> {
-		const { app, settingsService, taskLoadingService } = this.dependencies;
-		
-		try {
-			const settings = settingsService.getSettings();
-			
-			// Check if status bar is enabled
-			if (!settings.showTopTaskInStatusBar) {
-				if (this.topTaskStatusBarItem) {
-					this.topTaskStatusBarItem.addClass('hidden');
-				}
-				this.eventSystem.emit('ui:status-bar-updated', { visible: false });
-				return;
-			}
-
-			// Initialize file tracking for efficient task loading
-			await taskLoadingService.initializeFileTracking(settings.onlyShowToday);
-			const checkboxes = await taskLoadingService.loadTasksWithFiltering(settings);
-			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
-			
-			// Emit checkboxes found event
-			this.eventSystem.emit('checkboxes:found', { 
-				count: checkboxes.length, 
-				source: settings.checkboxSource 
-			});
-			
-			if (topTask) {
-				console.log('OnTask: Top task found, updating status bar', topTask);
-				if (this.isTopTaskVisible) {
-					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
-					const displayText = remainingText || 'Top Task';
-					const fileName = topTask.file?.name || 'Unknown';
-					if (this.topTaskStatusBarItem) {
-						this.topTaskStatusBarItem.setText(`🔥 ${displayText} | ${fileName}`);
-						console.log('OnTask: Status bar text set to:', `🔥 ${displayText} | ${fileName}`);
-					}
-					this.eventSystem.emit('ui:status-bar-updated', { 
-						visible: true, 
-						text: `🔥 ${displayText} | ${fileName}` 
-					});
-				} else {
-					if (this.topTaskStatusBarItem) {
-						this.topTaskStatusBarItem.setText('👁️');
-						console.log('OnTask: Status bar text set to: 👁️');
-					}
-					this.eventSystem.emit('ui:status-bar-updated', { 
-						visible: true, 
-						text: '👁️' 
-					});
-				}
-				
-				// Apply color styling
-				this.applyTopTaskColor(settings);
-				if (this.topTaskStatusBarItem) {
-					this.topTaskStatusBarItem.removeClass('hidden');
-					console.log('OnTask: Status bar displayed');
-				}
-			} else {
-				console.log('OnTask: No top task found, hiding status bar');
-				if (this.topTaskStatusBarItem) {
-					this.topTaskStatusBarItem.addClass('hidden');
-				}
-				this.eventSystem.emit('ui:status-bar-updated', { visible: false });
-			}
-		} catch (error) {
-			console.error('Error updating top task status bar:', error);
-			if (this.topTaskStatusBarItem) {
-				this.topTaskStatusBarItem.addClass('hidden');
-			}
-			this.eventSystem.emit('plugin:error', { 
-				error, 
-				context: 'updateTopTaskStatusBar' 
-			});
-		}
-	}
 
 	setupEventListeners(): void {
 		const { app, settingsService } = this.dependencies;
@@ -184,9 +101,6 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 				case 'customFolderPath':
 				case 'includeSubfolders':
 					this.configureCheckboxSource();
-					break;
-				case 'showTopTaskInStatusBar':
-					this.updateTopTaskStatusBar();
 					break;
 				case 'showTopTaskInEditor':
 					// Editor integration service will handle this via its own event listener
@@ -204,12 +118,6 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		});
 		this.eventListeners.push(() => streamsSubscription.unsubscribe());
 
-		// Listen for checkbox updates to trigger immediate status bar update
-		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', () => {
-			console.log('OnTask: Checkboxes updated event received, updating status bar immediately');
-			this.updateTopTaskStatusBar();
-		});
-		this.eventListeners.push(() => checkboxUpdateSubscription.unsubscribe());
 
 		// Emit plugin initialized event
 		this.eventSystem.emit('plugin:initialized', {});
@@ -241,39 +149,6 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		});
 		ribbonIconEl.addClass('on-task-ribbon-class');
 
-		// Add top task status bar item
-		this.topTaskStatusBarItem = plugin.addStatusBarItem();
-		console.log('OnTask: Status bar item created', this.topTaskStatusBarItem);
-		this.topTaskStatusBarItem.addClass('ontask-toptask-hero-status');
-		this.topTaskStatusBarItem.addClass('ontask-top-task-status-bar');
-		
-		// Add event listeners
-		this.topTaskStatusBarItem.addEventListener('click', () => {
-			console.log('OnTask: Status bar clicked');
-			this.toggleTopTaskVisibility();
-		});
-		
-		this.topTaskStatusBarItem.addEventListener('contextmenu', (e) => {
-			console.log('OnTask: contextmenu event triggered', e);
-			e.preventDefault();
-			e.stopPropagation();
-			this.showColorMenu(e, settingsService);
-		});
-		
-		// Also add mousedown event as backup for right-click
-		this.topTaskStatusBarItem.addEventListener('mousedown', (e) => {
-			if (e.button === 2) { // Right mouse button
-				console.log('OnTask: Right mouse button pressed');
-				e.preventDefault();
-				e.stopPropagation();
-				this.showColorMenu(e, settingsService);
-			}
-		});
-		
-		// Add mouseover event for testing
-		this.topTaskStatusBarItem.addEventListener('mouseover', () => {
-			console.log('OnTask: Status bar mouseover');
-		});
 
 		// Add commands
 		this.addCommands(plugin);
@@ -308,153 +183,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		// No additional configuration needed here
 	}
 
-	private toggleTopTaskVisibility(): void {
-		this.isTopTaskVisible = !this.isTopTaskVisible;
-		this.updateTopTaskStatusBar();
-	}
 
-	private showColorMenu(event: MouseEvent, settingsService: SettingsService): void {
-		console.log('OnTask: showColorMenu called', event);
-		event.preventDefault();
-		
-		// Remove any existing color menu
-		const existingMenu = document.querySelector('.ontask-color-menu');
-		if (existingMenu) {
-			existingMenu.remove();
-		}
 
-		// Create a simple test menu first
-		const testMenu = document.createElement('div');
-		testMenu.textContent = 'TEST MENU - Right click working!';
-		testMenu.addClass('ontask-test-menu');
-		testMenu.style.left = `${event.clientX}px`;
-		testMenu.style.top = `${event.clientY}px`;
-		document.body.appendChild(testMenu);
-		
-		// Remove test menu after 2 seconds
-		setTimeout(() => {
-			if (testMenu.parentNode) {
-				testMenu.parentNode.removeChild(testMenu);
-			}
-		}, 2000);
 
-		// Create color menu
-		const menu = document.createElement('div');
-		menu.className = 'ontask-color-menu';
-		menu.style.left = `${event.clientX - 200}px`;
-		menu.style.top = `${event.clientY - 300}px`;
-
-		// Color options
-		const colors = [
-			{ name: 'Neutral', value: 'neutral', bg: 'transparent', text: 'var(--text-normal)' },
-			{ name: 'Red', value: 'red', bg: '#ff6b6b', text: 'white' },
-			{ name: 'Orange', value: 'orange', bg: '#ffa726', text: 'white' },
-			{ name: 'Yellow', value: 'yellow', bg: '#ffeb3b', text: 'black' },
-			{ name: 'Green', value: 'green', bg: '#66bb6a', text: 'white' },
-			{ name: 'Blue', value: 'blue', bg: '#42a5f5', text: 'white' },
-			{ name: 'Purple', value: 'purple', bg: '#ab47bc', text: 'white' },
-			{ name: 'Pink', value: 'pink', bg: '#ec407a', text: 'white' },
-			{ name: 'Teal', value: 'teal', bg: '#26a69a', text: 'white' },
-			{ name: 'Indigo', value: 'indigo', bg: '#5c6bc0', text: 'white' }
-		];
-
-		// Add menu items
-		for (const color of colors) {
-			const menuItem = document.createElement('div');
-			menuItem.className = 'ontask-color-menu-item';
-			// Menu item styles are now handled by CSS
-
-			// Add color preview
-			const colorPreview = document.createElement('div');
-			colorPreview.addClass('ontask-color-preview');
-			colorPreview.style.backgroundColor = color.bg;
-
-			// Add color name
-			const colorName = document.createElement('span');
-			colorName.textContent = color.name;
-
-			// Add checkmark if this is the current color
-			const settings = settingsService.getSettings();
-			if (settings.topTaskColor === color.value) {
-				const checkmark = document.createElement('span');
-				checkmark.textContent = '✓';
-				checkmark.addClass('ontask-color-checkmark');
-				menuItem.appendChild(checkmark);
-			}
-
-			menuItem.appendChild(colorPreview);
-			menuItem.appendChild(colorName);
-
-			// Add hover effect
-			menuItem.addEventListener('mouseenter', () => {
-				// Hover effects are now handled by CSS
-			});
-			menuItem.addEventListener('mouseleave', () => {
-				// Hover effects are now handled by CSS
-			});
-
-			// Add click handler
-			menuItem.addEventListener('click', async () => {
-				await settingsService.updateSetting('topTaskColor', color.value);
-				this.updateTopTaskStatusBar();
-				menu.remove();
-			});
-
-			menu.appendChild(menuItem);
-		}
-
-		// Add to document
-		document.body.appendChild(menu);
-		console.log('OnTask: Color menu added to DOM', menu);
-
-		// Close menu when clicking outside
-		const closeMenu = (e: MouseEvent) => {
-			if (!menu.contains(e.target as Node)) {
-				menu.remove();
-				document.removeEventListener('click', closeMenu);
-			}
-		};
-
-		// Use requestAnimationFrame to avoid immediate closure
-		requestAnimationFrame(() => {
-			document.addEventListener('click', closeMenu);
-			console.log('OnTask: Color menu should now be visible');
-		});
-	}
-
-	private applyTopTaskColor(settings: any): void {
-		if (!this.topTaskStatusBarItem) return;
-
-		const colorMap: { [key: string]: { bg: string; text: string } } = {
-			neutral: { bg: 'transparent', text: 'var(--text-normal)' },
-			red: { bg: '#ff6b6b', text: 'white' },
-			orange: { bg: '#ffa726', text: 'white' },
-			yellow: { bg: '#ffeb3b', text: 'black' },
-			green: { bg: '#66bb6a', text: 'white' },
-			blue: { bg: '#42a5f5', text: 'white' },
-			purple: { bg: '#ab47bc', text: 'white' },
-			pink: { bg: '#ec407a', text: 'white' },
-			teal: { bg: '#26a69a', text: 'white' },
-			indigo: { bg: '#5c6bc0', text: 'white' }
-		};
-
-		const color = colorMap[settings.topTaskColor] || colorMap.neutral;
-		this.topTaskStatusBarItem.style.backgroundColor = color.bg;
-		this.topTaskStatusBarItem.style.color = color.text;
-		this.topTaskStatusBarItem.style.border = color.bg === 'transparent' ? '1px solid var(--background-modifier-border)' : 'none';
-	}
-
-	private parseCheckboxLine(line: string): { remainingText: string } {
-		const trimmedLine = line.trim();
-		
-		// Simple approach: find the first occurrence of ']' and take everything after it
-		const bracketIndex = trimmedLine.indexOf(']');
-		if (bracketIndex !== -1) {
-			const remainingText = trimmedLine.substring(bracketIndex + 1).trim();
-			return { remainingText };
-		}
-		
-		// Fallback: return the original line if no bracket found
-		return { remainingText: trimmedLine };
-	}
 }

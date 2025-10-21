@@ -17,7 +17,6 @@ export interface PluginOrchestrator {
 	// UI management
 	openOnTaskView(): Promise<void>;
 	refreshOnTaskViews(): Promise<void>;
-	updateTopTaskStatusBar(): Promise<void>;
 	
 	// Event handling
 	setupEventListeners(): void;
