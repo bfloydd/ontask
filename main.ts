@@ -44,6 +44,10 @@ export default class OnTask extends Plugin {
 		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService, this.statusConfigService, this.dataService));
 	}
 
+	getLogger() {
+		return this.loggingService.getLogger();
+	}
+
 	async onunload() {
 		if (this.orchestrator) {
 			await this.orchestrator.shutdown();

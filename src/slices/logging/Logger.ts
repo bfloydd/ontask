@@ -6,22 +6,16 @@ export enum LogLevel {
     NONE = 4
 }
 
-// Singleton Logger implementation
+// Plugin-scoped Logger implementation
 export class Logger {
-    private static instance: Logger;
     private enabled: boolean = false;
     private level: LogLevel = LogLevel.INFO;
     private prefix: string = '[OnTask] ';
 
-    private constructor() {
-        // Private constructor to prevent direct instantiation
-    }
-
-    public static getInstance(): Logger {
-        if (!Logger.instance) {
-            Logger.instance = new Logger();
+    constructor(prefix?: string) {
+        if (prefix) {
+            this.prefix = prefix;
         }
-        return Logger.instance;
     }
 
     isEnabled(): boolean {
@@ -45,7 +39,7 @@ export class Logger {
         this.level = LogLevel.NONE;
     }
 
-    static parseLogLevel(level: string | boolean): LogLevel | boolean {
+    private parseLogLevel(level: string | boolean): LogLevel | boolean {
         if (typeof level === 'boolean') {
             return level;
         }
@@ -62,7 +56,7 @@ export class Logger {
     }
 
     setLogging(level: string | boolean): void {
-        const parsedLevel = Logger.parseLogLevel(level);
+        const parsedLevel = this.parseLogLevel(level);
         
         if (typeof parsedLevel === 'boolean') {
             this.enabled = parsedLevel;

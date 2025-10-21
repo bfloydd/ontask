@@ -57,6 +57,13 @@ const mockApp = {
 	}
 } as any;
 
+const mockLogger = {
+	debug: jest.fn(),
+	warn: jest.fn(),
+	info: jest.fn(),
+	error: jest.fn()
+} as any;
+
 describe('TaskLoadingService', () => {
 	let taskLoadingService: TaskLoadingService;
 
@@ -66,7 +73,8 @@ describe('TaskLoadingService', () => {
 			mockStreamsService,
 			mockSettingsService,
 			mockStatusConfigService,
-			mockApp
+			mockApp,
+			mockLogger
 		);
 	});
 

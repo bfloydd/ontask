@@ -22,6 +22,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 	private statusConfigService: StatusConfigService;
 	private streamsService: StreamsService;
 	private app: any;
+	private logger: Logger;
 	
 	// File tracking for Load More functionality
 	private currentFileIndex: number = 0;
@@ -32,13 +33,15 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		streamsService: StreamsService,
 		settingsService: SettingsService,
 		statusConfigService: StatusConfigService,
-		app: any
+		app: any,
+		logger: Logger
 	) {
 		this.streamsService = streamsService;
 		this.taskFinderFactory = new TaskFinderFactoryImpl(app, streamsService);
 		this.settingsService = settingsService;
 		this.statusConfigService = statusConfigService;
 		this.app = app;
+		this.logger = logger;
 	}
 
 	getStreamsService(): StreamsService {
@@ -58,7 +61,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
 			
 			if (!file) {
-				Logger.getInstance().warn(`TaskLoadingService: File not found: ${filePath}`);
+				this.logger.warn(`TaskLoadingService: File not found: ${filePath}`);
 				continue;
 			}
 			

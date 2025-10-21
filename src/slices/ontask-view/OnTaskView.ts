@@ -21,6 +21,7 @@ export class OnTaskViewImpl extends ItemView {
 	private dataService: DataService;
 	private plugin: any;
 	private eventSystem: EventSystem;
+	private logger: Logger;
 	private contextMenuService: ContextMenuService;
 	private taskLoadingService: TaskLoadingService;
 	private domRenderingService: DOMRenderingService;
@@ -46,7 +47,8 @@ export class OnTaskViewImpl extends ItemView {
 		statusConfigService: StatusConfigService,
 		dataService: DataService,
 		plugin: any, 
-		eventSystem: EventSystem
+		eventSystem: EventSystem,
+		logger: Logger
 	) {
 		super(leaf);
 		this.taskLoadingService = taskLoadingService;
@@ -55,6 +57,7 @@ export class OnTaskViewImpl extends ItemView {
 		this.dataService = dataService;
 		this.plugin = plugin;
 		this.eventSystem = eventSystem;
+		this.logger = logger;
 		
 		this.contextMenuService = new ContextMenuService(
 			this.eventSystem,
@@ -411,7 +414,7 @@ export class OnTaskViewImpl extends ItemView {
 				
 				if (success) {
 				} else {
-					Logger.getInstance().warn(`OnTask: Failed to update stream bar from file ${filePath}`);
+					this.logger.warn(`OnTask: Failed to update stream bar from file ${filePath}`);
 				}
 			} else {
 			}

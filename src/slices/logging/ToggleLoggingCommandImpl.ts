@@ -3,14 +3,15 @@ import { Command } from '../commands';
 import { Logger, LogLevel } from './Logger';
 
 export class ToggleLoggingCommandImpl implements Command {
+    private logger: Logger;
+
     constructor(
         private app: App,
         private updateSetting: (enabled: boolean) => void,
-        private saveSettings: () => Promise<void>
-    ) {}
-
-    private get logger(): Logger {
-        return Logger.getInstance();
+        private saveSettings: () => Promise<void>,
+        logger: Logger
+    ) {
+        this.logger = logger;
     }
 
     async execute(): Promise<void> {

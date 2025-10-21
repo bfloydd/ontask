@@ -114,7 +114,8 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 			this.dependencies.statusConfigService,
 			this.dependencies.dataService,
 			plugin,
-			this.dependencies.eventSystem
+			this.dependencies.eventSystem,
+			this.dependencies.loggingService.getLogger()
 		));
 
 		const ribbonIconEl = plugin.addRibbonIcon('checkmark', 'On Task', () => {

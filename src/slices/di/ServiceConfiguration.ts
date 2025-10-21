@@ -56,7 +56,8 @@ export class ServiceConfiguration {
 			const streamsService = container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
 			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 			const statusConfigService = container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
-			return new TaskLoadingService(streamsService, settingsService, statusConfigService, app);
+			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
+			return new TaskLoadingService(streamsService, settingsService, statusConfigService, app, loggingService.getLogger());
 		});
 
 		// Register editor integration service
