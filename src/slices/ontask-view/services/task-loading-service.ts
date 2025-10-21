@@ -89,7 +89,6 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 					if (loadedTasks.length >= targetTasks) {
 						this.currentFileIndex = fileIndex;
 						this.currentTaskIndex = fileTasks.indexOf(task);
-						Logger.getInstance().debug(`TaskLoadingService: Stopped at file ${fileIndex} (${filePath}), task ${this.currentTaskIndex} of ${fileTasks.length} - Final Progress: ${loadedTasks.length}/${targetTasks}`);
 						return loadedTasks;
 					}
 				}
@@ -106,7 +105,6 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			}
 		}
 		
-		Logger.getInstance().info(`Loaded ${loadedTasks.length} tasks from ${this.trackedFiles.length} files`);
 		return loadedTasks;
 	}
 
@@ -171,7 +169,6 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			return filenameB.localeCompare(filenameA);
 		});
 		
-		Logger.getInstance().info(`Initialized file tracking with ${this.trackedFiles.length} files`);
 	}
 
 	resetTracking(): void {

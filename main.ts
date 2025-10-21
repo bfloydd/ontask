@@ -5,7 +5,6 @@ import { EventSystem } from './src/slices/events';
 import { EditorIntegrationServiceImpl } from './src/slices/editor/EditorIntegrationServiceImpl';
 import { DIContainer, DIContainerImpl, ServiceConfiguration, SERVICE_IDS } from './src/slices/di';
 import { StreamsService } from './src/slices/streams';
-import { OnTaskViewImpl, ONTASK_VIEW_TYPE } from './src/slices/ontask-view';
 import { DataService } from './src/slices/data';
 import { StatusConfigService } from './src/slices/settings/status-config';
 import { LoggingService } from './src/slices/logging';

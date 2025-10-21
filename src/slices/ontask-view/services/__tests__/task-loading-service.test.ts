@@ -11,7 +11,6 @@ jest.mock('../../../logging/Logger', () => ({
 }));
 
 import { TaskLoadingService } from '../task-loading-service';
-import { TaskFinderFactoryImpl } from '../../../task-finder/TaskFinderFactoryImpl';
 import { SettingsService } from '../../../settings';
 import { StatusConfigService } from '../../../settings/status-config';
 

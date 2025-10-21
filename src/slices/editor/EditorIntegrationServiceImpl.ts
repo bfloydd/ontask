@@ -1,5 +1,5 @@
 // Editor integration service
-import { App, MarkdownView, TFile, Plugin } from 'obsidian';
+import { App, MarkdownView, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
 import { SettingsService } from '../settings/SettingsServiceInterface';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';

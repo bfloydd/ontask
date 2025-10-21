@@ -64,7 +64,6 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
 				finalTopTask = tasks[0];
 				finalTopTask.isTopTask = true;
-				Logger.getInstance().info(`Top task selected: ${config.name}`);
 				break;
 			}
 		}

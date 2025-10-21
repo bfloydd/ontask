@@ -59,7 +59,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		// Find the top task (the winner)
 		const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
 		if (topTask) {
-			Logger.getInstance().info(`Top task: ${topTask.lineContent.substring(0, 50)}...`);
 		}
 
 		// Render top task prominently at the top if it exists

@@ -104,8 +104,6 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 				
 				// Log for debugging if the line wasn't updated
 				if (updatedLine === line) {
-					Logger.getInstance().warn('File Operations Service: Warning - line was not updated:', JSON.stringify(line));
-					Logger.getInstance().warn('File Operations Service: Expected pattern: - [status] at start of line');
 				}
 				
 				lines[lineIndex] = updatedLine;
