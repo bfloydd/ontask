@@ -1,4 +1,4 @@
-// Event system slice - Service implementation
+// Event system service
 import { EventSystem, EventCallback, EventSubscription, EventData } from './EventSystemInterface';
 
 interface EventListener {
@@ -59,21 +59,18 @@ export class EventSystemServiceImpl implements EventSystem {
 			data
 		};
 
-		// Create a copy of listeners to avoid issues with modifications during iteration
 		const listenersToCall = [...eventListeners];
 
 		for (const listener of listenersToCall) {
 			try {
 				const result = listener.callback(eventData);
 				
-				// Handle async callbacks
 				if (result instanceof Promise) {
 					result.catch(error => {
 						console.error(`Error in event listener for ${eventName}:`, error);
 					});
 				}
 
-				// Remove one-time listeners
 				if (listener.once) {
 					this.removeListener(eventName, listener.id);
 				}
@@ -95,7 +92,6 @@ export class EventSystemServiceImpl implements EventSystem {
 			data
 		};
 
-		// Create a copy of listeners to avoid issues with modifications during iteration
 		const listenersToCall = [...eventListeners];
 		const promises: Promise<void>[] = [];
 
@@ -103,7 +99,6 @@ export class EventSystemServiceImpl implements EventSystem {
 			try {
 				const result = listener.callback(eventData);
 				
-				// Handle both sync and async callbacks
 				if (result instanceof Promise) {
 					promises.push(
 						result.catch(error => {
@@ -112,7 +107,6 @@ export class EventSystemServiceImpl implements EventSystem {
 					);
 				}
 
-				// Remove one-time listeners
 				if (listener.once) {
 					this.removeListener(eventName, listener.id);
 				}
@@ -121,7 +115,6 @@ export class EventSystemServiceImpl implements EventSystem {
 			}
 		}
 
-		// Wait for all async listeners to complete
 		await Promise.all(promises);
 	}
 
@@ -141,7 +134,6 @@ export class EventSystemServiceImpl implements EventSystem {
 			const index = listeners.findIndex(l => l.id === listenerId);
 			if (index > -1) {
 				listeners.splice(index, 1);
-				// Remove the event name if no listeners remain
 				if (listeners.length === 0) {
 					this.listeners.delete(eventName);
 				}

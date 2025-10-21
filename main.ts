@@ -23,11 +23,9 @@ export default class OnTask extends Plugin {
 	private loggingService: LoggingService;
 
 	async onload() {
-		// Initialize dependency injection container
 		this.container = new DIContainerImpl();
 		ServiceConfiguration.configureServices(this.container, this.app, this);
 
-		// Resolve services from container
 		this.eventSystem = this.container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
 		this.settingsService = this.container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 		this.streamsService = this.container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
@@ -37,7 +35,6 @@ export default class OnTask extends Plugin {
 		this.statusConfigService = this.container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
 		this.loggingService = this.container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
 
-		// Initialize services
 		await this.dataService.initialize();
 		await this.settingsService.initialize();
 		this.settings = this.settingsService.getSettings();
@@ -45,7 +42,6 @@ export default class OnTask extends Plugin {
 		await this.orchestrator.initialize();
 		await this.editorIntegrationService.initialize();
 		
-		// Add settings tab
 		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService, this.statusConfigService, this.dataService));
 	}
 

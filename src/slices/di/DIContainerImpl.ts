@@ -1,4 +1,4 @@
-// Dependency Injection slice - Service implementation
+// Dependency injection container
 import { DIContainer, ServiceIdentifier, ServiceFactory, ServiceRegistration } from './DIContainerInterface';
 
 export class DIContainerImpl implements DIContainer {
@@ -24,12 +24,10 @@ export class DIContainerImpl implements DIContainer {
 			throw new Error(`Service with identifier '${String(identifier)}' is not registered`);
 		}
 
-		// Return existing instance if singleton and already created
 		if (registration.singleton && registration.instance) {
 			return registration.instance as T;
 		}
 
-		// Create new instance
 		try {
 			const instance = registration.factory(this);
 			registration.instance = instance;

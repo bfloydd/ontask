@@ -18,8 +18,6 @@ export class StatusConfigService extends PluginAwareSliceService {
 
 	async initialize(): Promise<void> {
 		if (this.initialized) return;
-		
-		// Initialize any required setup
 		this.initialized = true;
 	}
 

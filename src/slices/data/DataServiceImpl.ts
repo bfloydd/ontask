@@ -1,4 +1,4 @@
-// Data service implementation for handling data.json operations
+// Data service
 
 import { App, Plugin } from 'obsidian';
 import { DataService, StatusConfig, QuickFilter } from './DataServiceInterface';
@@ -18,16 +18,13 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 	async initialize(): Promise<void> {
 		if (this.initialized) return;
 		
-		// Load data from data.json
 		this.data = await this.loadData();
 		
-		// Initialize statusConfigs with defaults if not present
 		if (!this.data.statusConfigs || this.data.statusConfigs.length === 0) {
 			this.data.statusConfigs = [...DEFAULT_STATUS_CONFIGS];
 			await this.saveData();
 		}
 		
-		// Initialize quickFilters with defaults if not present
 		if (!this.data.quickFilters || this.data.quickFilters.length === 0) {
 			this.data.quickFilters = [
 				{
@@ -42,12 +39,12 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 					statusSymbols: ['.', '>', 'r', 'b', '?'],
 					enabled: true
 				}
-		];
-		await this.saveData();
+			];
+			await this.saveData();
+		}
+		
+		this.initialized = true;
 	}
-	
-	this.initialized = true;
-}
 
 cleanup(): void {
 	this.data = {};
@@ -71,7 +68,6 @@ cleanup(): void {
 		}
 	}
 
-	// Status configuration methods
 	getStatusConfigs(): StatusConfig[] {
 		return [...(this.data.statusConfigs || [])];
 	}
@@ -122,7 +118,6 @@ cleanup(): void {
 		await this.saveData();
 	}
 
-	// Quick filter methods
 	getQuickFilters(): QuickFilter[] {
 		return [...(this.data.quickFilters || [])];
 	}

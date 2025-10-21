@@ -1,4 +1,4 @@
-// Editor integration slice - Service implementation
+// Editor integration service
 import { App, MarkdownView, TFile, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
 import { SettingsService } from '../settings/SettingsServiceInterface';
