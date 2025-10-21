@@ -2,7 +2,6 @@ import { LoggingService as ILoggingService, LoggingDependencies } from './Loggin
 import { Logger, LogLevel } from './Logger';
 import { ToggleLoggingCommandImpl } from './ToggleLoggingCommandImpl';
 import { Command } from '../../shared/interfaces';
-import { logger } from '../../shared/Logger';
 import { SettingsAwareSliceService } from '../../shared/base-slice';
 
 export class LoggingServiceImpl extends SettingsAwareSliceService implements ILoggingService {
@@ -24,9 +23,9 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
         
         const settings = this.getSettings();
         if (settings.debugLoggingEnabled) {
-            logger.enable(LogLevel.DEBUG);
+            this.logger.on(LogLevel.DEBUG);
         } else {
-            logger.disable();
+            this.logger.off();
         }
 
         this.initialized = true;
@@ -39,9 +38,9 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
 
     onSettingsChanged(settings: any): void {
         if (settings.debugLoggingEnabled) {
-            logger.enable(LogLevel.DEBUG);
+            this.logger.on(LogLevel.DEBUG);
         } else {
-            logger.disable();
+            this.logger.off();
         }
     }
 
@@ -64,14 +63,14 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
     }
 
     enableDebug(): void {
-        logger.enable(LogLevel.DEBUG);
+        this.logger.on(LogLevel.DEBUG);
         if ((this.dependencies.plugin as any).settings) {
             (this.dependencies.plugin as any).settings.debugLoggingEnabled = true;
         }
     }
 
     disableDebug(): void {
-        logger.enable(LogLevel.INFO);
+        this.logger.on(LogLevel.INFO);
         if ((this.dependencies.plugin as any).settings) {
             (this.dependencies.plugin as any).settings.debugLoggingEnabled = false;
         }
