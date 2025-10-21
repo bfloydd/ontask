@@ -36,23 +36,19 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 	}
 
 	setupEventListeners(): void {
-		Logger.getInstance().debug('EventHandlingService: Setting up event listeners');
 		
 		// Clean up any existing listeners first
 		this.cleanupEventListeners();
 		
 		// Listen for settings changes
 		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
-			Logger.getInstance().debug('EventHandlingService: Settings changed event received:', event.data.key);
 			if (event.data.key === 'onlyShowToday') {
-				Logger.getInstance().debug('EventHandlingService: Triggering refresh due to settings change');
 				this.onRefreshCheckboxes();
 			}
 		});
 		
 		// Listen for checkbox updates to update top task section immediately
 		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
-			Logger.getInstance().debug('EventHandlingService: Checkboxes updated event received, updating top task section');
 			// Only update the top task section without full refresh
 			const contentArea = this.app.workspace.getActiveViewOfType(ItemView)?.contentEl?.querySelector('.ontask-content') as HTMLElement;
 			if (contentArea) {
@@ -64,7 +60,6 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 		const fileModifyListener = (file: any) => {
 			// Skip refresh if we're currently updating a status ourselves
 			if (this.isUpdatingStatus) {
-				Logger.getInstance().debug('EventHandlingService: Skipping refresh - currently updating status');
 				return;
 			}
 			

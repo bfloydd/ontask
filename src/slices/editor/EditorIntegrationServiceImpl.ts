@@ -101,15 +101,11 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	 * This prevents multiple rapid updates and batches them into a single update
 	 */
 	private scheduleDecorationUpdate(): void {
-		Logger.getInstance().debug('OnTask Editor: scheduleDecorationUpdate called, pending:', this.pendingDecorationUpdate);
-		
 		if (this.pendingDecorationUpdate) {
-			Logger.getInstance().debug('OnTask Editor: Update already pending, skipping');
 			return; // Already scheduled
 		}
 
 		this.pendingDecorationUpdate = true;
-		Logger.getInstance().debug('OnTask Editor: Scheduling decoration update');
 		
 		// Cancel any existing request
 		if (this.updateRequestId !== null) {
@@ -117,7 +113,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 
 		this.updateRequestId = requestAnimationFrame(() => {
-			Logger.getInstance().debug('OnTask Editor: Executing scheduled decoration update');
 			this.pendingDecorationUpdate = false;
 			this.updateRequestId = null;
 			this.updateEditorDecorations();
@@ -271,7 +266,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		// Remove all stored overlays
 		this.topTaskOverlays.forEach((overlay, key) => {
 			if (overlay && overlay.parentNode) {
-				Logger.getInstance().debug('OnTask Editor: Removing stored overlay for key:', key);
 				overlay.remove();
 			}
 		});

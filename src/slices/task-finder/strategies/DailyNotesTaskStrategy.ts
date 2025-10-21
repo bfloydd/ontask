@@ -82,7 +82,6 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		}
 
 		// Return checkboxes without top task processing (handled at view level)
-		Logger.getInstance().debug(`Daily Notes Strategy: Found ${checkboxes.length} checkboxes`);
 		return checkboxes;
 	}
 
@@ -208,7 +207,6 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		// Check both filename and full path for date patterns
 		for (const dateFormat of todayFormats) {
 			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
-				Logger.getInstance().debug(`OnTask: Found today's file: ${file.name} (matches date: ${dateFormat})`);
 				return true;
 			}
 		}
@@ -217,7 +215,6 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		const datePatterns = this.getDatePatterns(today);
 		for (const pattern of datePatterns) {
 			if (pattern.test(fileName) || pattern.test(filePath)) {
-				Logger.getInstance().debug(`OnTask: Found today's file: ${file.name} (matches pattern: ${pattern})`);
 				return true;
 			}
 		}

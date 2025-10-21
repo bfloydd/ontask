@@ -50,13 +50,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		const loadedTasks: any[] = [];
 		const statusFilters = this.statusConfigService.getStatusFilters();
 		
-		Logger.getInstance().debug(`TaskLoadingService: Loading ${targetTasks} tasks starting from file index ${this.currentFileIndex}, task index ${this.currentTaskIndex}`);
-		
 		const allowedStatuses = this.getAllowedStatuses(statusFilters);
 		const checkboxRegex = this.createCheckboxRegex(allowedStatuses);
-		
-		Logger.getInstance().debug(`TaskLoadingService: Using regex pattern: ${checkboxRegex}`);
-		Logger.getInstance().debug(`TaskLoadingService: Allowed statuses: ${allowedStatuses.join(', ')}`);
 		
 		for (let fileIndex = this.currentFileIndex; fileIndex < this.trackedFiles.length; fileIndex++) {
 			const filePath = this.trackedFiles[fileIndex];
@@ -99,7 +94,6 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 					}
 				}
 				
-				Logger.getInstance().debug(`TaskLoadingService: Processing file ${fileIndex + 1}/${this.trackedFiles.length}: ${filePath} - Found ${fileTasks.length} tasks, added ${tasksToAdd.length} (start from index ${startTaskIndex}) - Progress: ${loadedTasks.length}/${targetTasks}`);
 				
 				if (loadedTasks.length < targetTasks) {
 					this.currentFileIndex = fileIndex + 1;
@@ -112,7 +106,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			}
 		}
 		
-		Logger.getInstance().debug(`TaskLoadingService: Loaded ${loadedTasks.length} tasks from ${this.trackedFiles.length} files`);
+		Logger.getInstance().info(`Loaded ${loadedTasks.length} tasks from ${this.trackedFiles.length} files`);
 		return loadedTasks;
 	}
 
@@ -177,15 +171,13 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			return filenameB.localeCompare(filenameA);
 		});
 		
-		Logger.getInstance().debug(`TaskLoadingService: Initialized file tracking with ${this.trackedFiles.length} files`);
-		Logger.getInstance().debug('TaskLoadingService: First few files:', this.trackedFiles.slice(0, 5));
+		Logger.getInstance().info(`Initialized file tracking with ${this.trackedFiles.length} files`);
 	}
 
 	resetTracking(): void {
 		this.currentFileIndex = 0;
 		this.currentTaskIndex = 0;
 		this.trackedFiles = [];
-		Logger.getInstance().debug('TaskLoadingService: Reset tracking for fresh start');
 	}
 
 	getCurrentFileIndex(): number {

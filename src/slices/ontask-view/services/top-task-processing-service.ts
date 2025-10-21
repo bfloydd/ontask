@@ -37,7 +37,6 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 	}
 
 	processTopTasksFromDisplayedTasks(checkboxes: any[]): void {
-		Logger.getInstance().debug('TopTaskProcessingService: Processing top tasks from displayed tasks');
 		
 		// First, clear any existing top task markers
 		checkboxes.forEach(checkbox => {
@@ -55,7 +54,6 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 			tasksByType[config.name] = matchingTasks;
 		});
 		
-		Logger.getInstance().debug('TopTaskProcessingService: Found tasks:', taskCounts);
 		
 		// Find the highest priority task type that has tasks
 		let finalTopTask: any = null;
@@ -66,24 +64,18 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
 				finalTopTask = tasks[0];
 				finalTopTask.isTopTask = true;
-				Logger.getInstance().debug(`TopTaskProcessingService: Selected ${config.name} task as top task:`, finalTopTask.lineContent);
+				Logger.getInstance().info(`Top task selected: ${config.name}`);
 				break;
 			}
 		}
 		
 		if (finalTopTask) {
-			Logger.getInstance().debug('TopTaskProcessingService: Top task selected:', {
-				lineContent: finalTopTask.lineContent,
-				file: finalTopTask.file?.path,
-				isTopTask: finalTopTask.isTopTask
-			});
 			
 			// Emit top task found event for other components to use
 			this.eventSystem.emit('top-task:found', {
 				topTask: finalTopTask
 			});
 		} else {
-			Logger.getInstance().debug('TopTaskProcessingService: No top task found in displayed tasks');
 			
 			// Emit top task cleared event
 			this.eventSystem.emit('top-task:cleared', {});

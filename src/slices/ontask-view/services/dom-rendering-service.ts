@@ -58,14 +58,8 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 
 		// Find the top task (the winner)
 		const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
-		Logger.getInstance().debug('DOMRenderingService: Looking for top task. Total checkboxes:', checkboxes.length);
-		Logger.getInstance().debug('DOMRenderingService: Top task found:', topTask ? 'YES' : 'NO');
 		if (topTask) {
-			Logger.getInstance().debug('DOMRenderingService: Top task details:', {
-				lineContent: topTask.lineContent,
-				isTopTask: topTask.isTopTask,
-				file: topTask.file?.path
-			});
+			Logger.getInstance().info(`Top task: ${topTask.lineContent.substring(0, 50)}...`);
 		}
 
 		// Render top task prominently at the top if it exists
@@ -281,7 +275,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		// Insert at the beginning of content area
 		contentArea.insertBefore(topTaskSection, contentArea.firstChild);
 		
-		Logger.getInstance().debug('DOMRenderingService: Top task section created and inserted');
 	}
 
 	createFileSectionElement(filePath: string, fileCheckboxes: any[], maxTasksToShow: number, tasksShown: number): HTMLElement {
@@ -351,7 +344,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	}
 
 	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
-		Logger.getInstance().debug('DOMRenderingService: Rendering additional tasks');
 		
 		// Group additional tasks by file
 		const tasksByFile = new Map<string, any[]>();
@@ -398,7 +390,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 			fileCount.textContent = `${currentCount} task${currentCount === 1 ? '' : 's'}`;
 		}
 		
-		Logger.getInstance().debug(`DOMRenderingService: Appended ${fileTasks.length} tasks to existing file section: ${filePath}`);
 	}
 
 	createNewFileSection(contentArea: HTMLElement, fileTasks: any[], filePath: string): void {

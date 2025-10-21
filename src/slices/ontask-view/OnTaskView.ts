@@ -158,9 +158,7 @@ export class OnTaskViewImpl extends ItemView {
 	}
 
 	async refreshCheckboxes(): Promise<void> {
-		Logger.getInstance().debug('OnTask View: refreshCheckboxes called');
 		if (this.isRefreshing) {
-			Logger.getInstance().debug('OnTask View: Already refreshing, skipping');
 			return;
 		}
 		
@@ -186,15 +184,7 @@ export class OnTaskViewImpl extends ItemView {
 			
 			await this.taskLoadingService.initializeFileTracking(settings.onlyShowToday);
 			this.checkboxes = await this.taskLoadingService.loadTasksWithFiltering(settings);
-			Logger.getInstance().debug('OnTask View: Loaded checkboxes:', this.checkboxes.length);
-			
 			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(this.checkboxes);
-			
-			Logger.getInstance().debug('OnTask View: Checkbox details after top task processing:', this.checkboxes.map(cb => ({
-				lineContent: cb.lineContent,
-				isTopTask: cb.isTopTask,
-				file: cb.file?.path
-			})));
 			
 			loadingEl.remove();
 			
@@ -218,7 +208,6 @@ export class OnTaskViewImpl extends ItemView {
 			}
 		} finally {
 			this.isRefreshing = false;
-			Logger.getInstance().debug('OnTask View: Finished refreshCheckboxes');
 		}
 	}
 
@@ -353,8 +342,6 @@ export class OnTaskViewImpl extends ItemView {
 		// Always add Load More button - it will find more tasks if available
 		this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
 		
-		Logger.getInstance().debug(`OnTask View: Loaded ${additionalTasks.length} additional tasks. Total shown: ${this.displayedTasksCount} of ${this.checkboxes.length}`);
-		Logger.getInstance().debug(`OnTask View: Current position - file ${this.taskLoadingService.getCurrentFileIndex()}, task ${this.taskLoadingService.getCurrentTaskIndex()}`);
 	}
 
 
@@ -408,30 +395,25 @@ export class OnTaskViewImpl extends ItemView {
 		try {
 			const settings = this.settingsService.getSettings();
 			if (settings.checkboxSource !== 'streams') {
-				Logger.getInstance().debug(`OnTask: Streams not active checkbox source (current: ${settings.checkboxSource}), skipping stream detection`);
 				return;
 			}
 
 			const streamsService = this.taskLoadingService.getStreamsService();
 			
 			if (!streamsService || !streamsService.isStreamsPluginAvailable()) {
-				Logger.getInstance().debug('OnTask: Streams plugin not available, skipping stream detection');
 				return;
 			}
 
 			const stream = streamsService.isFileInStream(filePath);
 			if (stream) {
-				Logger.getInstance().debug(`OnTask: File ${filePath} is in stream "${stream.name}"`);
 				
 				const success = await streamsService.updateStreamBarFromFile(filePath);
 				
 				if (success) {
-					Logger.getInstance().debug(`OnTask: Successfully updated stream bar from file ${filePath}`);
 				} else {
 					Logger.getInstance().warn(`OnTask: Failed to update stream bar from file ${filePath}`);
 				}
 			} else {
-				Logger.getInstance().debug(`OnTask: File ${filePath} is not in any stream`);
 			}
 		} catch (error) {
 			console.error('OnTask: Error handling stream detection:', error);
@@ -476,12 +458,6 @@ export class OnTaskViewImpl extends ItemView {
 					if (currentLine.match(/^\s*-\s*\[[^\]]*\]/)) {
 						if (lastContent !== currentLine) {
 							hasCheckboxChanges = true;
-							Logger.getInstance().debug('OnTask View: Checkbox content changed:', {
-								file: file.path,
-								line: checkbox.lineNumber,
-								old: lastContent,
-								new: currentLine
-							});
 						}
 						this.lastCheckboxContent.set(checkboxKey, currentLine);
 					}
@@ -489,7 +465,6 @@ export class OnTaskViewImpl extends ItemView {
 			}
 			
 			if (hasCheckboxChanges) {
-				Logger.getInstance().debug('OnTask View: Checkbox changes detected, refreshing view');
 				this.eventSystem.emit('file:modified', { path: file.path });
 				this.refreshCheckboxes();
 			}
@@ -507,11 +482,9 @@ export class OnTaskViewImpl extends ItemView {
 			this.lastCheckboxContent.set(checkboxKey, checkbox.lineContent?.trim() || '');
 		}
 		
-		Logger.getInstance().debug(`OnTask View: Initialized content tracking for ${this.checkboxes.length} checkboxes`);
 	}
 
 	private showStatusSelectionForCheckboxes(selectedStatus: string): void {
-		Logger.getInstance().debug('OnTask View: Status selection for checkboxes', selectedStatus);
 		
 		const checkboxElements = this.contentEl.querySelectorAll('.ontask-checkbox-item');
 		const promises: Promise<void>[] = [];

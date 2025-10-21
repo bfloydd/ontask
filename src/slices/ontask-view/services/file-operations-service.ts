@@ -79,7 +79,6 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 	}
 
 	async updateCheckboxStatus(checkbox: any, newStatus: string): Promise<void> {
-		Logger.getInstance().debug('File Operations Service: Updating checkbox status', checkbox, newStatus);
 		
 		// Set flag to prevent file modification listener from triggering refresh
 		this.isUpdatingStatus = true;

@@ -81,7 +81,6 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		}
 
 		// Return checkboxes without top task processing (handled at view level)
-		Logger.getInstance().debug(`Folder Strategy: Found ${checkboxes.length} checkboxes`);
 		return checkboxes;
 	}
 
