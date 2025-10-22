@@ -1,11 +1,8 @@
-// Streams service
 import { App, Plugin } from 'obsidian';
 import { StreamsService, Stream } from './StreamsServiceInterface';
 
-// Type for the streams plugin
 interface StreamsPlugin extends Plugin {
 	getStreams(): Stream[];
-	// Additional methods that might be available in the streams plugin
 	updateStreamBarFromFile?: (filePath: string) => Promise<boolean>;
 	isFileInStream?: (filePath: string) => Stream | undefined;
 }

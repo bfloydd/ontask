@@ -24,7 +24,6 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 	private app: any;
 	private logger: Logger;
 	
-	// File tracking for Load More functionality
 	private currentFileIndex: number = 0;
 	private currentTaskIndex: number = 0;
 	private trackedFiles: string[] = [];
@@ -201,9 +200,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			.filter(([_, isAllowed]) => isAllowed !== false)
 			.map(([status, _]) => status);
 		
-		// Add space as synonym for dot (to-do task) if dot is allowed
 		if (allowedStatuses.includes('.')) {
-			allowedStatuses.push(' '); // Space is synonym for dot
+			allowedStatuses.push(' ');
 		}
 		
 		return allowedStatuses;

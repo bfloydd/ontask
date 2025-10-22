@@ -15,7 +15,6 @@ export class ToggleLoggingCommandImpl implements Command {
     }
 
     async execute(): Promise<void> {
-        // Toggle between DEBUG and INFO
         if (this.logger.isEnabled()) {
             this.logger.on(LogLevel.INFO);
             this.updateSetting(false);
@@ -26,7 +25,6 @@ export class ToggleLoggingCommandImpl implements Command {
             new Notice('Streams logging enabled (DEBUG level)');
         }
         
-        // Save settings
         await this.saveSettings();
     }
 }

@@ -11,10 +11,6 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 		this.contextMenuService = contextMenuService;
 	}
 
-	/**
-	 * Adds mobile touch handlers with long-press detection for context menu
-	 * Allows normal scrolling while providing long-press for context menu
-	 */
 	addMobileTouchHandlers(element: HTMLElement, task: any): void {
 		let touchStartTime: number = 0;
 		let touchStartX: number = 0;
@@ -30,10 +26,8 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 			touchStartY = e.touches[0].clientY;
 			hasMoved = false;
 
-			// Start long press timer
 			longPressTimer = window.setTimeout(() => {
 				if (!hasMoved) {
-					// Long press detected - show context menu
 					const touch = e.touches[0];
 					const mouseEvent = new MouseEvent('contextmenu', {
 						clientX: touch.clientX,
@@ -48,7 +42,6 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 
 		element.addEventListener('touchmove', (e) => {
 			if (longPressTimer) {
-				// Check if touch has moved significantly
 				const currentX = e.touches[0].clientX;
 				const currentY = e.touches[0].clientY;
 				const deltaX = Math.abs(currentX - touchStartX);
@@ -56,7 +49,6 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 
 				if (deltaX > MOVE_THRESHOLD || deltaY > MOVE_THRESHOLD) {
 					hasMoved = true;
-					// Cancel long press timer if user is scrolling
 					if (longPressTimer) {
 						clearTimeout(longPressTimer);
 						longPressTimer = null;
@@ -66,7 +58,6 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 		});
 
 		element.addEventListener('touchend', (e) => {
-			// Clear long press timer on touch end
 			if (longPressTimer) {
 				clearTimeout(longPressTimer);
 				longPressTimer = null;
@@ -74,7 +65,6 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 		});
 
 		element.addEventListener('touchcancel', (e) => {
-			// Clear long press timer on touch cancel
 			if (longPressTimer) {
 				clearTimeout(longPressTimer);
 				longPressTimer = null;

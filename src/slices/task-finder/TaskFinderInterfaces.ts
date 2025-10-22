@@ -11,7 +11,7 @@ export interface TaskItem {
 	isTopTaskContender?: boolean;
 }
 
-// Keep CheckboxItem for backward compatibility
+// Backward compatibility
 export type CheckboxItem = TaskItem;
 
 export interface TaskFinderContext {
@@ -20,7 +20,7 @@ export interface TaskFinderContext {
 	filePaths?: string[]; // Specific files to scan (for performance)
 }
 
-// Keep CheckboxFinderContext for backward compatibility
+// Backward compatibility
 export type CheckboxFinderContext = TaskFinderContext;
 
 export interface TaskFinderStrategy {
@@ -45,7 +45,7 @@ export interface TaskFinderStrategy {
 	getConfiguration?(): Record<string, any>;
 }
 
-// Keep CheckboxFinderStrategy for backward compatibility
+// Backward compatibility
 export type CheckboxFinderStrategy = TaskFinderStrategy;
 
 export interface TaskFinderFactory {
@@ -65,5 +65,5 @@ export interface TaskFinderFactory {
 	registerStrategy(name: string, strategy: TaskFinderStrategy): void;
 }
 
-// Keep CheckboxFinderFactory for backward compatibility
+// Backward compatibility
 export type CheckboxFinderFactory = TaskFinderFactory;

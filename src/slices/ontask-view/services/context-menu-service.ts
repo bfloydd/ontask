@@ -38,23 +38,14 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	}
 
 	showContextMenu(event: MouseEvent, checkbox: any): void {
-		
-		// Remove any existing context menu
 		const existingMenu = document.querySelector('.ontask-context-menu');
 		if (existingMenu) {
 			existingMenu.remove();
 		}
 
-		// Create context menu
 		const menu = this.createContextMenu(checkbox);
-		
-		// Add to document first to get dimensions
 		document.body.appendChild(menu);
-
-		// Smart positioning to prevent off-screen display
 		this.positionContextMenu(menu, event);
-
-		// Close menu when clicking outside, scrolling, or right-clicking anywhere
 		this.setupMenuCloseHandlers(menu);
 	}
 
@@ -62,10 +53,8 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const menu = document.createElement('div');
 		menu.className = 'ontask-context-menu';
 
-		// Use centralized status configuration
 		const statuses = this.statusConfigService.getStatusConfigs();
 
-		// Add menu items for each status
 		for (const status of statuses) {
 			const menuItem = this.createMenuItem(status, checkbox);
 			menu.appendChild(menuItem);
@@ -78,19 +67,14 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const menuItem = document.createElement('div');
 		menuItem.className = 'ontask-context-menu-item';
 
-		// Create status display with colors from configuration
 		const statusDisplay = this.createStatusDisplay(status);
-
-		// Create text content
 		const textContent = this.createTextContent(status);
 
 		menuItem.appendChild(statusDisplay);
 		menuItem.appendChild(textContent);
 
-		// Add hover effect
 		this.addHoverEffects(menuItem);
 
-		// Add click handler
 		menuItem.addEventListener('click', () => {
 			this.updateCheckboxStatusCallback(checkbox, status.symbol);
 			menuItem.closest('.ontask-context-menu')?.remove();
@@ -130,7 +114,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	}
 
 	private addHoverEffects(menuItem: HTMLElement): void {
-		// Hover effects are now handled by CSS
 	}
 
 	private setupMenuCloseHandlers(menu: HTMLElement): void {
@@ -143,10 +126,9 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 			}
 		};
 
-		// Use requestAnimationFrame to avoid immediate closure
 		requestAnimationFrame(() => {
 			document.addEventListener('click', closeMenu);
-			document.addEventListener('scroll', closeMenu, true); // Use capture phase for scroll events
+			document.addEventListener('scroll', closeMenu, true);
 			document.addEventListener('contextmenu', closeMenu);
 		});
 	}
@@ -158,41 +140,31 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const menuWidth = menuRect.width;
 		const menuHeight = menuRect.height;
 		
-		// Get initial position from event
 		let left = event.clientX;
 		let top = event.clientY;
 		
-		// Mobile-specific adjustments
 		const isMobile = window.innerWidth <= 768;
-		const margin = isMobile ? 5 : 10; // Smaller margin on mobile
+		const margin = isMobile ? 5 : 10;
 		
-		// Check if menu would go off the right edge
 		if (left + menuWidth > viewportWidth - margin) {
 			left = viewportWidth - menuWidth - margin;
 		}
 		
-		// Check if menu would go off the left edge
 		if (left < margin) {
 			left = margin;
 		}
 		
-		// Check if menu would go off the bottom edge
 		if (top + menuHeight > viewportHeight - margin) {
 			top = viewportHeight - menuHeight - margin;
 		}
 		
-		// Check if menu would go off the top edge
 		if (top < margin) {
 			top = margin;
 		}
-		
-		// Apply the calculated position
 		menu.style.left = `${left}px`;
 		menu.style.top = `${top}px`;
 		
-		// On mobile, ensure the menu is fully visible by adjusting if needed
 		if (isMobile) {
-			// Double-check positioning after setting styles
 			requestAnimationFrame(() => {
 				const finalRect = menu.getBoundingClientRect();
 				if (finalRect.right > viewportWidth) {
@@ -206,47 +178,31 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	}
 
 	showFiltersMenu(): void {
-		// Check if menu is already open and toggle it
 		const existingMenu = document.querySelector('.ontask-filters-menu');
 		if (existingMenu) {
 			existingMenu.remove();
-			return; // Menu was open, now it's closed - we're done
+			return;
 		}
 
-		// Create filter menu
 		const menu = this.createFiltersMenu();
-		
-		// Add to document
 		document.body.appendChild(menu);
-
-		// Position the menu
 		this.positionFilterMenu(menu);
-
-		// Close menu when clicking outside
 		this.setupMenuCloseHandlers(menu);
 	}
 
 	private createFiltersMenu(): HTMLElement {
 		const menu = document.createElement('div');
 		menu.className = 'ontask-filters-menu';
-		// Menu positioning and styling is now handled by CSS classes
-
-		// Get current settings and status configs
 		const settings = this.settingsService.getSettings();
 		const statusConfigs = this.statusConfigService.getStatusConfigs();
 
-		// Create header
 		const header = menu.createDiv();
 		header.createEl('h3', { text: 'Status Filters' });
 
-		// Create checkboxes for each status
 		const checkboxesContainer = this.createStatusCheckboxes(menu, statusConfigs);
 		menu.appendChild(checkboxesContainer);
 
-		// Create Quick Filters section
 		this.renderQuickFiltersSection(menu, checkboxesContainer);
-
-		// Create buttons container
 		this.createFilterButtons(menu, checkboxesContainer);
 
 		return menu;
@@ -256,7 +212,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const checkboxesContainer = menu.createDiv();
 		checkboxesContainer.className = 'ontask-filters-checkboxes-container';
 
-		// Track checkbox elements for save functionality
 		const checkboxElements: { [key: string]: HTMLInputElement } = {};
 
 		for (const status of statusConfigs) {
@@ -264,7 +219,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 			checkboxesContainer.appendChild(checkboxItem);
 		}
 
-		// Store checkbox elements for later use
 		(checkboxesContainer as any).checkboxElements = checkboxElements;
 
 		return checkboxesContainer;
@@ -274,24 +228,19 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const checkboxItem = document.createElement('div');
 		checkboxItem.className = 'ontask-filters-checkbox-item';
 
-		// Create checkbox
 		const checkbox = document.createElement('input');
 		checkbox.type = 'checkbox';
 		checkbox.id = `filter-${status.symbol}`;
 		checkbox.checked = status.filtered !== false;
 		checkboxElements[status.symbol] = checkbox;
 
-		// Create status display
 		const statusDisplay = this.createStatusDisplay(status);
-
-		// Create label
 		const label = this.createStatusLabel(status, checkbox);
 
 		checkboxItem.appendChild(checkbox);
 		checkboxItem.appendChild(statusDisplay);
 		checkboxItem.appendChild(label);
 
-		// Add click handler to the entire item
 		checkboxItem.addEventListener('click', (e) => {
 			if (e.target !== checkbox) {
 				checkbox.checked = !checkbox.checked;
@@ -324,7 +273,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const buttonsContainer = menu.createDiv();
 		buttonsContainer.className = 'ontask-filters-buttons-container';
 
-		// Create Save button
 		const saveButton = buttonsContainer.createEl('button', { text: 'Save' });
 		saveButton.addClass('mod-cta');
 		saveButton.addEventListener('click', async () => {
@@ -335,24 +283,17 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	private async saveFilterSettings(checkboxesContainer: HTMLElement, menu: HTMLElement): Promise<void> {
 		const checkboxElements = (checkboxesContainer as any).checkboxElements;
 		
-		// Collect filter states
 		const newFilters: Record<string, boolean> = {};
 		for (const [symbol, checkbox] of Object.entries(checkboxElements)) {
 			newFilters[symbol] = (checkbox as HTMLInputElement).checked;
 		}
 
-		// Update status configs - update each status config's filtered property
 		for (const [symbol, filtered] of Object.entries(newFilters)) {
 			await this.statusConfigService.updateStatusFiltered(symbol, filtered);
 		}
 		
-		// Close menu
 		menu.remove();
-		
-		// Reset tracking when filters change
 		this.resetTrackingCallback();
-		
-		// Refresh the view to apply filters
 		await this.refreshCheckboxesCallback();
 	}
 
@@ -363,15 +304,12 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 			return;
 		}
 
-		// Create separator
 		const separator = menu.createDiv();
 		separator.className = 'ontask-filters-separator';
 
-		// Create Quick Filters header
 		const quickFiltersHeader = menu.createDiv();
 		quickFiltersHeader.createEl('h3', { text: 'Quick Filters' });
 
-		// Create Quick Filters buttons container
 		const quickFiltersContainer = menu.createDiv();
 		quickFiltersContainer.className = 'ontask-filters-quick-filters-container';
 
@@ -386,7 +324,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		button.textContent = filter.name;
 		button.className = 'ontask-quick-filter-button';
 
-		// Click handler
 		button.addEventListener('click', () => {
 			this.applyQuickFilter(filter, checkboxesContainer);
 		});
@@ -397,7 +334,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	private applyQuickFilter(filter: any, checkboxesContainer: HTMLElement): void {
 		const checkboxElements = (checkboxesContainer as any).checkboxElements;
 		
-		// Apply the quick filter by checking/unchecking the appropriate checkboxes
 		filter.statusSymbols.forEach((symbol: string) => {
 			const checkbox = checkboxElements[symbol];
 			if (checkbox) {
@@ -405,7 +341,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 			}
 		});
 
-		// Uncheck all other checkboxes
 		Object.keys(checkboxElements).forEach(symbol => {
 			if (!filter.statusSymbols.includes(symbol)) {
 				checkboxElements[symbol].checked = false;
@@ -414,49 +349,38 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	}
 
 	private positionFilterMenu(menu: HTMLElement): void {
-		// Find the filters button to position the menu below it
 		const filtersButton = this.contentEl.querySelector('.ontask-header-button') as HTMLElement;
 		if (!filtersButton) {
-			// Fallback to center positioning if button not found
 			this.centerPositionMenu(menu);
 			return;
 		}
 
-		// Get button position and dimensions
 		const buttonRect = filtersButton.getBoundingClientRect();
 		const menuRect = menu.getBoundingClientRect();
 		
-		// Calculate position below the button
 		const viewportWidth = window.innerWidth;
 		const viewportHeight = window.innerHeight;
 		const menuWidth = menuRect.width;
 		const menuHeight = menuRect.height;
-		
-		// Position below the button with some spacing
 		let left = buttonRect.left;
-		let top = buttonRect.bottom + 8; // 8px spacing below button
+		let top = buttonRect.bottom + 8;
 		
-		// Ensure menu doesn't go off the right edge
 		if (left + menuWidth > viewportWidth - 10) {
 			left = viewportWidth - menuWidth - 10;
 		}
 		
-		// Ensure menu doesn't go off the left edge
 		if (left < 10) {
 			left = 10;
 		}
 		
-		// If menu would go off the bottom edge, position it above the button instead
 		if (top + menuHeight > viewportHeight - 10) {
-			top = buttonRect.top - menuHeight - 8; // 8px spacing above button
+			top = buttonRect.top - menuHeight - 8;
 		}
 		
-		// Ensure menu doesn't go off the top edge
 		if (top < 10) {
 			top = 10;
 		}
 		
-		// Apply the calculated position
 		menu.style.left = `${left}px`;
 		menu.style.top = `${top}px`;
 	}

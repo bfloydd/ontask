@@ -2,9 +2,9 @@ export interface StatusConfig {
 	symbol: string;
 	name: string;
 	description: string;
-	color: string; // Hex color
-	backgroundColor?: string; // Optional background color
-	filtered?: boolean; // Whether this status is filtered (shown)
+	color: string;
+	backgroundColor?: string;
+	filtered?: boolean;
 }
 
 export interface OnTaskSettings {

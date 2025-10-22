@@ -6,7 +6,6 @@ export enum LogLevel {
     NONE = 4
 }
 
-// Plugin-scoped Logger implementation
 export class Logger {
     private enabled: boolean = false;
     private level: LogLevel = LogLevel.INFO;

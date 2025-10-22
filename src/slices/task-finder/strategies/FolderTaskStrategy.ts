@@ -22,7 +22,6 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 	}
 
 	isAvailable(): boolean {
-		// Check if the configured folder exists
 		const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
 		return folder !== null;
 	}
@@ -39,7 +38,6 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		const checkboxes: TaskItem[] = [];
 		
 		try {
-			// If specific files are provided, scan only those files for performance
 			if (context.filePaths && context.filePaths.length > 0) {
 				for (const filePath of context.filePaths) {
 					const file = this.app.vault.getAbstractFileByPath(filePath);
@@ -49,27 +47,21 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 					}
 				}
 			} else {
-				// Fallback to original behavior if no specific files provided
 				const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
 				if (!folder) {
 					return checkboxes;
 				}
 
-				// Get all markdown files in the folder
 				const files = this.getFilesInFolder(folder);
 				
-				// Performance optimization: Filter files by today before reading their content
 				let filesToProcess = files;
 				if (context.onlyShowToday) {
 					filesToProcess = files.filter(file => this.isTodayFile(file));
 				}
-				
-				// Process files sequentially with early termination for performance
 				for (const file of filesToProcess) {
 					const fileCheckboxes = await this.findCheckboxesInFile(file, context);
 					checkboxes.push(...fileCheckboxes);
 					
-					// Early termination if limit is reached
 					if (context.limit && checkboxes.length >= context.limit) {
 						break;
 					}
@@ -80,7 +72,6 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 			console.error(`Error finding checkboxes in folder ${this.config.folderPath}:`, error);
 		}
 
-		// Return checkboxes without top task processing (handled at view level)
 		return checkboxes;
 	}
 
@@ -88,20 +79,16 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		const files: TFile[] = [];
 		
 		if (folder instanceof TFile) {
-			// If it's a single file, return it
 			files.push(folder);
 		} else {
-			// If it's a folder, get all markdown files
 			const allFiles = this.app.vault.getMarkdownFiles();
 			
 			for (const file of allFiles) {
 				if (this.config.recursive) {
-					// Include files in subfolders
 					if (file.path.startsWith(this.config.folderPath)) {
 						files.push(file);
 					}
 				} else {
-					// Only include files directly in the folder
 					const relativePath = file.path.substring(this.config.folderPath.length + 1);
 					if (!relativePath.includes('/') && file.path.startsWith(this.config.folderPath)) {
 						files.push(file);
@@ -134,7 +121,6 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 						sourcePath: this.config.folderPath
 					});
 					
-					// Early termination if limit is reached
 					if (context.limit && checkboxes.length >= context.limit) {
 						break;
 					}
@@ -150,49 +136,38 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 	private findCheckboxInLine(line: string): string | null {
 		const trimmedLine = line.trim();
 		
-		// Look for the pattern: - [X] at the beginning of the line only, where X is a single character
 		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]])\]\s*(.*)$/);
 		if (!checkboxMatch) return null;
 		
-		// Extract the checkbox content (single character)
 		const checkboxContent = checkboxMatch[1];
 		
-		// Return the full checkbox pattern
 		return `- [${checkboxContent}]`;
 	}
 
 	private isCheckboxCompleted(line: string): boolean {
 		const trimmedLine = line.trim();
 		
-		// Look for the pattern: - [X] at the beginning of the line only, where X is a single character
 		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]])\]\s*(.*)$/);
 		if (!checkboxMatch) return false;
 		
-		// Extract the checkbox content (single character)
 		const checkboxContent = checkboxMatch[1].trim().toLowerCase();
 		
-		// Check if it's completed (only 'x' and 'checked' are considered completed)
 		return checkboxContent === 'x' || checkboxContent === 'checked';
 	}
 
 	public isTodayFile(file: TFile): boolean {
 		const today = new Date();
 		
-		// Generate multiple date formats that might be used in filenames
 		const todayFormats = this.getTodayDateFormats(today);
-		
-		// Check if filename contains today's date in any common format
 		const fileName = file.name.toLowerCase();
 		const filePath = file.path.toLowerCase();
 		
-		// Check both filename and full path for date patterns
 		for (const dateFormat of todayFormats) {
 			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
 				return true;
 			}
 		}
 		
-		// Check for date patterns in the filename using regex
 		const datePatterns = this.getDatePatterns(today);
 		for (const pattern of datePatterns) {
 			if (pattern.test(fileName) || pattern.test(filePath)) {
@@ -224,19 +199,12 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		const day = String(today.getDate()).padStart(2, '0');
 		
 		return [
-			// YYYY-MM-DD pattern
 			new RegExp(`${year}-${month}-${day}`),
-			// YYYYMMDD pattern
 			new RegExp(`${year}${month}${day}`),
-			// MM-DD-YYYY pattern
 			new RegExp(`${month}-${day}-${year}`),
-			// MM/DD/YYYY pattern
 			new RegExp(`${month}/${day}/${year}`),
-			// DD-MM-YYYY pattern
 			new RegExp(`${day}-${month}-${year}`),
-			// DD/MM/YYYY pattern
 			new RegExp(`${day}/${month}/${year}`),
 		];
 	}
-
 }
