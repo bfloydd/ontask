@@ -194,7 +194,14 @@ export class OnTaskViewImpl extends ItemView {
 			loadingEl.remove();
 			
 			this.domRenderingService.renderCheckboxes(contentArea, this.checkboxes, this.displayedTasksCount);
-			this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
+			
+			// Only add load more button when not filtering by today
+			if (!settings.onlyShowToday) {
+				this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
+			} else {
+				this.loadMoreButton = null;
+			}
+			
 			this.updateButtonStates();
 			this.initializeCheckboxContentTracking();
 			
@@ -291,8 +298,12 @@ export class OnTaskViewImpl extends ItemView {
 		
 		fileSections.forEach(section => fragment.appendChild(section));
 		
-		const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
-		fragment.appendChild(loadMoreSection);
+		// Only show load more button when not filtering by today
+		const settings = this.settingsService.getSettings();
+		if (!settings.onlyShowToday) {
+			const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
+			fragment.appendChild(loadMoreSection);
+		}
 		
 		contentArea.appendChild(fragment);
 	}
@@ -322,7 +333,12 @@ export class OnTaskViewImpl extends ItemView {
 			filePath: task.file?.path || ''
 		})));
 		
-		this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
+		// Only add load more button when not filtering by today
+		if (!settings.onlyShowToday) {
+			this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
+		} else {
+			this.loadMoreButton = null;
+		}
 	}
 
 

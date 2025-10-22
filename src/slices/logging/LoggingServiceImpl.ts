@@ -81,6 +81,11 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
         }
     }
 
+    setEventSystem(eventSystem: EventSystem): void {
+        this.eventSystem = eventSystem;
+        this.setupEventListeners();
+    }
+
     protected getSettings(): any {
         return (this.dependencies.plugin as any).settings || {};
     }

@@ -25,14 +25,16 @@ export default class OnTask extends Plugin {
 		this.container = new DIContainerImpl();
 		ServiceConfiguration.configureServices(this.container, this.app, this);
 
+		this.loggingService = this.container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
 		this.eventSystem = this.container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
+		
+		this.loggingService.setEventSystem(this.eventSystem);
 		this.settingsService = this.container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 		this.streamsService = this.container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
 		this.orchestrator = this.container.resolve<PluginOrchestrator>(SERVICE_IDS.PLUGIN_ORCHESTRATOR);
 		this.editorIntegrationService = this.container.resolve<EditorIntegrationServiceImpl>(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE);
 		this.dataService = this.container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
 		this.statusConfigService = this.container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
-		this.loggingService = this.container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
 
 		await this.dataService.initialize();
 		await this.settingsService.initialize();

@@ -1,6 +1,7 @@
 import { App, Plugin } from 'obsidian';
-import { Logger, LogLevel } from './Logger';
+import { Logger } from './Logger';
 import { Command } from '../commands';
+import { EventSystem } from '../events';
 
 export interface LoggingService {
     initialize(): Promise<void>;
@@ -10,6 +11,7 @@ export interface LoggingService {
     createToggleCommand(): Command;
     enableDebug(): void;
     disableDebug(): void;
+    setEventSystem(eventSystem: EventSystem): void;
 }
 
 export interface LoggingDependencies {

@@ -67,8 +67,9 @@ export class ServiceConfiguration {
 		container.registerSingleton(SERVICE_IDS.LOGGING_SERVICE, (container) => {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
 			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
-			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
-			return new LoggingServiceImpl({ app, plugin }, eventSystem);
+			// Don't resolve EventSystem here to avoid circular dependency
+			// EventSystem will be injected later after LoggingService is created
+			return new LoggingServiceImpl({ app, plugin });
 		});
 
 		container.registerSingleton(SERVICE_IDS.PLUGIN_ORCHESTRATOR, (container) => {
