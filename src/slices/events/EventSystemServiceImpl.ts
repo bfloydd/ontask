@@ -1,4 +1,3 @@
-// Event system service
 import { EventSystem, EventCallback, EventSubscription, EventData } from './EventSystemInterface';
 import { Logger } from '../logging/Logger';
 

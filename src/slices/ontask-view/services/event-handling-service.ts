@@ -39,11 +39,8 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 	}
 
 	setupEventListeners(): void {
-		
-		// Clean up any existing listeners first
 		this.cleanupEventListeners();
 		
-		// Listen for settings changes
 		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
 			this.logger.debug('[OnTask EventHandling] Settings changed event received:', event.data);
 			if (event.data.key === 'onlyShowToday') {
@@ -52,10 +49,8 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 			}
 		});
 		
-		// Listen for checkbox updates to update top task section immediately
 		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
 			this.logger.debug('[OnTask EventHandling] Checkboxes updated event received:', event.data);
-			// Only update the top task section without full refresh
 			const contentArea = this.app.workspace.getActiveViewOfType(ItemView)?.contentEl?.querySelector('.ontask-content') as HTMLElement;
 			if (contentArea) {
 				this.logger.debug('[OnTask EventHandling] Updating top task section');
@@ -65,9 +60,6 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 			}
 		});
 		
-		// Editor events disabled - no longer listening for file modifications
-		
-		// Store cleanup functions
 		this.eventListeners = [
 			() => settingsSubscription.unsubscribe(),
 			() => checkboxUpdateSubscription.unsubscribe()
@@ -81,7 +73,6 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 		}
 	}
 
-	// Method to update references when checkboxes or isUpdatingStatus change
 	updateReferences(checkboxes: any[], isUpdatingStatus: boolean): void {
 		this.checkboxes = checkboxes;
 		this.isUpdatingStatus = isUpdatingStatus;

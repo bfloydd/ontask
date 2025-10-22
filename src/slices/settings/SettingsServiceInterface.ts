@@ -1,5 +1,3 @@
-// Settings slice - Interface definitions
-
 export interface StatusConfig {
 	symbol: string;
 	name: string;
@@ -33,7 +31,6 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	debugLoggingEnabled: false
 };
 
-// Default status configurations - used only for initialization
 export const DEFAULT_STATUS_CONFIGS: StatusConfig[] = [
 	{ symbol: '.', name: 'To-do', description: 'Not started', color: '#6b7280', backgroundColor: 'transparent', filtered: true },
 	{ symbol: '+', name: 'Next', description: 'Next up, on deck', color: '#fff', backgroundColor: 'brown', filtered: true },
@@ -57,24 +54,11 @@ export interface SettingsChangeEvent {
 }
 
 export interface SettingsService {
-	// Initialize settings service
 	initialize(): Promise<void>;
-	
-	// Get current settings
 	getSettings(): OnTaskSettings;
-	
-	// Update a single setting
 	updateSetting<K extends keyof OnTaskSettings>(key: K, value: OnTaskSettings[K]): Promise<void>;
-	
-	// Update multiple settings
 	updateSettings(updates: Partial<OnTaskSettings>): Promise<void>;
-	
-	// Reset to defaults
 	resetToDefaults(): Promise<void>;
-	
-	// Subscribe to settings changes
 	onSettingsChange(callback: (event: SettingsChangeEvent) => void): () => void;
-	
-	// Check if Daily Notes is available
 	isDailyNotesAvailable(): boolean;
 }

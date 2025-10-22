@@ -1,4 +1,3 @@
-// Settings service
 import { App, Plugin } from 'obsidian';
 import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './SettingsServiceInterface';
 import { EventSystem } from '../events';
@@ -32,7 +31,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 	}
 
 	private async migrateFromOldStructure(loadedSettings: any): Promise<void> {
-		// Future migrations can be added here
+		// Reserved for future migrations
 	}
 
 	getSettings(): OnTaskSettings {
@@ -101,7 +100,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 	}
 
 	onSettingsChanged(settings: any): void {
-		// Override for additional settings change handling
+		// Hook for custom settings change handling
 	}
 
 	private notifyChange(event: SettingsChangeEvent): void {

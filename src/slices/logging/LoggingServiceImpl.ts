@@ -30,7 +30,6 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
             this.logger.off();
         }
 
-        // Set up event listeners for settings changes
         this.setupEventListeners();
 
         this.initialized = true;

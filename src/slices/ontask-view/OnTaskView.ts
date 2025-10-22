@@ -261,93 +261,68 @@ export class OnTaskViewImpl extends ItemView {
 			return;
 		}
 
-		// Use DocumentFragment for better performance
 		const fragment = document.createDocumentFragment();
-		
-		// Find the top task (the winner)
 		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
 
-		// Render top task prominently at the top if it exists
 		if (topTask) {
 			const topTaskSection = this.domRenderingService.createTopTaskSectionElement(topTask);
 			fragment.appendChild(topTaskSection);
 		}
 
-		// Group all checkboxes by file (including the top task - it should appear in both the Hero section and list per spec)
 		const checkboxesByFile = this.domRenderingService.groupCheckboxesByFile(this.checkboxes);
-		
-		// Sort files by modification date (latest first)
 		const sortedFiles = this.domRenderingService.sortFilesByDate(checkboxesByFile);
 		
-		// Calculate how many tasks to show based on pagination
 		let tasksShown = 0;
 		const maxTasksToShow = this.displayedTasksCount;
-		
-		// Render each file's checkboxes with pagination using batch processing
 		const fileSections: HTMLElement[] = [];
 		
 		for (const [filePath, fileCheckboxes] of sortedFiles) {
 			if (tasksShown >= maxTasksToShow) {
-				break; // Stop rendering if we've reached the limit
+				break;
 			}
 			
 			const fileSection = this.domRenderingService.createFileSectionElement(filePath, fileCheckboxes, maxTasksToShow, tasksShown);
 			fileSections.push(fileSection);
 			
-			// Update tasks shown count
 			const remainingSlots = maxTasksToShow - tasksShown;
 			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
 			tasksShown += tasksToShowFromFile;
 		}
 		
-		// Append all file sections to fragment
 		fileSections.forEach(section => fragment.appendChild(section));
 		
-		// Always show Load More button - it will find more tasks if available
 		const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
 		fragment.appendChild(loadMoreSection);
 		
-		// Append fragment to content area in one operation
 		contentArea.appendChild(fragment);
 	}
 
 
 
 	private async loadMoreTasks(): Promise<void> {
-		// Find the content area
 		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
 		if (!contentArea) {
 			console.error('Content area not found');
 			return;
 		}
 		
-		// Remove the existing Load More button
 		if (this.loadMoreButton) {
 			this.loadMoreButton.remove();
 			this.loadMoreButton = null;
 		}
 		
-		// Get current settings
 		const settings = this.settingsService.getSettings();
-		
-		// Load more tasks using the new tracking system
 		const additionalTasks = await this.taskLoadingService.loadTasksWithFiltering(settings);
 		
-		// Add new tasks to existing ones
 		this.checkboxes.push(...additionalTasks);
-		
-		// Update displayed count
 		this.displayedTasksCount += additionalTasks.length;
 		
-		// Render the additional tasks
 		this.domRenderingService.renderAdditionalTasks(contentArea, additionalTasks.map(task => ({
 			checkbox: task,
 			filePath: task.file?.path || ''
 		})));
 		
-		// Always add Load More button - it will find more tasks if available
 		this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
-		
 	}
 
 
@@ -369,13 +344,10 @@ export class OnTaskViewImpl extends ItemView {
 	private async openFile(filePath: string, lineNumber: number): Promise<void> {
 		const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
 		if (file) {
-			// Check if the file is in a stream and update stream date if needed
 			await this.handleStreamUpdate(filePath);
 			
-			// Open the file
 			this.app.workspace.openLinkText(filePath, '');
 			
-			// Try to scroll to the specific line (if editor is open)
 			setTimeout(() => {
 				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (markdownView && markdownView.editor) {

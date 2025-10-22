@@ -1,4 +1,3 @@
-// General Settings view component for settings
 import { App, Setting } from 'obsidian';
 import { SettingsService } from '../SettingsServiceInterface';
 
@@ -16,10 +15,7 @@ export class GeneralSettingsView {
 	render(): void {
 		this.containerEl.empty();
 
-		// Basic settings
 		this.renderBasicSettings();
-		
-		// Checkbox source settings
 		this.renderCheckboxSourceSettings();
 	}
 
@@ -42,7 +38,6 @@ export class GeneralSettingsView {
 				.setValue(settings.showTopTaskInEditor)
 				.onChange(async (value) => {
 					await this.settingsService.updateSetting('showTopTaskInEditor', value);
-					// Trigger editor update
 					this.app.workspace.trigger('ontask:settings-changed', { 
 						key: 'showTopTaskInEditor', 
 						value 
@@ -67,7 +62,6 @@ export class GeneralSettingsView {
 				.setValue(settings.debugLoggingEnabled)
 				.onChange(async (value) => {
 					await this.settingsService.updateSetting('debugLoggingEnabled', value);
-					// Trigger logging service update
 					this.app.workspace.trigger('ontask:settings-changed', { 
 						key: 'debugLoggingEnabled', 
 						value 
@@ -78,7 +72,6 @@ export class GeneralSettingsView {
 	private renderCheckboxSourceSettings(): void {
 		const settings = this.settingsService.getSettings();
 
-		// Checkbox source selection
 		const sourceSetting = new Setting(this.containerEl)
 			.setName('Checkbox source')
 			.setDesc('Choose where to find checkboxes from')
@@ -89,16 +82,13 @@ export class GeneralSettingsView {
 				.setValue(settings.checkboxSource)
 				.onChange(async (value: 'streams' | 'daily-notes' | 'folder') => {
 					await this.settingsService.updateSetting('checkboxSource', value);
-					// Trigger checkbox source change
 					this.app.workspace.trigger('ontask:settings-changed', { 
 						key: 'checkboxSource', 
 						value 
 					});
-					// Refresh settings to show/hide folder options
 					this.render();
 				}));
 
-		// Add warning for Daily Notes if plugin is not available
 		if (settings.checkboxSource === 'daily-notes') {
 			if (!this.settingsService.isDailyNotesAvailable()) {
 				const warningEl = this.containerEl.createEl('div', { 
@@ -108,8 +98,6 @@ export class GeneralSettingsView {
 				warningEl.addClass('ontask-warning-text');
 			}
 		}
-
-		// Folder path setting (only show when folder is selected)
 		if (settings.checkboxSource === 'folder') {
 			new Setting(this.containerEl)
 				.setName('Folder path')
@@ -119,7 +107,6 @@ export class GeneralSettingsView {
 					.setValue(settings.customFolderPath)
 					.onChange(async (value) => {
 						await this.settingsService.updateSetting('customFolderPath', value);
-						// Trigger checkbox source change
 						this.app.workspace.trigger('ontask:settings-changed', { 
 							key: 'customFolderPath', 
 							value 
@@ -133,7 +120,6 @@ export class GeneralSettingsView {
 					.setValue(settings.includeSubfolders)
 					.onChange(async (value) => {
 						await this.settingsService.updateSetting('includeSubfolders', value);
-						// Trigger checkbox source change
 						this.app.workspace.trigger('ontask:settings-changed', { 
 							key: 'includeSubfolders', 
 							value 

@@ -1,4 +1,3 @@
-// Editor integration service
 import { App, MarkdownView, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
 import { SettingsService } from '../settings/SettingsServiceInterface';
@@ -39,7 +38,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	async initialize(): Promise<void> {
 		if (this.initialized) return;
 
-		// Listen for settings changes
 		this.eventSystem.on('settings:changed', (event) => {
 			this.logger.debug('[OnTask Editor] Settings changed event received:', event.data);
 			if (event.data.key === 'showTopTaskInEditor') {
@@ -48,7 +46,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			}
 		});
 
-		// Listen for top task found event from OnTask View
 		this.eventSystem.on('top-task:found', (event) => {
 			this.logger.debug('[OnTask Editor] Top task found event received:', event.data);
 			this.topTaskMemory = event.data.topTask;
@@ -60,7 +57,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			}
 		});
 
-		// Listen for top task cleared event from OnTask View
 		this.eventSystem.on('top-task:cleared', () => {
 			this.logger.debug('[OnTask Editor] Top task cleared event received');
 			this.topTaskMemory = null;
@@ -72,7 +68,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			}
 		});
 
-		// Listen for checkbox updates to update decorations (fallback)
 		this.eventSystem.on('checkboxes:updated', () => {
 			this.logger.debug('[OnTask Editor] Checkboxes updated event received');
 			if (this.isEnabled()) {
@@ -83,11 +78,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			}
 		});
 
-		// Editor events disabled - no longer listening for file modifications or active leaf changes
-
 		this.initialized = true;
-		
-		// Initial check for top task if editor is enabled
 		if (this.isEnabled()) {
 			setTimeout(() => {
 				this.findTopTaskIndependently();
@@ -106,7 +97,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 
 		this.pendingDecorationUpdate = true;
 		
-		// Cancel any existing request
 		if (this.updateRequestId !== null) {
 			cancelAnimationFrame(this.updateRequestId);
 		}
@@ -125,10 +115,8 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 
 		try {
-			// Use in-memory top task instead of re-scanning files
 			const topTask = this.topTaskMemory;
 			
-			// Check if we need to update
 			const needsUpdate = !this.currentTopTask || 
 				this.currentTopTask.lineContent !== topTask?.lineContent || 
 				this.currentTopTask.file.path !== topTask?.file.path;
@@ -140,19 +128,15 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			this.currentTopTask = topTask;
 			
 			if (!topTask) {
-				// Clean up existing overlays only when there's no top task
 				this.cleanup();
 				return;
 			}
 
-			// Clean up existing overlays before adding new ones
 			this.cleanup();
 
-			// Get all markdown views and add overlay to each one
 			const markdownLeaves = this.app.workspace.getLeavesOfType('markdown');
 			
 			if (markdownLeaves.length === 0) {
-				// Schedule a retry after a short delay
 				setTimeout(() => {
 					this.scheduleDecorationUpdate();
 				}, 1000);
@@ -161,7 +145,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			
 			for (const leaf of markdownLeaves) {
 				if (leaf.view instanceof MarkdownView) {
-					// Add a small delay to ensure the view is fully rendered
 					await new Promise(resolve => setTimeout(resolve, 100));
 					await this.addTopTaskOverlay(leaf.view, topTask);
 				}
@@ -177,7 +160,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			return;
 		}
 
-		// Try multiple container selectors in order of preference
 		const containerSelectors = [
 			'.markdown-source-view',
 			'.markdown-preview-view', 
@@ -200,13 +182,10 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			return;
 		}
 
-		// Check if overlay already exists in this editor
 		const existingOverlay = editorContainer.querySelector('.ontask-toptask-hero-overlay');
 		if (existingOverlay) {
-			return; // Don't create duplicate
+			return;
 		}
-
-		// Create top task bar element
 		const topTaskBar = editorContainer.createEl('div', {
 			cls: 'ontask-toptask-hero-overlay',
 			attr: {
@@ -214,7 +193,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			}
 		});
 
-		// Create the top task content
 		const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		const displayText = remainingText || 'Top Task';
 		
@@ -226,14 +204,11 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			</div>
 		`;
 
-		// Insert at the bottom of the editor container
 		editorContainer.appendChild(topTaskBar);
 		
-		// Store overlay for cleanup using view path as key
 		const overlayKey = view.file?.path || 'unknown';
 		this.topTaskOverlays.set(overlayKey, topTaskBar);
 
-		// Add click handler to focus the editor
 		topTaskBar.addEventListener('click', () => {
 			editor.focus();
 		});
@@ -242,27 +217,22 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	private parseCheckboxLine(line: string): { remainingText: string } {
 		const trimmedLine = line.trim();
 		
-		// Simple approach: find the first occurrence of ']' and take everything after it
 		const bracketIndex = trimmedLine.indexOf(']');
 		if (bracketIndex !== -1) {
 			const remainingText = trimmedLine.substring(bracketIndex + 1).trim();
 			return { remainingText };
 		}
 		
-		// Fallback: return the original line if no bracket found
 		return { remainingText: trimmedLine };
 	}
 
 	cleanup(): void {
-		
-		// Cancel any pending animation frame
 		if (this.updateRequestId !== null) {
 			cancelAnimationFrame(this.updateRequestId);
 			this.updateRequestId = null;
 		}
 		this.pendingDecorationUpdate = false;
 
-		// Remove all stored overlays
 		this.topTaskOverlays.forEach((overlay, key) => {
 			if (overlay && overlay.parentNode) {
 				overlay.remove();
@@ -270,7 +240,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		});
 		this.topTaskOverlays.clear();
 
-		// Also remove any orphaned overlays from all editor containers
 		const editorContainers = document.querySelectorAll('.markdown-source-view, .markdown-preview-view');
 		editorContainers.forEach(container => {
 			const overlays = container.querySelectorAll('.ontask-toptask-hero-overlay');
@@ -294,15 +263,11 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		try {
 			const settings = this.settingsService.getSettings();
 			
-			// Initialize file tracking for efficient task loading
 			await this.taskLoadingService.initializeFileTracking(settings.onlyShowToday);
 			const checkboxes = await this.taskLoadingService.loadTasksWithFiltering(settings);
 			
-			// Process top tasks using the same logic as OnTask View
-			// We need to manually process the top tasks since we're not going through OnTask View
 			this.processTopTasks(checkboxes);
 			
-			// Find the top task after processing
 			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
 			
 			if (topTask) {
@@ -317,24 +282,18 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 	}
 
-	/**
-	 * Process top tasks using the same logic as TopTaskProcessingService
-	 */
 	private processTopTasks(checkboxes: any[]): void {
-		// First, clear any existing top task markers
 		checkboxes.forEach(checkbox => {
 			checkbox.isTopTask = false;
 			checkbox.isTopTaskContender = false;
 		});
 		
-		// Top task configuration - same as TopTaskProcessingService
 		const TOP_TASK_CONFIG = [
 			{ symbol: '/', name: 'In Progress', pattern: /^\s*-\s*\[\/\]\s.*/ },
 			{ symbol: '!', name: 'Important', pattern: /^\s*-\s*\[!\]\s.*/ },
 			{ symbol: '+', name: 'Next', pattern: /^\s*-\s*\[\+\]\s.*/ }
 		];
 		
-		// Find tasks for each priority level
 		const tasksByType: Record<string, any[]> = {};
 		
 		TOP_TASK_CONFIG.forEach(config => {
@@ -342,12 +301,10 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			tasksByType[config.name] = matchingTasks;
 		});
 		
-		// Find the highest priority task type that has tasks
 		let finalTopTask: any = null;
 		for (const config of TOP_TASK_CONFIG) {
 			const tasks = tasksByType[config.name];
 			if (tasks.length > 0) {
-				// Sort by file modification time (most recent first)
 				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
 				finalTopTask = tasks[0];
 				finalTopTask.isTopTask = true;

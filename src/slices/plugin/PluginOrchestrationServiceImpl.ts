@@ -1,4 +1,3 @@
-// Plugin orchestration service
 import { App, Plugin } from 'obsidian';
 import { PluginOrchestrator, PluginDependencies } from './PluginOrchestratorInterface';
 import { SettingsService } from '../settings';
@@ -93,11 +92,9 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 					break;
 				case 'showTopTaskInEditor':
 					this.logger.debug('[OnTask Orchestrator] showTopTaskInEditor setting changed, delegating to editor integration');
-					// Editor integration handles this
 					break;
 				case 'debugLoggingEnabled':
 					this.logger.debug('[OnTask Orchestrator] debugLoggingEnabled setting changed, delegating to logging service');
-					// Logging service handles this
 					break;
 			}
 		});
@@ -159,7 +156,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 	}
 
 	private configureCheckboxSource(): void {
-		// TaskLoadingService handles checkbox source configuration internally
+		// Handled internally by TaskLoadingService
 	}
 
 

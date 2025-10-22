@@ -39,14 +39,11 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 	}
 
 	processTopTasksFromDisplayedTasks(checkboxes: any[]): void {
-		
-		// First, clear any existing top task markers
 		checkboxes.forEach(checkbox => {
 			checkbox.isTopTask = false;
 			checkbox.isTopTaskContender = false;
 		});
 		
-		// Find tasks for each priority level using declarative config
 		const taskCounts: Record<string, number> = {};
 		const tasksByType: Record<string, any[]> = {};
 		
@@ -56,13 +53,10 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 			tasksByType[config.name] = matchingTasks;
 		});
 		
-		
-		// Find the highest priority task type that has tasks
 		let finalTopTask: any = null;
 		for (const config of TopTaskProcessingService.TOP_TASK_CONFIG) {
 			const tasks = tasksByType[config.name];
 			if (tasks.length > 0) {
-				// Sort by file modification time (most recent first)
 				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
 				finalTopTask = tasks[0];
 				finalTopTask.isTopTask = true;
@@ -72,13 +66,11 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 		
 		if (finalTopTask) {
 			this.logger.debug('[OnTask TopTask] Emitting top-task:found event for', finalTopTask.file.name, 'line', finalTopTask.lineNumber);
-			// Emit top task found event for other components to use
 			this.eventSystem.emit('top-task:found', {
 				topTask: finalTopTask
 			});
 		} else {
 			this.logger.debug('[OnTask TopTask] Emitting top-task:cleared event - no top task found');
-			// Emit top task cleared event
 			this.eventSystem.emit('top-task:cleared', {});
 		}
 	}
