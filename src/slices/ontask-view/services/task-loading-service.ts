@@ -90,7 +90,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 					
 					if (loadedTasks.length >= targetTasks) {
 						this.currentFileIndex = fileIndex;
-						this.currentTaskIndex = fileTasks.indexOf(task);
+						this.currentTaskIndex = fileTasks.indexOf(task) + 1;
 						return loadedTasks;
 					}
 				}
