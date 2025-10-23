@@ -406,7 +406,7 @@
 	border: 8px solid var(--ontask-toptask-color, var(--text-error));
 	border-radius: 10px;
 	background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
-	box-shadow: 0 6px 16px var(--ontask-toptask-shadow-color, rgba(255, 0, 0, 0.15)), 0 2px 4px var(--ontask-toptask-shadow-color, rgba(255, 0, 0, 0.1));
+	box-shadow: 0 8px 20px var(--ontask-toptask-shadow-color, rgba(255, 0, 0, 0.25)), 0 4px 8px var(--ontask-toptask-shadow-color, rgba(255, 0, 0, 0.15));
 	overflow: hidden;
 	position: relative;
 }

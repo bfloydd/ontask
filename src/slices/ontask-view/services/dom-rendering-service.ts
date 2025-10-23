@@ -463,7 +463,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	private calculateShadowColor(color: string): string {
 		// For CSS variables, use a default shadow color
 		if (color.startsWith('var(')) {
-			return 'rgba(255, 0, 0, 0.15)'; // Default red shadow for theme colors
+			return 'rgba(255, 0, 0, 0.25)'; // More prominent red shadow for theme colors
 		}
 		
 		// For hex colors, convert to RGB and create a shadow color
@@ -476,14 +476,14 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 			const g = parseInt(hex.substr(2, 2), 16);
 			const b = parseInt(hex.substr(4, 2), 16);
 			
-			// Create shadow colors with reduced opacity
-			const shadowColor1 = `rgba(${r}, ${g}, ${b}, 0.15)`;
-			const shadowColor2 = `rgba(${r}, ${g}, ${b}, 0.1)`;
+			// Create shadow colors with higher opacity for more prominence
+			const shadowColor1 = `rgba(${r}, ${g}, ${b}, 0.25)`;
+			const shadowColor2 = `rgba(${r}, ${g}, ${b}, 0.15)`;
 			
 			return shadowColor1;
 		} catch (error) {
 			// Fallback to default red shadow if color parsing fails
-			return 'rgba(255, 0, 0, 0.15)';
+			return 'rgba(255, 0, 0, 0.25)';
 		}
 	}
 }
