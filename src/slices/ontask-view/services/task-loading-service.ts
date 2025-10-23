@@ -55,6 +55,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		const allowedStatuses = this.getAllowedStatuses(statusFilters);
 		const checkboxRegex = this.createCheckboxRegex(allowedStatuses);
 		
+		this.logger.debug(`Starting task loading: target=${targetTasks}, files=${this.trackedFiles.length}, currentFile=${this.currentFileIndex}, currentTask=${this.currentTaskIndex}`);
+		
 		for (let fileIndex = this.currentFileIndex; fileIndex < this.trackedFiles.length; fileIndex++) {
 			const filePath = this.trackedFiles[fileIndex];
 			const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
@@ -85,16 +87,29 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 				const startTaskIndex = (fileIndex === this.currentFileIndex) ? this.currentTaskIndex : 0;
 				const tasksToAdd = fileTasks.slice(startTaskIndex);
 				
+				// Debug log: Show file progress and tasks found
+				this.logger.debug(`Loading file ${fileIndex + 1}/${this.trackedFiles.length}: ${filePath}`);
+				this.logger.debug(`  Found ${fileTasks.length} total tasks in file`);
+				this.logger.debug(`  Adding ${tasksToAdd.length} tasks (starting from index ${startTaskIndex})`);
+				
+				// Debug log: Show each task being added
+				tasksToAdd.forEach((task, taskIndex) => {
+					this.logger.debug(`  Task ${taskIndex + 1}: Line ${task.lineNumber} - ${task.lineContent}`);
+				});
+				
 				for (const task of tasksToAdd) {
 					loadedTasks.push(task);
 					
 					if (loadedTasks.length >= targetTasks) {
 						this.currentFileIndex = fileIndex;
 						this.currentTaskIndex = fileTasks.indexOf(task) + 1;
+						this.logger.debug(`Target reached! Stopped at file ${fileIndex + 1}/${this.trackedFiles.length}, task ${this.currentTaskIndex}/${fileTasks.length} - Final progress: ${loadedTasks.length}/${targetTasks}`);
 						return loadedTasks;
 					}
 				}
 				
+				// Debug log: Show progress after processing this file
+				this.logger.debug(`  Progress after file ${fileIndex + 1}: ${loadedTasks.length}/${targetTasks} tasks loaded`);
 				
 				if (loadedTasks.length < targetTasks) {
 					this.currentFileIndex = fileIndex + 1;
@@ -107,6 +122,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			}
 		}
 		
+		this.logger.debug(`Task loading completed: ${loadedTasks.length}/${targetTasks} tasks loaded from ${this.trackedFiles.length} files`);
 		return loadedTasks;
 	}
 
