@@ -1,5 +1,3 @@
-// Data service
-
 import { App, Plugin } from 'obsidian';
 import { DataService, StatusConfig, QuickFilter } from './DataServiceInterface';
 import { DEFAULT_STATUS_CONFIGS } from '../settings/SettingsServiceInterface';
@@ -46,10 +44,10 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 		this.initialized = true;
 	}
 
-cleanup(): void {
-	this.data = {};
-	this.initialized = false;
-}
+	cleanup(): void {
+		this.data = {};
+		this.initialized = false;
+	}
 
 	async loadData(): Promise<any> {
 		try {

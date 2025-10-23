@@ -1,4 +1,3 @@
-// Dependency injection container
 import { DIContainer, ServiceIdentifier, ServiceFactory, ServiceRegistration } from './DIContainerInterface';
 
 export class DIContainerImpl implements DIContainer {
@@ -15,7 +14,6 @@ export class DIContainerImpl implements DIContainer {
 	registerSingleton<T>(identifier: ServiceIdentifier<T>, factory: ServiceFactory<T>): void {
 		this.register(identifier, factory, true);
 	}
-
 
 	resolve<T>(identifier: ServiceIdentifier<T>): T {
 		const registration = this.registrations.get(identifier);
@@ -36,7 +34,6 @@ export class DIContainerImpl implements DIContainer {
 			throw new Error(`Failed to create instance for '${String(identifier)}': ${error}`);
 		}
 	}
-
 
 	clear(): void {
 		this.registrations.clear();

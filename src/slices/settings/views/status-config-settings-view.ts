@@ -1,4 +1,3 @@
-// Status Configuration Settings view component for settings
 import { App } from 'obsidian';
 import { StatusConfigView } from './status-config-view';
 import { StatusConfigService } from '../status-config';

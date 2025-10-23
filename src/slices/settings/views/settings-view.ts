@@ -1,4 +1,3 @@
-// Settings slice - UI view implementation
 import { App, PluginSettingTab } from 'obsidian';
 import { SettingsService } from '../SettingsServiceInterface';
 import { StatusConfigService } from '../status-config';

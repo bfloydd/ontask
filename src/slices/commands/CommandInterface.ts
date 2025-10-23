@@ -1,5 +1,3 @@
-// Commands slice - Interface definitions
-
 export interface Command {
     execute(): Promise<void>;
 }

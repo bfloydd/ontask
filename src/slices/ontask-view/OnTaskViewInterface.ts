@@ -1,5 +1,3 @@
-import { ItemView, WorkspaceLeaf } from 'obsidian';
-
 export interface OnTaskViewInterface {
 	getViewType(): string;
 	getDisplayText(): string;

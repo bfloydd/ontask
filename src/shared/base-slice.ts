@@ -25,6 +25,5 @@ export abstract class SettingsAwareSliceService extends PluginAwareSliceService 
     }
 
     onSettingsChanged(settings: any): void {
-        // Override in subclasses to handle settings changes
     }
 }

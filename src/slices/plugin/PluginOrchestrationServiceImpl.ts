@@ -1,13 +1,9 @@
 import { App, Plugin } from 'obsidian';
 import { PluginOrchestrator, PluginDependencies } from './PluginOrchestratorInterface';
 import { SettingsService } from '../settings';
-import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { StreamsService } from '../streams';
 import { OnTaskViewImpl, ONTASK_VIEW_TYPE } from '../ontask-view';
 import { EventSystem } from '../events';
-import { DataService } from '../data';
-import { StatusConfigService } from '../settings/status-config';
-import { LoggingService } from '../logging';
 import { Logger } from '../logging/Logger';
 import { SettingsAwareSliceService } from '../../shared/base-slice';
 

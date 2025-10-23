@@ -1,5 +1,3 @@
-// Plugin orchestration slice - Interface definitions
-
 import { App, Plugin } from 'obsidian';
 import { SettingsService } from '../settings';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';

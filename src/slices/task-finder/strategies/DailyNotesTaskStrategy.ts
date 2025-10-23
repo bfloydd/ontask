@@ -1,5 +1,4 @@
 import { App, TFile } from 'obsidian';
-import { Logger } from '../../logging/Logger';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 
 export class DailyNotesTaskStrategy implements TaskFinderStrategy {

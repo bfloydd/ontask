@@ -1,6 +1,5 @@
 import { EventSystem } from '../../events';
 import { StatusConfigService } from '../../settings/status-config';
-import { Logger } from '../../logging/Logger';
 
 export interface ContextMenuServiceInterface {
 	showContextMenu(event: MouseEvent, checkbox: any): void;

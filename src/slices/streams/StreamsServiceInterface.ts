@@ -1,5 +1,3 @@
-import { App } from 'obsidian';
-
 export interface Stream {
 	id: string;
 	name: string;
