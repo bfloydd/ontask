@@ -1265,6 +1265,18 @@
 	--ontask-toptask-status-color: var(--ontask-dynamic-status-color);
 }
 
+/* Quick filter status badges with dynamic colors */
+.quick-filter-status-badge[data-dynamic-color] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+}
+
+/* Error messages with dynamic styling */
+.ontask-error-message[data-dynamic-error] {
+	color: var(--text-error);
+	margin-top: 8px;
+}
+
 /* Different colors for different rank levels */
 .ontask-task-ranking[data-rank="1"] {
 	background: linear-gradient(135deg, #ffd700, #ffed4e);

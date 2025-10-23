@@ -101,8 +101,9 @@ export class QuickFiltersView {
 				const statusBadge = statusDisplay.createSpan();
 				statusBadge.addClass('quick-filter-status-badge');
 				statusBadge.textContent = statusConfig.name;
-				statusBadge.style.backgroundColor = statusConfig.backgroundColor || 'transparent';
-				statusBadge.style.color = statusConfig.color;
+				statusBadge.setAttribute('data-dynamic-color', 'true');
+				statusBadge.style.setProperty('--ontask-status-color', statusConfig.color);
+				statusBadge.style.setProperty('--ontask-status-background-color', statusConfig.backgroundColor || 'transparent');
 			}
 		});
 	}
@@ -179,8 +180,7 @@ export class QuickFiltersView {
 				const errorMessage = content.createDiv();
 				errorMessage.addClass('ontask-error-message');
 				errorMessage.textContent = 'Please enter a filter name.';
-				errorMessage.style.color = 'var(--text-error)';
-				errorMessage.style.marginTop = '8px';
+				errorMessage.setAttribute('data-dynamic-error', 'true');
 				return;
 			}
 
@@ -192,8 +192,7 @@ export class QuickFiltersView {
 				const errorMessage = content.createDiv();
 				errorMessage.addClass('ontask-error-message');
 				errorMessage.textContent = 'Please select at least one status.';
-				errorMessage.style.color = 'var(--text-error)';
-				errorMessage.style.marginTop = '8px';
+				errorMessage.setAttribute('data-dynamic-error', 'true');
 				return;
 			}
 
@@ -222,8 +221,7 @@ export class QuickFiltersView {
 				const errorMessage = content.createDiv();
 				errorMessage.addClass('ontask-error-message');
 				errorMessage.textContent = 'Failed to save quick filter. Please try again.';
-				errorMessage.style.color = 'var(--text-error)';
-				errorMessage.style.marginTop = '8px';
+				errorMessage.setAttribute('data-dynamic-error', 'true');
 			}
 		}, { passive: true });
 
