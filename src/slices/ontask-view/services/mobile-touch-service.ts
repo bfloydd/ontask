@@ -38,7 +38,7 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 					this.contextMenuService.showContextMenu(mouseEvent, task);
 				}
 			}, LONG_PRESS_DURATION);
-		});
+		}, { passive: true });
 
 		element.addEventListener('touchmove', (e) => {
 			if (longPressTimer) {
@@ -55,20 +55,20 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 					}
 				}
 			}
-		});
+		}, { passive: true });
 
 		element.addEventListener('touchend', (e) => {
 			if (longPressTimer) {
 				clearTimeout(longPressTimer);
 				longPressTimer = null;
 			}
-		});
+		}, { passive: true });
 
 		element.addEventListener('touchcancel', (e) => {
 			if (longPressTimer) {
 				clearTimeout(longPressTimer);
 				longPressTimer = null;
 			}
-		});
+		}, { passive: true });
 	}
 }
