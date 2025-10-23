@@ -225,10 +225,10 @@ export class QuickFiltersView {
 				errorMessage.style.color = 'var(--text-error)';
 				errorMessage.style.marginTop = '8px';
 			}
-		});
+		}, { passive: true });
 
 		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
-		cancelButton.addEventListener('click', () => modal.close());
+		cancelButton.addEventListener('click', () => modal.close(), { passive: true });
 
 		modal.open();
 	}
@@ -253,10 +253,10 @@ export class QuickFiltersView {
 			await this.dataService.removeQuickFilter(filter.id);
 			modal.close();
 			this.render(); // Re-render the view
-		});
+		}, { passive: true });
 
 		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
-		cancelButton.addEventListener('click', () => modal.close());
+		cancelButton.addEventListener('click', () => modal.close(), { passive: true });
 
 		modal.open();
 	}

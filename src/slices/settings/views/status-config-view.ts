@@ -130,9 +130,9 @@ export class StatusConfigView {
 		}
 
 		// Event listeners
-		editBtn.addEventListener('click', () => this.editStatus(config, index));
+		editBtn.addEventListener('click', () => this.editStatus(config, index), { passive: true });
 		if (deleteBtn) {
-			deleteBtn.addEventListener('click', () => this.deleteStatus(index));
+			deleteBtn.addEventListener('click', () => this.deleteStatus(index), { passive: true });
 		}
 		
 		// Drag and drop
@@ -145,7 +145,7 @@ export class StatusConfigView {
 			text: '+ Add New Status'
 		});
 		
-		addBtn.addEventListener('click', () => this.addNewStatus());
+		addBtn.addEventListener('click', () => this.addNewStatus(), { passive: true });
 	}
 
 	private async editStatus(config: StatusConfig, index: number): Promise<void> {
@@ -247,7 +247,7 @@ export class StatusConfigView {
 
 		// Add change listeners to update preview
 		contentEl.querySelectorAll('input[type="text"]').forEach((input: HTMLInputElement) => {
-			input.addEventListener('input', updatePreview);
+			input.addEventListener('input', updatePreview, { passive: true });
 		});
 
 		// Buttons
@@ -265,11 +265,11 @@ export class StatusConfigView {
 		saveBtn.addEventListener('click', async () => {
 			await this.saveStatus(config, index);
 			modal.close();
-		});
+		}, { passive: true });
 
 		cancelBtn.addEventListener('click', () => {
 			modal.close();
-		});
+		}, { passive: true });
 
 		modal.open();
 	}
@@ -321,15 +321,15 @@ export class StatusConfigView {
 		itemEl.addEventListener('dragstart', (e) => {
 			e.dataTransfer?.setData('text/plain', index.toString());
 			itemEl.classList.add('dragging');
-		});
+		}, { passive: true });
 
 		itemEl.addEventListener('dragend', () => {
 			itemEl.classList.remove('dragging');
-		});
+		}, { passive: true });
 
 		itemEl.addEventListener('dragover', (e) => {
 			e.preventDefault();
-		});
+		}, { passive: false });
 
 		itemEl.addEventListener('drop', async (e) => {
 			e.preventDefault();
@@ -345,6 +345,6 @@ export class StatusConfigView {
 				this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
 				this.render();
 			}
-		});
+		}, { passive: false });
 	}
 }

@@ -53,7 +53,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 			tabEl.addEventListener('click', () => {
 				this.currentTab = tab.id as 'general' | 'status' | 'quick-filters';
 				this.display(); // Re-render with new tab
-			});
+			}, { passive: true });
 		});
 	}
 

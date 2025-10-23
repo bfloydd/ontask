@@ -126,17 +126,17 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		statusDisplay.addEventListener('click', () => {
 			this.onOpenFile(checkbox.file?.path || '', checkbox.lineNumber);
-		});
+		}, { passive: true });
 		
 		textEl.addEventListener('click', () => {
 			this.onOpenFile(checkbox.file?.path || '', checkbox.lineNumber);
-		});
+		}, { passive: true });
 		
 		checkboxEl.addEventListener('contextmenu', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
 			this.contextMenuService.showContextMenu(e, checkbox);
-		});
+		}, { passive: false });
 
 		this.addMobileTouchHandlers(checkboxEl, checkbox);
 		
@@ -181,13 +181,13 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
-		});
+		}, { passive: true });
 		
 		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
 		topTaskText.textContent = remainingText || 'Top Task';
 		topTaskText.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
-		});
+		}, { passive: true });
 		
 		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
 		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
@@ -200,7 +200,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 			e.preventDefault();
 			e.stopPropagation();
 			this.contextMenuService.showContextMenu(e, topTask);
-		});
+		}, { passive: false });
 		this.addMobileTouchHandlers(topTaskDisplay, topTask);
 		
 		return topTaskSection;
@@ -233,13 +233,13 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
-		});
+		}, { passive: true });
 		
 		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
 		topTaskText.textContent = remainingText || 'Top Task';
 		topTaskText.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
-		});
+		}, { passive: true });
 		
 		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
 		topTaskSource.textContent = `From: ${this.getFileName(topTask.file?.path || '')}`;
@@ -252,7 +252,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 			e.preventDefault();
 			e.stopPropagation();
 			this.contextMenuService.showContextMenu(e, topTask);
-		});
+		}, { passive: false });
 		
 		contentArea.insertBefore(topTaskSection, contentArea.firstChild);
 	}
@@ -296,7 +296,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		newLoadMoreButton.addEventListener('click', async () => {
 			await onLoadMore();
-		});
+		}, { passive: true });
 
 		return newLoadMoreButton;
 	}
@@ -312,7 +312,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		loadMoreButton.addEventListener('click', async () => {
 			await onLoadMore();
-		});
+		}, { passive: true });
 		
 		return loadMoreSection;
 	}

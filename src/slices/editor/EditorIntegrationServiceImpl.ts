@@ -223,7 +223,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 
 		topTaskBar.addEventListener('click', () => {
 			editor.focus();
-		});
+		}, { passive: true });
 	}
 
 	private parseCheckboxLine(line: string): { remainingText: string } {

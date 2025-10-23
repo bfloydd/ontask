@@ -78,7 +78,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		menuItem.addEventListener('click', () => {
 			this.updateCheckboxStatusCallback(checkbox, status.symbol);
 			menuItem.closest('.ontask-context-menu')?.remove();
-		});
+		}, { passive: true });
 
 		return menuItem;
 	}
@@ -120,16 +120,16 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const closeMenu = (e: MouseEvent) => {
 			if (!menu.contains(e.target as Node)) {
 				menu.remove();
-				document.removeEventListener('click', closeMenu);
-				document.removeEventListener('scroll', closeMenu);
-				document.removeEventListener('contextmenu', closeMenu);
+				document.removeEventListener('click', closeMenu, true);
+				document.removeEventListener('scroll', closeMenu, true);
+				document.removeEventListener('contextmenu', closeMenu, true);
 			}
 		};
 
 		requestAnimationFrame(() => {
-			document.addEventListener('click', closeMenu);
-			document.addEventListener('scroll', closeMenu, true);
-			document.addEventListener('contextmenu', closeMenu);
+		document.addEventListener('click', closeMenu, { passive: true });
+		document.addEventListener('scroll', closeMenu, { passive: true, capture: true });
+		document.addEventListener('contextmenu', closeMenu, { passive: true });
 		});
 	}
 
@@ -245,7 +245,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 			if (e.target !== checkbox) {
 				checkbox.checked = !checkbox.checked;
 			}
-		});
+		}, { passive: true });
 
 		return checkboxItem;
 	}
@@ -277,7 +277,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		saveButton.addClass('mod-cta');
 		saveButton.addEventListener('click', async () => {
 			await this.saveFilterSettings(checkboxesContainer, menu);
-		});
+		}, { passive: true });
 	}
 
 	private async saveFilterSettings(checkboxesContainer: HTMLElement, menu: HTMLElement): Promise<void> {
@@ -326,7 +326,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 		button.addEventListener('click', () => {
 			this.applyQuickFilter(filter, checkboxesContainer);
-		});
+		}, { passive: true });
 
 		return button;
 	}
