@@ -45,6 +45,37 @@ export class GeneralSettingsView {
 				}));
 
 		new Setting(this.containerEl)
+			.setName('Use theme default color')
+			.setDesc('When enabled, uses Obsidian\'s error color (var(--text-error)) for the top task. When disabled, you can choose a custom color below.')
+			.addToggle(toggle => toggle
+				.setValue(settings.useThemeDefaultColor)
+				.onChange(async (value) => {
+					await this.settingsService.updateSetting('useThemeDefaultColor', value);
+					this.app.workspace.trigger('ontask:settings-changed', { 
+						key: 'useThemeDefaultColor', 
+						value 
+					});
+					// Re-render to show/hide the color picker
+					this.render();
+				}));
+
+		if (!settings.useThemeDefaultColor) {
+			new Setting(this.containerEl)
+				.setName('Custom top task color')
+				.setDesc('Choose a custom color for the top task border and highlights.')
+				.addColorPicker(colorPicker => {
+					colorPicker.setValue(settings.topTaskColor)
+						.onChange(async (value) => {
+							await this.settingsService.updateSetting('topTaskColor', value);
+							this.app.workspace.trigger('ontask:settings-changed', { 
+								key: 'topTaskColor', 
+								value 
+							});
+						});
+				});
+		}
+
+		new Setting(this.containerEl)
 			.setName('Load more limit')
 			.setDesc('Number of tasks to load per batch for better performance. This limit applies to both initial load and all subsequent Load More operations.')
 			.addText(text => text

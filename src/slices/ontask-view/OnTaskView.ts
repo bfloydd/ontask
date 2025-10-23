@@ -73,6 +73,7 @@ export class OnTaskViewImpl extends ItemView {
 		this.domRenderingService = new DOMRenderingService(
 			this.statusConfigService,
 			this.contextMenuService,
+			this.settingsService,
 			this.app,
 			(filePath: string, lineNumber: number) => this.openFile(filePath, lineNumber),
 			(filePath: string) => this.getFileName(filePath),

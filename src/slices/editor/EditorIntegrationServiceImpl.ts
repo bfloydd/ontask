@@ -43,6 +43,9 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			if (event.data.key === 'showTopTaskInEditor') {
 				this.logger.debug('[OnTask Editor] showTopTaskInEditor setting changed, scheduling decoration update');
 				this.scheduleDecorationUpdate();
+			} else if (event.data.key === 'topTaskColor' || event.data.key === 'useThemeDefaultColor') {
+				this.logger.debug('[OnTask Editor] top task color setting changed, updating existing overlays');
+				this.updateExistingOverlayColors();
 			}
 		});
 
@@ -193,6 +196,15 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			}
 		});
 
+		// Apply the configurable top task color
+		const settings = this.settingsService.getSettings();
+		const colorToUse = settings.useThemeDefaultColor ? 'var(--text-error)' : settings.topTaskColor;
+		topTaskBar.style.setProperty('--ontask-toptask-color', colorToUse);
+		
+		// Calculate and apply shadow color that complements the chosen color
+		const shadowColor = this.calculateShadowColor(colorToUse);
+		topTaskBar.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
+
 		const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		const displayText = remainingText || 'Top Task';
 		
@@ -318,6 +330,49 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	 */
 	private isTopTaskByConfig(checkbox: any, config: { symbol: string; name: string; pattern: RegExp }): boolean {
 		return config.pattern.test(checkbox.lineContent);
+	}
+
+	/**
+	 * Update the color of existing top task overlays when the setting changes
+	 */
+	private updateExistingOverlayColors(): void {
+		const settings = this.settingsService.getSettings();
+		const colorToUse = settings.useThemeDefaultColor ? 'var(--text-error)' : settings.topTaskColor;
+		const shadowColor = this.calculateShadowColor(colorToUse);
+		this.topTaskOverlays.forEach((overlay) => {
+			overlay.style.setProperty('--ontask-toptask-color', colorToUse);
+			overlay.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
+		});
+	}
+
+	/**
+	 * Calculate a shadow color that complements the chosen top task color
+	 */
+	private calculateShadowColor(color: string): string {
+		// For CSS variables, use a default shadow color
+		if (color.startsWith('var(')) {
+			return 'rgba(255, 0, 0, 0.15)'; // Default red shadow for theme colors
+		}
+		
+		// For hex colors, convert to RGB and create a shadow color
+		try {
+			// Remove # if present
+			const hex = color.replace('#', '');
+			
+			// Convert hex to RGB
+			const r = parseInt(hex.substr(0, 2), 16);
+			const g = parseInt(hex.substr(2, 2), 16);
+			const b = parseInt(hex.substr(4, 2), 16);
+			
+			// Create shadow colors with reduced opacity
+			const shadowColor1 = `rgba(${r}, ${g}, ${b}, 0.15)`;
+			const shadowColor2 = `rgba(${r}, ${g}, ${b}, 0.1)`;
+			
+			return shadowColor1;
+		} catch (error) {
+			// Fallback to default red shadow if color parsing fails
+			return 'rgba(255, 0, 0, 0.15)';
+		}
 	}
 
 }

@@ -2,6 +2,7 @@ import { TFile } from 'obsidian';
 import { StatusConfigService } from '../../settings/status-config';
 import { ContextMenuService } from './context-menu-service';
 import { Logger } from '../../logging/Logger';
+import { SettingsService } from '../../settings';
 
 export interface DOMRenderingServiceInterface {
 	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number): void;
@@ -22,6 +23,7 @@ export interface DOMRenderingServiceInterface {
 export class DOMRenderingService implements DOMRenderingServiceInterface {
 	private statusConfigService: StatusConfigService;
 	private contextMenuService: ContextMenuService;
+	private settingsService: SettingsService;
 	private app: any;
 	private onOpenFile: (filePath: string, lineNumber: number) => Promise<void>;
 	private getFileName: (filePath: string) => string;
@@ -32,6 +34,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	constructor(
 		statusConfigService: StatusConfigService,
 		contextMenuService: ContextMenuService,
+		settingsService: SettingsService,
 		app: any,
 		onOpenFile: (filePath: string, lineNumber: number) => Promise<void>,
 		getFileName: (filePath: string) => string,
@@ -41,6 +44,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	) {
 		this.statusConfigService = statusConfigService;
 		this.contextMenuService = contextMenuService;
+		this.settingsService = settingsService;
 		this.app = app;
 		this.onOpenFile = onOpenFile;
 		this.getFileName = getFileName;
@@ -147,6 +151,15 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		const topTaskSection = document.createElement('div');
 		topTaskSection.className = 'ontask-toptask-hero-section ontask-file-section';
 		
+		// Apply the configurable top task color
+		const settings = this.settingsService.getSettings();
+		const colorToUse = settings.useThemeDefaultColor ? 'var(--text-error)' : settings.topTaskColor;
+		topTaskSection.style.setProperty('--ontask-toptask-color', colorToUse);
+		
+		// Calculate and apply shadow color that complements the chosen color
+		const shadowColor = this.calculateShadowColor(colorToUse);
+		topTaskSection.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
+		
 		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
 		
@@ -196,6 +209,15 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	createTopTaskSection(contentArea: HTMLElement, topTask: any): void {
 		const topTaskSection = contentArea.createDiv('ontask-toptask-hero-section');
 		topTaskSection.addClass('ontask-file-section');
+		
+		// Apply the configurable top task color
+		const settings = this.settingsService.getSettings();
+		const colorToUse = settings.useThemeDefaultColor ? 'var(--text-error)' : settings.topTaskColor;
+		topTaskSection.style.setProperty('--ontask-toptask-color', colorToUse);
+		
+		// Calculate and apply shadow color that complements the chosen color
+		const shadowColor = this.calculateShadowColor(colorToUse);
+		topTaskSection.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
 		
 		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
@@ -433,5 +455,35 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		}
 		
 		return sortedMap;
+	}
+
+	/**
+	 * Calculate a shadow color that complements the chosen top task color
+	 */
+	private calculateShadowColor(color: string): string {
+		// For CSS variables, use a default shadow color
+		if (color.startsWith('var(')) {
+			return 'rgba(255, 0, 0, 0.15)'; // Default red shadow for theme colors
+		}
+		
+		// For hex colors, convert to RGB and create a shadow color
+		try {
+			// Remove # if present
+			const hex = color.replace('#', '');
+			
+			// Convert hex to RGB
+			const r = parseInt(hex.substr(0, 2), 16);
+			const g = parseInt(hex.substr(2, 2), 16);
+			const b = parseInt(hex.substr(4, 2), 16);
+			
+			// Create shadow colors with reduced opacity
+			const shadowColor1 = `rgba(${r}, ${g}, ${b}, 0.15)`;
+			const shadowColor2 = `rgba(${r}, ${g}, ${b}, 0.1)`;
+			
+			return shadowColor1;
+		} catch (error) {
+			// Fallback to default red shadow if color parsing fails
+			return 'rgba(255, 0, 0, 0.15)';
+		}
 	}
 }

@@ -10,6 +10,7 @@ export interface StatusConfig {
 export interface OnTaskSettings {
 	onlyShowToday: boolean;
 	topTaskColor: string;
+	useThemeDefaultColor: boolean;
 	showTopTaskInEditor: boolean;
 	checkboxSource: 'streams' | 'daily-notes' | 'folder';
 	customFolderPath: string;
@@ -21,7 +22,8 @@ export interface OnTaskSettings {
 
 export const DEFAULT_SETTINGS: OnTaskSettings = {
 	onlyShowToday: false,
-	topTaskColor: 'neutral',
+	topTaskColor: '#ff6b6b',
+	useThemeDefaultColor: true,
 	showTopTaskInEditor: true,
 	checkboxSource: 'streams',
 	customFolderPath: '',
