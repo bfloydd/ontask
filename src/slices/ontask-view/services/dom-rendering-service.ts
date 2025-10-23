@@ -168,6 +168,11 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		const shadowColor = this.calculateShadowColor(colorToUse);
 		topTaskSection.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
 		
+		// Set the status color CSS variable for the checkbox display
+		const { statusSymbol } = this.parseCheckboxLine(topTask.lineContent);
+		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
+		topTaskSection.style.setProperty('--ontask-toptask-status-color', statusColor);
+		
 		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
 		
@@ -177,11 +182,10 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		const topTaskContent = topTaskDisplay.createDiv('ontask-toptask-hero-content');
 		
 		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
-		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
+		const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
 		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 		
-		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
 		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
 		topTaskStatusDisplay.style.color = statusColor;
 		topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
@@ -227,6 +231,11 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		const shadowColor = this.calculateShadowColor(colorToUse);
 		topTaskSection.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
 		
+		// Set the status color CSS variable for the checkbox display
+		const { statusSymbol } = this.parseCheckboxLine(topTask.lineContent);
+		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
+		topTaskSection.style.setProperty('--ontask-toptask-status-color', statusColor);
+		
 		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
 		
@@ -236,9 +245,16 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		const topTaskContent = topTaskDisplay.createDiv('ontask-toptask-hero-content');
 		
 		const topTaskStatusDisplay = topTaskDisplay.createDiv('ontask-checkbox-display');
-		const { statusSymbol, remainingText } = this.parseCheckboxLine(topTask.lineContent);
+		const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
 		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
+		
+		// Apply status colors from status config
+		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
+		topTaskStatusDisplay.style.color = statusColor;
+		topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
+		topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
+		
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
 		}, { passive: true });
@@ -386,11 +402,21 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		if (topTask) {
 			if (existingTopTaskSection) {
-				const topTaskStatusDisplay = existingTopTaskSection.querySelector('.ontask-checkbox-display');
+				// Set the status color CSS variable for the checkbox display
+				const { statusSymbol } = this.parseCheckboxLine(topTask.lineContent);
+				const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
+				(existingTopTaskSection as HTMLElement).style.setProperty('--ontask-toptask-status-color', statusColor);
+				
+				const topTaskStatusDisplay = existingTopTaskSection.querySelector('.ontask-checkbox-display') as HTMLElement;
 				if (topTaskStatusDisplay) {
-					const { statusSymbol } = this.parseCheckboxLine(topTask.lineContent);
 					topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
 					topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
+					
+					// Apply status colors from status config
+					const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
+					topTaskStatusDisplay.style.color = statusColor;
+					topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
+					topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
 				}
 				
 				const topTaskText = existingTopTaskSection.querySelector('.ontask-toptask-hero-text');

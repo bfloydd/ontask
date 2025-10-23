@@ -480,8 +480,8 @@
 	font-weight: bold;
 	min-width: 24px;
 	padding: 2px 8px;
-	border: 2px solid var(--text-error);
-	background: var(--text-error);
+	border: 2px solid var(--ontask-toptask-status-color, var(--text-error));
+	background: var(--ontask-toptask-status-color, var(--text-error));
 	color: var(--text-on-accent);
 }
 
