@@ -224,6 +224,20 @@
 	margin-left: auto;
 }
 
+/* Dynamic status display colors */
+.ontask-checkbox-display[data-dynamic-color] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 1px solid var(--ontask-status-color);
+}
+
+/* Dynamic status display colors for top task items - more specific */
+.ontask-toptask-hero-item .ontask-checkbox-display[data-dynamic-color] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 2px solid var(--ontask-status-color);
+}
+
 /* ========================================
    TASK ITEMS & CHECKBOXES
    ======================================== */
@@ -502,6 +516,13 @@
 .ontask-toptask-hero-item .ontask-link-btn:hover {
 	background: var(--interactive-accent-hover);
 	opacity: 1;
+}
+
+/* Dynamic top task section colors */
+.ontask-toptask-hero-section[data-dynamic-color] {
+	--ontask-toptask-color: var(--ontask-dynamic-color);
+	--ontask-toptask-shadow-color: var(--ontask-dynamic-shadow-color);
+	--ontask-toptask-status-color: var(--ontask-dynamic-status-color);
 }
 
 /* ========================================
@@ -1044,6 +1065,12 @@
 	border-color: var(--background-modifier-border-hover);
 }
 
+/* Dynamic status config colors */
+.status-config-symbol[data-dynamic-color] {
+	color: var(--ontask-config-color);
+	background-color: var(--ontask-config-background-color);
+}
+
 /* ========================================
    FILTERS & QUICK FILTERS
    ======================================== */
@@ -1118,6 +1145,12 @@
 	color: var(--text-normal);
 }
 
+/* Dynamic quick filter status badge colors */
+.quick-filter-status-badge[data-dynamic-color] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+}
+
 /* ========================================
    ERROR MESSAGES
    ======================================== */
@@ -1138,6 +1171,12 @@
 .ontask-error-message::before {
 	content: "⚠️";
 	font-size: 16px;
+}
+
+/* Dynamic error message styling */
+.ontask-error-message[data-dynamic-error] {
+	color: var(--text-error);
+	margin-top: 8px;
 }
 
 /* ========================================
@@ -1241,41 +1280,6 @@
 	vertical-align: middle;
 }
 
-/* ========================================
-   DYNAMIC STATUS STYLING
-   ======================================== */
-
-/* Status display with dynamic colors */
-.ontask-checkbox-display[data-dynamic-color] {
-	color: var(--ontask-status-color);
-	background-color: var(--ontask-status-background-color);
-	border: 1px solid var(--ontask-status-color);
-}
-
-/* Status config preview with dynamic colors */
-.status-config-symbol[data-dynamic-color] {
-	color: var(--ontask-config-color);
-	background-color: var(--ontask-config-background-color);
-}
-
-/* Top task section with dynamic colors */
-.ontask-toptask-hero-section[data-dynamic-color] {
-	--ontask-toptask-color: var(--ontask-dynamic-color);
-	--ontask-toptask-shadow-color: var(--ontask-dynamic-shadow-color);
-	--ontask-toptask-status-color: var(--ontask-dynamic-status-color);
-}
-
-/* Quick filter status badges with dynamic colors */
-.quick-filter-status-badge[data-dynamic-color] {
-	color: var(--ontask-status-color);
-	background-color: var(--ontask-status-background-color);
-}
-
-/* Error messages with dynamic styling */
-.ontask-error-message[data-dynamic-error] {
-	color: var(--text-error);
-	margin-top: 8px;
-}
 
 /* Different colors for different rank levels */
 .ontask-task-ranking[data-rank="1"] {
