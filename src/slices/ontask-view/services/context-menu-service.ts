@@ -87,9 +87,9 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		statusDisplay.className = 'ontask-checkbox-display';
 		statusDisplay.setAttribute('data-status', status.symbol);
 		statusDisplay.textContent = this.getStatusDisplayText(status.symbol);
-		statusDisplay.style.color = status.color;
-		statusDisplay.style.backgroundColor = status.backgroundColor || 'transparent';
-		statusDisplay.style.border = `1px solid ${status.color}`;
+		statusDisplay.setAttribute('data-dynamic-color', 'true');
+		statusDisplay.style.setProperty('--ontask-status-color', status.color);
+		statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
 
 		return statusDisplay;
 	}

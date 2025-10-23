@@ -1241,6 +1241,30 @@
 	vertical-align: middle;
 }
 
+/* ========================================
+   DYNAMIC STATUS STYLING
+   ======================================== */
+
+/* Status display with dynamic colors */
+.ontask-checkbox-display[data-dynamic-color] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 1px solid var(--ontask-status-color);
+}
+
+/* Status config preview with dynamic colors */
+.status-config-symbol[data-dynamic-color] {
+	color: var(--ontask-config-color);
+	background-color: var(--ontask-config-background-color);
+}
+
+/* Top task section with dynamic colors */
+.ontask-toptask-hero-section[data-dynamic-color] {
+	--ontask-toptask-color: var(--ontask-dynamic-color);
+	--ontask-toptask-shadow-color: var(--ontask-dynamic-shadow-color);
+	--ontask-toptask-status-color: var(--ontask-dynamic-status-color);
+}
+
 /* Different colors for different rank levels */
 .ontask-task-ranking[data-rank="1"] {
 	background: linear-gradient(135deg, #ffd700, #ffed4e);
@@ -1249,15 +1273,15 @@
 }
 
 .ontask-task-ranking[data-rank="2"] {
-	background: linear-gradient(135deg, #e5e7eb, #d1d5db);
-	border-color: #9ca3af;
-	color: #374151;
-}
-
-.ontask-task-ranking[data-rank="3"] {
 	background: linear-gradient(135deg, #fbbf24, #f59e0b);
 	border-color: #d97706;
 	color: #92400e;
+}
+
+.ontask-task-ranking[data-rank="3"] {
+	background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+	border-color: #9ca3af;
+	color: #374151;
 }
 
 /* Mobile adjustments */

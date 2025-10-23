@@ -62,8 +62,9 @@ export class StatusConfigView {
 			cls: 'status-config-symbol',
 			text: config.symbol
 		});
-		statusEl.style.color = config.color;
-		statusEl.style.backgroundColor = config.backgroundColor || 'transparent';
+		statusEl.setAttribute('data-dynamic-color', 'true');
+		statusEl.style.setProperty('--ontask-config-color', config.color);
+		statusEl.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
 		
 		// Add lock icon for non-editable symbols
 		if (isNonEditableSymbol) {
@@ -239,14 +240,15 @@ export class StatusConfigView {
 			cls: 'status-config-modal-symbol',
 			text: config.symbol
 		});
-		previewStatus.style.color = config.color;
-		previewStatus.style.backgroundColor = config.backgroundColor || 'transparent';
+		previewStatus.setAttribute('data-dynamic-color', 'true');
+		previewStatus.style.setProperty('--ontask-config-color', config.color);
+		previewStatus.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
 
 		// Update preview on change
 		const updatePreview = () => {
 			previewStatus.textContent = config.symbol;
-			previewStatus.style.color = config.color;
-			previewStatus.style.backgroundColor = config.backgroundColor || 'transparent';
+			previewStatus.style.setProperty('--ontask-config-color', config.color);
+			previewStatus.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
 		};
 
 		// Add change listeners to update preview

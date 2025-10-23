@@ -115,9 +115,9 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
 		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-		statusDisplay.style.color = statusColor;
-		statusDisplay.style.backgroundColor = statusBackgroundColor;
-		statusDisplay.style.border = `1px solid ${statusColor}`;
+		statusDisplay.setAttribute('data-dynamic-color', 'true');
+		statusDisplay.style.setProperty('--ontask-status-color', statusColor);
+		statusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
 		
 		const textEl = document.createElement('span');
 		textEl.textContent = remainingText || 'Task';
@@ -162,16 +162,18 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		// Apply the configurable top task color
 		const settings = this.settingsService.getSettings();
 		const colorToUse = settings.useThemeDefaultColor ? 'var(--text-error)' : settings.topTaskColor;
-		topTaskSection.style.setProperty('--ontask-toptask-color', colorToUse);
 		
 		// Calculate and apply shadow color that complements the chosen color
 		const shadowColor = this.calculateShadowColor(colorToUse);
-		topTaskSection.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
 		
 		// Set the status color CSS variable for the checkbox display
 		const { statusSymbol } = this.parseCheckboxLine(topTask.lineContent);
 		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
-		topTaskSection.style.setProperty('--ontask-toptask-status-color', statusColor);
+		
+		topTaskSection.setAttribute('data-dynamic-color', 'true');
+		topTaskSection.style.setProperty('--ontask-dynamic-color', colorToUse);
+		topTaskSection.style.setProperty('--ontask-dynamic-shadow-color', shadowColor);
+		topTaskSection.style.setProperty('--ontask-dynamic-status-color', statusColor);
 		
 		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
@@ -187,9 +189,9 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 		
 		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-		topTaskStatusDisplay.style.color = statusColor;
-		topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
-		topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
+		topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
+		topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
+		topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
 		
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
@@ -251,9 +253,9 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		// Apply status colors from status config
 		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-		topTaskStatusDisplay.style.color = statusColor;
-		topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
-		topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
+		topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
+		topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
+		topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
 		
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
@@ -414,9 +416,9 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 					
 					// Apply status colors from status config
 					const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-					topTaskStatusDisplay.style.color = statusColor;
-					topTaskStatusDisplay.style.backgroundColor = statusBackgroundColor;
-					topTaskStatusDisplay.style.border = `1px solid ${statusColor}`;
+					topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
+					topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
+					topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
 				}
 				
 				const topTaskText = existingTopTaskSection.querySelector('.ontask-toptask-hero-text');
