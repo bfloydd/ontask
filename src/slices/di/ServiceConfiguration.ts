@@ -58,10 +58,11 @@ export class ServiceConfiguration {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
 			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
 			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
+			const statusConfigService = container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
 			const taskLoadingService = container.resolve<TaskLoadingService>(SERVICE_IDS.TASK_LOADING_SERVICE);
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
 			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
-			return new EditorIntegrationServiceImpl(app, settingsService, taskLoadingService, eventSystem, plugin, loggingService.getLogger());
+			return new EditorIntegrationServiceImpl(app, settingsService, statusConfigService, taskLoadingService, eventSystem, plugin, loggingService.getLogger());
 		});
 
 		container.registerSingleton(SERVICE_IDS.LOGGING_SERVICE, (container) => {

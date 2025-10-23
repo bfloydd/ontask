@@ -82,7 +82,7 @@ export class OnTaskViewImpl extends ItemView {
 			(element: HTMLElement, task: any) => this.mobileTouchService.addMobileTouchHandlers(element, task)
 		);
 		
-		this.topTaskProcessingService = new TopTaskProcessingService(this.eventSystem, this.logger);
+		this.topTaskProcessingService = new TopTaskProcessingService(this.eventSystem, this.logger, this.statusConfigService);
 		
 		this.fileOperationsService = new FileOperationsService(
 			this.app,

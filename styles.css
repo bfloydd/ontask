@@ -1222,3 +1222,53 @@
 	padding: 8px 16px;
 	font-size: 15px;
 }
+
+/* ========================================
+   TASK RANKING BADGES
+   ======================================== */
+
+.ontask-task-ranking {
+	display: inline-block;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 3px;
+	padding: 2px 6px;
+	margin-left: 8px;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--text-muted);
+	line-height: 1;
+	vertical-align: middle;
+}
+
+/* Different colors for different rank levels */
+.ontask-task-ranking[data-rank="1"] {
+	background: linear-gradient(135deg, #ffd700, #ffed4e);
+	border-color: #f59e0b;
+	color: #92400e;
+}
+
+.ontask-task-ranking[data-rank="2"] {
+	background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+	border-color: #9ca3af;
+	color: #374151;
+}
+
+.ontask-task-ranking[data-rank="3"] {
+	background: linear-gradient(135deg, #fbbf24, #f59e0b);
+	border-color: #d97706;
+	color: #92400e;
+}
+
+/* Mobile adjustments */
+.is-mobile .ontask-task-ranking {
+	font-size: 12px;
+	padding: 3px 7px;
+	margin-left: 6px;
+}
+
+.is-phone .ontask-task-ranking {
+	font-size: 11px;
+	padding: 2px 5px;
+	margin-left: 4px;
+}

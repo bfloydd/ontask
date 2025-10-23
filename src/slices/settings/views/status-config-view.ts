@@ -82,26 +82,12 @@ export class StatusConfigView {
 			text: config.name
 		});
 		
-		// Add visual indicator for non-editable symbols
-		if (isNonEditableSymbol) {
-			let indicatorText: string;
-			let tooltipText: string;
-			
-			if (config.symbol === '.') {
-				indicatorText = ' (Default)';
-				tooltipText = 'This symbol represents the default task state and cannot be modified';
-			} else if (config.symbol === 'x') {
-				indicatorText = ' (Done)';
-				tooltipText = 'This symbol represents the completed task state and cannot be modified';
-			} else {
-				indicatorText = ' (Top Task)';
-				tooltipText = 'This symbol is used for top task detection and cannot be modified';
-			}
-			
+		// Add visual indicator for ranking or non-editable symbols
+		if (config.topTaskRanking !== undefined) {
 			const indicatorEl = nameEl.createEl('span', {
-				cls: 'status-config-non-editable-indicator',
-				text: indicatorText,
-				attr: { title: tooltipText }
+				cls: 'status-config-ranking-indicator',
+				text: ` (Top task rank #${config.topTaskRanking})`,
+				attr: { title: 'This status participates in top task selection with this priority ranking' }
 			});
 			indicatorEl.addClass('status-config-indicator');
 		}
@@ -207,6 +193,26 @@ export class StatusConfigView {
 				.setValue(config.description)
 				.setPlaceholder('e.g., Task is completed')
 				.onChange(value => config.description = value));
+
+		// Top Task Ranking input
+		new Setting(contentEl)
+			.setName('Top Task Ranking')
+			.setDesc('Priority for top task selection (lower = higher priority). Leave blank to exclude from top task selection.')
+			.addText(text => {
+				text.setValue(config.topTaskRanking?.toString() || '')
+					.setPlaceholder('e.g., 1, 2, 3')
+					.inputEl.type = 'number';
+				text.inputEl.min = '1';
+				text.inputEl.step = '1';
+				text.onChange(value => {
+					if (value.trim() === '') {
+						config.topTaskRanking = undefined;
+					} else {
+						const ranking = parseInt(value, 10);
+						config.topTaskRanking = isNaN(ranking) ? undefined : ranking;
+					}
+				});
+			});
 
 		// Color input
 		new Setting(contentEl)

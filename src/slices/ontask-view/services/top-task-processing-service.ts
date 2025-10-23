@@ -1,5 +1,6 @@
 import { EventSystem } from '../../events';
 import { Logger } from '../../logging/Logger';
+import { StatusConfigService } from '../../settings/status-config';
 
 export interface TopTaskProcessingServiceInterface {
 	processTopTasksFromDisplayedTasks(checkboxes: any[]): void;
@@ -10,32 +11,12 @@ export interface TopTaskProcessingServiceInterface {
 export class TopTaskProcessingService implements TopTaskProcessingServiceInterface {
 	private eventSystem: EventSystem;
 	private logger: Logger;
+	private statusConfigService: StatusConfigService;
 
-	/**
-	 * Top task configuration - easily modifiable priority order
-	 * Each entry defines: symbol, name, and regex pattern for detection
-	 */
-	private static readonly TOP_TASK_CONFIG = [
-		{
-			symbol: '/',
-			name: 'slash',
-			pattern: /^-\s*\[\/([^\]]*)\]/
-		},
-		{
-			symbol: '!',
-			name: 'exclamation', 
-			pattern: /^-\s*\[!([^\]]*)\]/
-		},
-		{
-			symbol: '+',
-			name: 'plus',
-			pattern: /^-\s*\[\+([^\]]*)\]/
-		}
-	] as const;
-
-	constructor(eventSystem: EventSystem, logger: Logger) {
+	constructor(eventSystem: EventSystem, logger: Logger, statusConfigService: StatusConfigService) {
 		this.eventSystem = eventSystem;
 		this.logger = logger;
+		this.statusConfigService = statusConfigService;
 	}
 
 	processTopTasksFromDisplayedTasks(checkboxes: any[]): void {
@@ -44,17 +25,42 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 			checkbox.isTopTaskContender = false;
 		});
 		
+		// Get all status configs with topTaskRanking defined
+		const allStatusConfigs = this.statusConfigService.getStatusConfigs();
+		const rankedStatusConfigs = allStatusConfigs
+			.filter(config => config.topTaskRanking !== undefined)
+			.sort((a, b) => (a.topTaskRanking || 0) - (b.topTaskRanking || 0));
+		
+		if (rankedStatusConfigs.length === 0) {
+			this.logger.debug('[OnTask TopTask] No status configs with topTaskRanking found');
+			this.eventSystem.emit('top-task:cleared', {});
+			return;
+		}
+		
+		// Build dynamic configs with regex patterns
+		const dynamicConfigs = rankedStatusConfigs.map(config => ({
+			symbol: config.symbol,
+			name: config.name,
+			pattern: new RegExp(`^\\s*-\\s*\\[${this.escapeRegex(config.symbol)}\\]\\s.*`),
+			ranking: config.topTaskRanking
+		}));
+		
 		const taskCounts: Record<string, number> = {};
 		const tasksByType: Record<string, any[]> = {};
 		
-		TopTaskProcessingService.TOP_TASK_CONFIG.forEach(config => {
+		dynamicConfigs.forEach(config => {
 			const matchingTasks = checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
 			taskCounts[config.name] = matchingTasks.length;
 			tasksByType[config.name] = matchingTasks;
+			
+			// Mark tasks with ranking for UI display
+			matchingTasks.forEach(task => {
+				task.topTaskRanking = config.ranking;
+			});
 		});
 		
 		let finalTopTask: any = null;
-		for (const config of TopTaskProcessingService.TOP_TASK_CONFIG) {
+		for (const config of dynamicConfigs) {
 			const tasks = tasksByType[config.name];
 			if (tasks.length > 0) {
 				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
@@ -81,6 +87,23 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 	}
 
 	getTopTaskConfig(): readonly { symbol: string; name: string; pattern: RegExp }[] {
-		return TopTaskProcessingService.TOP_TASK_CONFIG;
+		// Get all status configs with topTaskRanking defined
+		const allStatusConfigs = this.statusConfigService.getStatusConfigs();
+		const rankedStatusConfigs = allStatusConfigs
+			.filter(config => config.topTaskRanking !== undefined)
+			.sort((a, b) => (a.topTaskRanking || 0) - (b.topTaskRanking || 0));
+		
+		return rankedStatusConfigs.map(config => ({
+			symbol: config.symbol,
+			name: config.name,
+			pattern: new RegExp(`^\\s*-\\s*\\[${this.escapeRegex(config.symbol)}\\]\\s.*`)
+		}));
+	}
+
+	/**
+	 * Escape special regex characters in a string
+	 */
+	private escapeRegex(string: string): string {
+		return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	}
 }

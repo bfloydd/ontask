@@ -123,6 +123,15 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		textEl.textContent = remainingText || 'Task';
 		textEl.addClass('ontask-checkbox-text');
 		
+		// Add ranking badge if task has topTaskRanking
+		if (checkbox.topTaskRanking !== undefined) {
+			const rankingEl = document.createElement('span');
+			rankingEl.textContent = `Rank ${checkbox.topTaskRanking}`;
+			rankingEl.addClass('ontask-task-ranking');
+			rankingEl.setAttribute('data-rank', checkbox.topTaskRanking.toString());
+			textEl.appendChild(rankingEl);
+		}
+		
 		statusDisplay.addEventListener('click', () => {
 			this.onOpenFile(checkbox.file?.path || '', checkbox.lineNumber);
 		}, { passive: true });

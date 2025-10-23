@@ -5,6 +5,7 @@ export interface StatusConfig {
 	color: string;
 	backgroundColor?: string;
 	filtered?: boolean;
+	topTaskRanking?: number;
 }
 
 export interface OnTaskSettings {
@@ -35,10 +36,10 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 
 export const DEFAULT_STATUS_CONFIGS: StatusConfig[] = [
 	{ symbol: '.', name: 'To-do', description: 'Not started', color: '#6b7280', backgroundColor: 'transparent', filtered: true },
-	{ symbol: '+', name: 'Next', description: 'Next up, on deck', color: '#fff', backgroundColor: 'brown', filtered: true },
-	{ symbol: '/', name: 'In Progress', description: 'Incomplete', color: '#ffffff', backgroundColor: '#dc2626', filtered: true },
+	{ symbol: '+', name: 'Next', description: 'Next up, on deck', color: '#fff', backgroundColor: 'brown', filtered: true, topTaskRanking: 3 },
+	{ symbol: '/', name: 'In Progress', description: 'Incomplete', color: '#ffffff', backgroundColor: '#dc2626', filtered: true, topTaskRanking: 1 },
 	{ symbol: 'x', name: 'Done', description: 'Completed', color: '#ffffff', backgroundColor: '#10b981', filtered: true },
-	{ symbol: '!', name: 'Important', description: 'Top task', color: '#ffffff', backgroundColor: '#ef4444', filtered: true },
+	{ symbol: '!', name: 'Important', description: 'Top task', color: '#ffffff', backgroundColor: '#ef4444', filtered: true, topTaskRanking: 2 },
 	{ symbol: '*', name: 'Star', description: 'Marked', color: '#ffffff', backgroundColor: '#8b5cf6', filtered: true },
 	{ symbol: '?', name: 'Question', description: 'Needs clarification', color: '#ffffff', backgroundColor: '#f59e0b', filtered: true },
 	{ symbol: 'r', name: 'Review', description: 'In review', color: '#ffffff', backgroundColor: '#6b7280', filtered: true },

@@ -1,6 +1,7 @@
 import { App, MarkdownView, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
 import { SettingsService } from '../settings/SettingsServiceInterface';
+import { StatusConfigService } from '../settings/status-config';
 import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
 import { EventSystem } from '../events/EventSystemInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
@@ -9,6 +10,7 @@ import { Logger } from '../logging/Logger';
 export class EditorIntegrationServiceImpl extends PluginAwareSliceService implements EditorIntegrationService {
 	private app: App;
 	private settingsService: SettingsService;
+	private statusConfigService: StatusConfigService;
 	private taskLoadingService: TaskLoadingService;
 	private eventSystem: EventSystem;
 	private logger: Logger;
@@ -21,6 +23,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	constructor(
 		app: App,
 		settingsService: SettingsService,
+		statusConfigService: StatusConfigService,
 		taskLoadingService: TaskLoadingService,
 		eventSystem: EventSystem,
 		plugin: Plugin,
@@ -29,6 +32,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		super();
 		this.app = app;
 		this.settingsService = settingsService;
+		this.statusConfigService = statusConfigService;
 		this.taskLoadingService = taskLoadingService;
 		this.eventSystem = eventSystem;
 		this.logger = logger;
@@ -300,21 +304,38 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			checkbox.isTopTaskContender = false;
 		});
 		
-		const TOP_TASK_CONFIG = [
-			{ symbol: '/', name: 'In Progress', pattern: /^\s*-\s*\[\/\]\s.*/ },
-			{ symbol: '!', name: 'Important', pattern: /^\s*-\s*\[!\]\s.*/ },
-			{ symbol: '+', name: 'Next', pattern: /^\s*-\s*\[\+\]\s.*/ }
-		];
+		// Get all status configs with topTaskRanking defined
+		const allStatusConfigs = this.statusConfigService.getStatusConfigs();
+		const rankedStatusConfigs = allStatusConfigs
+			.filter(config => config.topTaskRanking !== undefined)
+			.sort((a, b) => (a.topTaskRanking || 0) - (b.topTaskRanking || 0));
+		
+		if (rankedStatusConfigs.length === 0) {
+			return;
+		}
+		
+		// Build dynamic configs with regex patterns
+		const dynamicConfigs = rankedStatusConfigs.map(config => ({
+			symbol: config.symbol,
+			name: config.name,
+			pattern: new RegExp(`^\\s*-\\s*\\[${this.escapeRegex(config.symbol)}\\]\\s.*`),
+			ranking: config.topTaskRanking
+		}));
 		
 		const tasksByType: Record<string, any[]> = {};
 		
-		TOP_TASK_CONFIG.forEach(config => {
+		dynamicConfigs.forEach(config => {
 			const matchingTasks = checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
 			tasksByType[config.name] = matchingTasks;
+			
+			// Mark tasks with ranking for UI display
+			matchingTasks.forEach(task => {
+				task.topTaskRanking = config.ranking;
+			});
 		});
 		
 		let finalTopTask: any = null;
-		for (const config of TOP_TASK_CONFIG) {
+		for (const config of dynamicConfigs) {
 			const tasks = tasksByType[config.name];
 			if (tasks.length > 0) {
 				tasks.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
@@ -373,6 +394,13 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			// Fallback to default red shadow if color parsing fails
 			return 'rgba(255, 0, 0, 0.25)';
 		}
+	}
+
+	/**
+	 * Escape special regex characters in a string
+	 */
+	private escapeRegex(string: string): string {
+		return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	}
 
 }
