@@ -1257,3 +1257,79 @@
 	padding: 2px 5px;
 	margin-left: 4px;
 }
+
+/* ========================================
+   FILTER SECTION
+   ======================================== */
+
+.ontask-filter-section {
+	margin: 16px 0;
+	padding: 12px;
+	border: none !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	background: transparent !important;
+	overflow: visible !important;
+}
+
+.ontask-filter-container {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ontask-filter-input {
+	flex: 1;
+	padding: 8px 12px;
+	border: none;
+	background: transparent;
+	color: var(--text-normal);
+	font-size: 14px;
+	transition: border-color 0.2s ease;
+}
+
+.ontask-filter-input:focus {
+	outline: none;
+	background: var(--background-secondary);
+	border-radius: 4px;
+}
+
+.ontask-filter-clear-button {
+	padding: 8px 12px;
+	background: transparent;
+	color: var(--text-muted);
+	border: none;
+	font-size: 12px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.ontask-filter-clear-button:hover {
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border-radius: 4px;
+}
+
+.ontask-filter-clear-button:active {
+	background: var(--background-modifier-hover);
+}
+
+/* Mobile adjustments */
+.is-phone .ontask-filter-section {
+	margin: 12px 0;
+	padding: 10px;
+}
+
+.is-phone .ontask-filter-container {
+	gap: 6px;
+}
+
+.is-phone .ontask-filter-input {
+	padding: 6px 10px;
+	font-size: 13px;
+}
+
+.is-phone .ontask-filter-clear-button {
+	padding: 6px 10px;
+	font-size: 11px;
+}

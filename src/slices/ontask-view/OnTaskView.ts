@@ -37,6 +37,7 @@ export class OnTaskViewImpl extends ItemView {
 	private displayedTasksCount: number = 10; // Will be updated from settings
 	private loadMoreButton: HTMLButtonElement | null = null;
 	private lastCheckboxContent: Map<string, string> = new Map(); // Track checkbox content to detect actual changes
+	private currentFilter: string = '';
 	
 
 
@@ -163,6 +164,40 @@ export class OnTaskViewImpl extends ItemView {
 		}
 	}
 
+	private onFilterChange(filter: string): void {
+		this.currentFilter = filter;
+		this.applyFilter();
+	}
+
+	private clearFilter(): void {
+		this.currentFilter = '';
+		this.applyFilter();
+	}
+
+	private applyFilter(): void {
+		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
+		if (!contentArea) return;
+
+		// Get all task elements (excluding top task and filter sections)
+		const taskElements = contentArea.querySelectorAll('.ontask-file-section:not(.ontask-toptask-hero-section):not(.ontask-filter-section)');
+		
+		if (this.currentFilter.trim() === '') {
+			// Show all tasks
+			taskElements.forEach(element => {
+				(element as HTMLElement).style.display = '';
+			});
+		} else {
+			// Filter tasks based on content
+			const filterText = this.currentFilter.toLowerCase();
+			taskElements.forEach(element => {
+				const taskElement = element as HTMLElement;
+				const taskText = taskElement.textContent?.toLowerCase() || '';
+				const shouldShow = taskText.includes(filterText);
+				taskElement.style.display = shouldShow ? '' : 'none';
+			});
+		}
+	}
+
 	async refreshCheckboxes(): Promise<void> {
 		if (this.isRefreshing) {
 			return;
@@ -194,14 +229,7 @@ export class OnTaskViewImpl extends ItemView {
 			
 			loadingEl.remove();
 			
-			this.domRenderingService.renderCheckboxes(contentArea, this.checkboxes, this.displayedTasksCount);
-			
-			// Only add load more button when not filtering by today
-			if (!settings.onlyShowToday) {
-				this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
-			} else {
-				this.loadMoreButton = null;
-			}
+			this.domRenderingService.renderCheckboxes(contentArea, this.checkboxes, this.displayedTasksCount, this.currentFilter, (filter: string) => this.onFilterChange(filter), () => this.clearFilter(), () => this.loadMoreTasks(), settings.onlyShowToday);
 			
 			this.updateButtonStates();
 			this.initializeCheckboxContentTracking();
@@ -261,53 +289,6 @@ export class OnTaskViewImpl extends ItemView {
 	}
 
 
-	private async renderCheckboxesOptimized(contentArea: HTMLElement): Promise<void> {
-		
-		if (this.checkboxes.length === 0) {
-			const emptyEl = contentArea.createDiv('ontask-empty');
-			emptyEl.textContent = 'No checkboxes found.';
-			return;
-		}
-
-		const fragment = document.createDocumentFragment();
-		const topTask = this.checkboxes.find(checkbox => checkbox.isTopTask);
-
-		if (topTask) {
-			const topTaskSection = this.domRenderingService.createTopTaskSectionElement(topTask);
-			fragment.appendChild(topTaskSection);
-		}
-
-		const checkboxesByFile = this.domRenderingService.groupCheckboxesByFile(this.checkboxes);
-		const sortedFiles = this.domRenderingService.sortFilesByDate(checkboxesByFile);
-		
-		let tasksShown = 0;
-		const maxTasksToShow = this.displayedTasksCount;
-		const fileSections: HTMLElement[] = [];
-		
-		for (const [filePath, fileCheckboxes] of sortedFiles) {
-			if (tasksShown >= maxTasksToShow) {
-				break;
-			}
-			
-			const fileSection = this.domRenderingService.createFileSectionElement(filePath, fileCheckboxes, maxTasksToShow, tasksShown);
-			fileSections.push(fileSection);
-			
-			const remainingSlots = maxTasksToShow - tasksShown;
-			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
-			tasksShown += tasksToShowFromFile;
-		}
-		
-		fileSections.forEach(section => fragment.appendChild(section));
-		
-		// Only show load more button when not filtering by today
-		const settings = this.settingsService.getSettings();
-		if (!settings.onlyShowToday) {
-			const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
-			fragment.appendChild(loadMoreSection);
-		}
-		
-		contentArea.appendChild(fragment);
-	}
 
 
 
@@ -318,9 +299,10 @@ export class OnTaskViewImpl extends ItemView {
 			return;
 		}
 		
-		if (this.loadMoreButton) {
-			this.loadMoreButton.remove();
-			this.loadMoreButton = null;
+		// Remove existing load more button
+		const existingLoadMoreSection = contentArea.querySelector('.ontask-load-more-section');
+		if (existingLoadMoreSection) {
+			existingLoadMoreSection.remove();
 		}
 		
 		const settings = this.settingsService.getSettings();
@@ -334,18 +316,12 @@ export class OnTaskViewImpl extends ItemView {
 			filePath: task.file?.path || ''
 		})));
 		
-		// Only add load more button when not filtering by today
+		// Add new load more button if there are more tasks to load
 		if (!settings.onlyShowToday) {
-			this.loadMoreButton = this.domRenderingService.addLoadMoreButton(contentArea, this.loadMoreButton, () => this.loadMoreTasks());
-		} else {
-			this.loadMoreButton = null;
+			const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
+			contentArea.appendChild(loadMoreSection);
 		}
 	}
-
-
-
-
-
 
 	/**
 	 * Centralized method for displaying status symbols consistently across the plugin
@@ -355,8 +331,6 @@ export class OnTaskViewImpl extends ItemView {
 	private getStatusDisplayText(statusSymbol: string): string {
 		return statusSymbol;
 	}
-
-
 
 	private async openFile(filePath: string, lineNumber: number): Promise<void> {
 		const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
@@ -501,19 +475,10 @@ export class OnTaskViewImpl extends ItemView {
 		});
 	}
 
-
 	private openSettings(): void {
 		(this.app as any).setting.open();
 		(this.app as any).setting.openTabById(this.plugin.manifest.id);
 	}
-
-
-
-
-
-
-
-
 
 
 	private applyStatusFilters(checkboxes: any[], statusFilters: Record<string, boolean>): any[] {

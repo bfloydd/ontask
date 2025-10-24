@@ -4,12 +4,12 @@ import { ContextMenuService } from './context-menu-service';
 import { SettingsService } from '../../settings';
 
 export interface DOMRenderingServiceInterface {
-	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number): void;
+	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void;
 	createCheckboxElement(checkbox: any): HTMLElement;
 	createTopTaskSectionElement(topTask: any): HTMLElement;
 	createTopTaskSection(contentArea: HTMLElement, topTask: any): void;
+	createFilterSectionElement(currentFilter: string, onFilterChange: (filter: string) => void, onClearFilter: () => void): HTMLElement;
 	createFileSectionElement(filePath: string, fileCheckboxes: any[], maxTasksToShow: number, tasksShown: number): HTMLElement;
-	addLoadMoreButton(contentArea: HTMLElement, loadMoreButton: HTMLButtonElement | null, onLoadMore: () => Promise<void>): HTMLButtonElement;
 	createLoadMoreButtonElement(onLoadMore: () => Promise<void>): HTMLElement;
 	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void;
 	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: any[], filePath: string): void;
@@ -52,16 +52,26 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		this.addMobileTouchHandlers = addMobileTouchHandlers;
 	}
 
-	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number): void {
+	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void {
 		if (checkboxes.length === 0) {
 			const emptyEl = contentArea.createDiv('ontask-empty');
 			emptyEl.textContent = 'No checkboxes found.';
 			return;
 		}
 
+		// Use DocumentFragment for optimized DOM manipulation
+		const fragment = document.createDocumentFragment();
 		const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
+
 		if (topTask) {
-			this.createTopTaskSection(contentArea, topTask);
+			const topTaskSection = this.createTopTaskSectionElement(topTask);
+			fragment.appendChild(topTaskSection);
+		}
+
+		// Add filter section after top task
+		if (currentFilter !== undefined && onFilterChange && onClearFilter) {
+			const filterSection = this.createFilterSectionElement(currentFilter, onFilterChange, onClearFilter);
+			fragment.appendChild(filterSection);
 		}
 
 		const checkboxesByFile = this.groupCheckboxesByFile(checkboxes);
@@ -69,30 +79,31 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		let tasksShown = 0;
 		const maxTasksToShow = displayedTasksCount;
+		const fileSections: HTMLElement[] = [];
 		
 		for (const [filePath, fileCheckboxes] of sortedFiles) {
 			if (tasksShown >= maxTasksToShow) {
 				break;
 			}
 			
-			const fileSection = contentArea.createDiv('ontask-file-section');
-			fileSection.setAttribute('data-file-path', filePath);
-			
-			const fileHeader = fileSection.createDiv('ontask-file-header');
-			fileHeader.createEl('h3', { text: this.getFileName(filePath) });
+			const fileSection = this.createFileSectionElement(filePath, fileCheckboxes, maxTasksToShow, tasksShown);
+			fileSections.push(fileSection);
 			
 			const remainingSlots = maxTasksToShow - tasksShown;
 			const tasksToShowFromFile = Math.min(fileCheckboxes.length, remainingSlots);
-			
-			const checkboxesList = fileSection.createDiv('ontask-checkboxes-list');
-			
-			for (let i = 0; i < tasksToShowFromFile; i++) {
-				const checkbox = fileCheckboxes[i];
-				const checkboxEl = this.createCheckboxElement(checkbox);
-				checkboxesList.appendChild(checkboxEl);
-				tasksShown++;
-			}
+			tasksShown += tasksToShowFromFile;
 		}
+		
+		fileSections.forEach(section => fragment.appendChild(section));
+		
+		// Only show load more button when not filtering by today
+		if (!onlyShowToday && onLoadMore) {
+			const loadMoreSection = this.createLoadMoreButtonElement(onLoadMore);
+			fragment.appendChild(loadMoreSection);
+		}
+		
+		// Single DOM update for optimal performance
+		contentArea.appendChild(fragment);
 	}
 
 	createCheckboxElement(checkbox: any): HTMLElement {
@@ -309,6 +320,33 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		contentArea.insertBefore(topTaskSection, contentArea.firstChild);
 	}
 
+	createFilterSectionElement(currentFilter: string, onFilterChange: (filter: string) => void, onClearFilter: () => void): HTMLElement {
+		const filterSection = document.createElement('div');
+		filterSection.className = 'ontask-filter-section ontask-file-section';
+		
+		const filterContainer = filterSection.createDiv('ontask-filter-container');
+		
+		const filterInput = filterContainer.createEl('input', {
+			type: 'text',
+			placeholder: 'Filter tasks...',
+			value: currentFilter
+		});
+		filterInput.addClass('ontask-filter-input');
+		
+		// Add clear button
+		const clearButton = filterContainer.createEl('button', { text: 'Clear' });
+		clearButton.addClass('ontask-filter-clear-button');
+		clearButton.addEventListener('click', onClearFilter, { passive: true });
+		
+		// Add filter event listener
+		filterInput.addEventListener('input', (e) => {
+			const target = e.target as HTMLInputElement;
+			onFilterChange(target.value);
+		}, { passive: true });
+		
+		return filterSection;
+	}
+
 	createFileSectionElement(filePath: string, fileCheckboxes: any[], maxTasksToShow: number, tasksShown: number): HTMLElement {
 		const fileSection = document.createElement('div');
 		fileSection.className = 'ontask-file-section';
@@ -331,27 +369,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		return fileSection;
 	}
 
-	addLoadMoreButton(contentArea: HTMLElement, loadMoreButton: HTMLButtonElement | null, onLoadMore: () => Promise<void>): HTMLButtonElement {
-		if (loadMoreButton) {
-			loadMoreButton.remove();
-		}
-
-		const existingSections = contentArea.querySelectorAll('.ontask-load-more-section');
-		existingSections.forEach(section => section.remove());
-
-		const loadMoreSection = contentArea.createDiv('ontask-load-more-section');
-		
-		const newLoadMoreButton = loadMoreSection.createEl('button', {
-			text: 'Load More',
-			cls: 'ontask-load-more-button'
-		});
-		
-		newLoadMoreButton.addEventListener('click', async () => {
-			await onLoadMore();
-		}, { passive: true });
-
-		return newLoadMoreButton;
-	}
 
 	createLoadMoreButtonElement(onLoadMore: () => Promise<void>): HTMLElement {
 		const loadMoreSection = document.createElement('div');
