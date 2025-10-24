@@ -132,9 +132,9 @@ export class OnTaskViewImpl extends ItemView {
 		refreshButton.innerHTML = '<svg class="lucide lucide-refresh-cw" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg> Refresh';
 		refreshButton.addEventListener('click', () => this.refreshCheckboxes(), { passive: true });
 		
-		const filtersButton = buttonsContainer.createEl('button', { text: 'Filters' });
+		const filtersButton = buttonsContainer.createEl('button', { text: 'Statuses' });
 		filtersButton.addClass('ontask-header-button');
-		filtersButton.innerHTML = '<svg class="lucide lucide-filter" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3"/></svg> Filters';
+		filtersButton.innerHTML = '<svg class="lucide lucide-filter" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3"/></svg> Statuses';
 		filtersButton.addEventListener('click', () => this.contextMenuService.showFiltersMenu(), { passive: true });
 		
 		this.onlyTodayButton = buttonsContainer.createEl('button', { text: 'Show All' });
@@ -171,6 +171,16 @@ export class OnTaskViewImpl extends ItemView {
 
 	private clearFilter(): void {
 		this.currentFilter = '';
+		
+		// Clear the input field
+		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
+		if (contentArea) {
+			const filterInput = contentArea.querySelector('.ontask-filter-input') as HTMLInputElement;
+			if (filterInput) {
+				filterInput.value = '';
+			}
+		}
+		
 		this.applyFilter();
 	}
 
@@ -178,22 +188,42 @@ export class OnTaskViewImpl extends ItemView {
 		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
 		if (!contentArea) return;
 
-		// Get all task elements (excluding top task and filter sections)
-		const taskElements = contentArea.querySelectorAll('.ontask-file-section:not(.ontask-toptask-hero-section):not(.ontask-filter-section)');
+		// Get all file sections (excluding top task and filter sections)
+		const fileSections = contentArea.querySelectorAll('.ontask-file-section:not(.ontask-toptask-hero-section):not(.ontask-filter-section)');
 		
 		if (this.currentFilter.trim() === '') {
-			// Show all tasks
-			taskElements.forEach(element => {
-				(element as HTMLElement).style.display = '';
+			// Show all tasks and file sections
+			fileSections.forEach(section => {
+				(section as HTMLElement).style.display = '';
+				const taskElements = section.querySelectorAll('.ontask-checkbox-item');
+				taskElements.forEach(task => {
+					(task as HTMLElement).style.display = '';
+				});
 			});
 		} else {
-			// Filter tasks based on content
+			// Filter tasks and hide empty file sections
 			const filterText = this.currentFilter.toLowerCase();
-			taskElements.forEach(element => {
-				const taskElement = element as HTMLElement;
-				const taskText = taskElement.textContent?.toLowerCase() || '';
-				const shouldShow = taskText.includes(filterText);
-				taskElement.style.display = shouldShow ? '' : 'none';
+			
+			fileSections.forEach(section => {
+				const sectionElement = section as HTMLElement;
+				const taskElements = sectionElement.querySelectorAll('.ontask-checkbox-item');
+				let hasVisibleTasks = false;
+				
+				// Check each task in this section
+				taskElements.forEach(task => {
+					const taskElement = task as HTMLElement;
+					const taskText = taskElement.textContent?.toLowerCase() || '';
+					const shouldShow = taskText.includes(filterText);
+					
+					if (shouldShow) {
+						hasVisibleTasks = true;
+					}
+					
+					taskElement.style.display = shouldShow ? '' : 'none';
+				});
+				
+				// Hide the entire file section if it has no visible tasks
+				sectionElement.style.display = hasVisibleTasks ? '' : 'none';
 			});
 		}
 	}
@@ -315,6 +345,11 @@ export class OnTaskViewImpl extends ItemView {
 			checkbox: task,
 			filePath: task.file?.path || ''
 		})));
+		
+		// Apply current filter to newly loaded tasks
+		if (this.currentFilter.trim() !== '') {
+			this.applyFilter();
+		}
 		
 		// Add new load more button if there are more tasks to load
 		if (!settings.onlyShowToday) {
