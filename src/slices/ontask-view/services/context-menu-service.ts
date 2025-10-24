@@ -87,9 +87,17 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		statusDisplay.className = 'ontask-checkbox-display';
 		statusDisplay.setAttribute('data-status', status.symbol);
 		statusDisplay.textContent = this.getStatusDisplayText(status.symbol);
-		statusDisplay.setAttribute('data-dynamic-color', 'true');
+		// Apply colors from status config for all statuses
 		statusDisplay.style.setProperty('--ontask-status-color', status.color);
 		statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
+		
+		// Only apply dynamic styling attributes if this is a truly custom status configuration
+		// (not one of the built-in default statuses that have predefined colors)
+		const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(status.symbol);
+		if (!isBuiltInStatus) {
+			statusDisplay.setAttribute('data-dynamic-color', 'true');
+			statusDisplay.setAttribute('data-custom-status', 'true');
+		}
 
 		return statusDisplay;
 	}

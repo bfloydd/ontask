@@ -62,9 +62,17 @@ export class StatusConfigView {
 			cls: 'status-config-symbol',
 			text: config.symbol
 		});
-		statusEl.setAttribute('data-dynamic-color', 'true');
+		// Apply colors from status config for all statuses
 		statusEl.style.setProperty('--ontask-config-color', config.color);
 		statusEl.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
+		
+		// Only apply dynamic styling attributes if this is a truly custom status configuration
+		// (not one of the built-in default statuses that have predefined colors)
+		const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(config.symbol);
+		if (!isBuiltInStatus) {
+			statusEl.setAttribute('data-dynamic-color', 'true');
+			statusEl.setAttribute('data-custom-status', 'true');
+		}
 		
 		// Add lock icon for non-editable symbols
 		if (isNonEditableSymbol) {
@@ -240,15 +248,33 @@ export class StatusConfigView {
 			cls: 'status-config-modal-symbol',
 			text: config.symbol
 		});
-		previewStatus.setAttribute('data-dynamic-color', 'true');
-		previewStatus.style.setProperty('--ontask-config-color', config.color);
-		previewStatus.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
+		// Only apply dynamic styling if this is a truly custom status configuration
+		// (not one of the built-in default statuses that have predefined colors)
+		const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(config.symbol);
+		
+		if (!isBuiltInStatus) {
+			previewStatus.setAttribute('data-dynamic-color', 'true');
+			previewStatus.setAttribute('data-custom-status', 'true');
+			previewStatus.style.setProperty('--ontask-config-color', config.color);
+			previewStatus.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
+		}
 
 		// Update preview on change
 		const updatePreview = () => {
 			previewStatus.textContent = config.symbol;
-			previewStatus.style.setProperty('--ontask-config-color', config.color);
-			previewStatus.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
+			// Only apply dynamic styling if this is a truly custom status configuration
+			// (not one of the built-in default statuses that have predefined colors)
+			const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(config.symbol);
+			
+			if (!isBuiltInStatus) {
+				previewStatus.setAttribute('data-dynamic-color', 'true');
+				previewStatus.setAttribute('data-custom-status', 'true');
+				previewStatus.style.setProperty('--ontask-config-color', config.color);
+				previewStatus.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
+			} else {
+				previewStatus.removeAttribute('data-dynamic-color');
+				previewStatus.removeAttribute('data-custom-status');
+			}
 		};
 
 		// Add change listeners to update preview

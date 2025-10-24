@@ -115,9 +115,21 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
 		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-		statusDisplay.setAttribute('data-dynamic-color', 'true');
-		statusDisplay.style.setProperty('--ontask-status-color', statusColor);
-		statusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+		
+		// Apply colors from status config for all statuses
+		const statusConfig = this.statusConfigService.getStatusConfig(statusSymbol);
+		if (statusConfig) {
+			statusDisplay.style.setProperty('--ontask-status-color', statusColor);
+			statusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+			
+			// Only apply dynamic styling attributes if this is a truly custom status configuration
+			// (not one of the built-in default statuses that have predefined colors)
+			const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(statusSymbol);
+			if (!isBuiltInStatus) {
+				statusDisplay.setAttribute('data-dynamic-color', 'true');
+				statusDisplay.setAttribute('data-custom-status', 'true');
+			}
+		}
 		
 		const textEl = document.createElement('span');
 		textEl.textContent = remainingText || 'Task';
@@ -189,9 +201,16 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
 		
 		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-		topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
-		topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
-		topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+		
+		// For top task items, always apply dynamic styling to ensure proper status colors
+		// Top task items have special CSS rules that require CSS custom properties
+		const statusConfig = this.statusConfigService.getStatusConfig(statusSymbol);
+		if (statusConfig) {
+			topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
+			topTaskStatusDisplay.setAttribute('data-custom-status', 'true');
+			topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
+			topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+		}
 		
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
@@ -253,9 +272,16 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		// Apply status colors from status config
 		const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-		topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
-		topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
-		topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+		
+		// For top task items, always apply dynamic styling to ensure proper status colors
+		// Top task items have special CSS rules that require CSS custom properties
+		const statusConfig = this.statusConfigService.getStatusConfig(statusSymbol);
+		if (statusConfig) {
+			topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
+			topTaskStatusDisplay.setAttribute('data-custom-status', 'true');
+			topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
+			topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+		}
 		
 		topTaskStatusDisplay.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
@@ -416,9 +442,21 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 					
 					// Apply status colors from status config
 					const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
-					topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
-					topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
-					topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+					
+					// For top task items, we need to apply dynamic styling even for built-in statuses
+					// because the top task CSS rules require the custom properties to work correctly
+					// But we still need to check if this is a built-in status to avoid conflicts
+					const statusConfig = this.statusConfigService.getStatusConfig(statusSymbol);
+					const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(statusSymbol);
+					
+					if (statusConfig) {
+						if (!isBuiltInStatus) {
+							topTaskStatusDisplay.setAttribute('data-dynamic-color', 'true');
+							topTaskStatusDisplay.setAttribute('data-custom-status', 'true');
+						}
+						topTaskStatusDisplay.style.setProperty('--ontask-status-color', statusColor);
+						topTaskStatusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+					}
 				}
 				
 				const topTaskText = existingTopTaskSection.querySelector('.ontask-toptask-hero-text');

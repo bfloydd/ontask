@@ -224,15 +224,15 @@
 	margin-left: auto;
 }
 
-/* Dynamic status display colors */
-.ontask-checkbox-display[data-dynamic-color] {
+/* Dynamic status display colors - only for custom status configurations */
+.ontask-checkbox-display[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
 	border: 1px solid var(--ontask-status-color);
 }
 
-/* Dynamic status display colors for top task items - more specific */
-.ontask-toptask-hero-item .ontask-checkbox-display[data-dynamic-color] {
+/* Dynamic status display colors for top task items - only for custom status configurations */
+.ontask-toptask-hero-item .ontask-checkbox-display[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
 	border: 2px solid var(--ontask-status-color);
@@ -308,68 +308,13 @@
 	justify-content: center;
 }
 
-.ontask-checkbox-display[data-status="x"],
-.ontask-checkbox-display[data-status="!"],
-.ontask-checkbox-display[data-status="?"],
-.ontask-checkbox-display[data-status="*"],
-.ontask-checkbox-display[data-status="r"],
-.ontask-checkbox-display[data-status="b"],
-.ontask-checkbox-display[data-status="<"],
-.ontask-checkbox-display[data-status=">"],
-.ontask-checkbox-display[data-status="-"],
-.ontask-checkbox-display[data-status="/"] {
-	color: var(--text-on-accent);
+/* Dynamic status styling - all statuses use CSS custom properties from data.json */
+.ontask-checkbox-display[data-status] {
+	color: var(--ontask-status-color, var(--text-on-accent));
+	background: var(--ontask-status-background-color, var(--interactive-accent));
+	border-color: var(--ontask-status-color, var(--interactive-accent));
 }
 
-.ontask-checkbox-display[data-status="x"] {
-	background: var(--interactive-accent);
-	border-color: var(--interactive-accent);
-}
-
-.ontask-checkbox-display[data-status="!"] {
-	background: var(--text-error);
-	border-color: var(--text-error);
-}
-
-.ontask-checkbox-display[data-status="?"] {
-	background: var(--text-warning);
-	border-color: var(--text-warning);
-}
-
-.ontask-checkbox-display[data-status="*"] {
-	background: var(--text-accent);
-	border-color: var(--text-accent);
-}
-
-.ontask-checkbox-display[data-status="r"] {
-	background: var(--text-muted);
-	border-color: var(--text-muted);
-}
-
-.ontask-checkbox-display[data-status="b"] {
-	background: var(--text-accent);
-	border-color: var(--text-accent);
-}
-
-.ontask-checkbox-display[data-status="<"] {
-	background: var(--text-warning);
-	border-color: var(--text-warning);
-}
-
-.ontask-checkbox-display[data-status=">"] {
-	background: var(--text-accent);
-	border-color: var(--text-accent);
-}
-
-.ontask-checkbox-display[data-status="-"] {
-	background: var(--text-error);
-	border-color: var(--text-error);
-}
-
-.ontask-checkbox-display[data-status="/"] {
-	background: var(--text-warning);
-	border-color: var(--text-warning);
-}
 
 .ontask-checkbox-text {
 	font-family: var(--font-monospace);
