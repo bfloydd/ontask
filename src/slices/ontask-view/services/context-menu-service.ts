@@ -203,9 +203,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		const settings = this.settingsService.getSettings();
 		const statusConfigs = this.statusConfigService.getStatusConfigs();
 
-		const header = menu.createDiv();
-		header.createEl('h3', { text: 'Status Filters' });
-
 		const checkboxesContainer = this.createStatusCheckboxes(menu, statusConfigs);
 		menu.appendChild(checkboxesContainer);
 
@@ -313,9 +310,6 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 		const separator = menu.createDiv();
 		separator.className = 'ontask-filters-separator';
-
-		const quickFiltersHeader = menu.createDiv();
-		quickFiltersHeader.createEl('h3', { text: 'Quick Filters' });
 
 		const quickFiltersContainer = menu.createDiv();
 		quickFiltersContainer.className = 'ontask-filters-quick-filters-container';
