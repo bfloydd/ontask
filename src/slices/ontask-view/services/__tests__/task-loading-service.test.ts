@@ -320,6 +320,45 @@ describe('TaskLoadingService', () => {
 			expect(result[2].lineContent).toBe('- [/] In progress task');
 		});
 
+		it('should find no tasks when no statuses are allowed', async () => {
+			// Arrange
+			const settings = { loadMoreLimit: 10, onlyShowToday: false };
+			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
+			mockStatusConfigService.getStatusFilters = jest.fn(() => ({})); // Empty object = no statuses allowed
+			
+			const mockFiles = [
+				{ path: 'file1.md', name: 'file1.md' }
+			];
+
+			const mockFileContent = `- [ ] To-do task
+- [x] Completed task
+- [/] In progress task
+
+This is a blank line above
+
+- [!] Important task
+- [*] Starred task
+
+Another blank line
+
+Some regular text without checkboxes`;
+
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+				mockFiles.find(f => f.path === path) || null
+			);
+			mockApp.vault.read = jest.fn().mockResolvedValue(mockFileContent);
+
+			await taskLoadingService.initializeFileTracking(false);
+			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
+
+			// Act
+			const result = await taskLoadingService.loadTasksWithFiltering(settings);
+
+			// Assert
+			expect(result).toHaveLength(0); // Should find no tasks when no statuses are allowed
+			expect(mockApp.vault.read).toHaveBeenCalledTimes(1); // Should still read the file
+		});
+
 		it('should treat space as synonym for dot in status filtering', async () => {
 			// Arrange
 			const settings = { loadMoreLimit: 10, onlyShowToday: false };
