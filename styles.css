@@ -621,9 +621,9 @@
 .ontask-filters-quick-filters-container {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 6px;
-	padding: 10px;
-	border-top: 1px solid var(--background-modifier-border);
+	gap: 0px;
+	padding: 2px;
+	border-bottom: 1px solid var(--background-modifier-border);
 	justify-content: center;
 }
 
@@ -632,6 +632,12 @@
 	padding: 0;
 	border: none;
 	background: none;
+}
+
+/* Filter modal setting items - reduce padding and remove border */
+.ontask-filters-modal .setting-item {
+	padding: 0.5em 0;
+	border-top: none;
 }
 
 .ontask-filters-quick-filters-container .setting-item-control {
@@ -768,18 +774,6 @@
 	align-items: center;
 }
 
-/* ========================================
-   TEST MENU (DEBUG)
-   ======================================== */
-
-.ontask-test-menu {
-	position: fixed;
-	z-index: 9999;
-	background: red;
-	color: white;
-	padding: 10px;
-	border: 2px solid black;
-}
 
 
 /* ========================================

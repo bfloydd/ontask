@@ -36,6 +36,9 @@ class FilterModal extends Modal {
 		const { contentEl, titleEl } = this;
 		contentEl.empty();
 		titleEl.textContent = 'Filter Statuses';
+		
+		// Add the ontask-filters-modal class to the modal element
+		this.modalEl.addClass('ontask-filters-modal');
 
 		// Status checkboxes using native Setting components
 		const checkboxElements: { [key: string]: HTMLInputElement } = {};
