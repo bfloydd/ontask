@@ -108,7 +108,7 @@
 }
 
 .ontask-header-button {
-	padding: 0px 6px 0px 6px;
+	/* padding: 0px 6px 0px 6px; */
 	gap: 6px;
 	height: 25px;
 }
@@ -533,16 +533,16 @@
 }
 
 .is-mobile .ontask-header-button {
-	padding: 0px 4px 0px 4px;
+	/* padding: 0px 4px 0px 4px; */
 	gap: 4px;
-	height: 22px;
+	height: 25px;
 	font-size: 12px;
 }
 
 .is-phone .ontask-header-button {
-	padding: 0px 3px 0px 3px;
+	/* padding: 0px 3px 0px 3px; */
 	gap: 3px;
-	height: 20px;
+	height: 25px;
 	font-size: 11px;
 }
 
