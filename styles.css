@@ -611,8 +611,6 @@
 	justify-content: center;
 	gap: 8px;
 	margin-top: 12px;
-	border-top: 1px solid var(--background-modifier-border);
-	padding-top: 8px;
 }
 
 .ontask-filters-separator {
@@ -624,6 +622,39 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
+	padding: 10px;
+	border-top: 1px solid var(--background-modifier-border);
+	justify-content: center;
+}
+
+/* Quick filter buttons in modal - remove Setting wrapper styling */
+.ontask-filters-quick-filters-container .setting-item {
+	padding: 0;
+	border: none;
+	background: none;
+}
+
+.ontask-filters-quick-filters-container .setting-item-control {
+	flex: none;
+}
+
+.ontask-filters-quick-filters-container .setting-item-control button {
+	padding: 6px 12px;
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	font-size: 13px;
+	transition: all 0.2s ease;
+}
+
+.ontask-filters-quick-filters-container .setting-item-control button:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border-hover);
+}
+
+.ontask-filters-quick-filters-container .setting-item-control button:active {
+	background: var(--background-modifier-active);
 }
 
 .ontask-context-menu-item {
@@ -708,6 +739,35 @@
 	border: 1px solid var(--ontask-status-color);
 }
 
+/* Status icon in Setting components (filter modal) */
+.ontask-status-icon-inline {
+	font-family: var(--font-monospace);
+	font-size: 11px;
+	padding: 3px 6px;
+	border-radius: 3px;
+	margin-right: 8px;
+	min-width: 18px;
+	text-align: center;
+	border: 1px solid var(--ontask-status-color, var(--background-modifier-border));
+	color: var(--ontask-status-color, var(--text-normal));
+	background-color: var(--ontask-status-background-color, var(--background-primary));
+	display: inline-block;
+	flex-shrink: 0;
+}
+
+/* Dynamic status colors for custom statuses in settings */
+.ontask-status-icon-inline[data-dynamic-color][data-custom-status] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 1px solid var(--ontask-status-color);
+}
+
+/* Ensure Setting components with status icons display inline in modals */
+.modal .setting-item-name {
+	display: flex;
+	align-items: center;
+}
+
 /* ========================================
    TEST MENU (DEBUG)
    ======================================== */
@@ -721,14 +781,6 @@
 	border: 2px solid black;
 }
 
-/* ========================================
-   WORKSPACE LAYOUT
-   ======================================== */
-
-.workspace-split.mod-vertical.mod-root > * {
-	width: auto !important;
-	height: auto !important;
-}
 
 /* ========================================
    TOP TASK HERO OVERLAY
