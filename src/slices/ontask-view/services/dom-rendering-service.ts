@@ -386,6 +386,18 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		return loadMoreSection;
 	}
 
+	createLoadingIndicatorElement(): HTMLElement {
+		const loadingSection = document.createElement('div');
+		loadingSection.className = 'ontask-load-more-section';
+		
+		const loadingIndicator = document.createElement('div');
+		loadingIndicator.textContent = 'Loading tasks...';
+		loadingIndicator.className = 'ontask-loading-indicator';
+		loadingSection.appendChild(loadingIndicator);
+		
+		return loadingSection;
+	}
+
 	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
 		
 		const tasksByFile = new Map<string, any[]>();

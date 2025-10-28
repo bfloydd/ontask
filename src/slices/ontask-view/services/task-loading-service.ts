@@ -225,7 +225,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 
 	private createCheckboxRegex(allowedStatuses: string[]): RegExp {
 		if (allowedStatuses.length === 0) {
-			return /^$/;
+			return /(?=a)b/; // This regex never matches anything
 		}
 		
 		const escapedStatuses = allowedStatuses.map(status => 

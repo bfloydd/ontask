@@ -368,6 +368,35 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.ontask-loading-indicator {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 20px;
+	font-weight: 500;
+	color: var(--text-muted);
+	position: relative;
+}
+
+.ontask-loading-indicator::after {
+	content: '';
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 12px;
+	height: 12px;
+	border: 2px solid transparent;
+	border-top: 2px solid currentColor;
+	border-radius: 50%;
+	animation: ontask-spin 1s linear infinite;
+}
+
+@keyframes ontask-spin {
+	0% { transform: translateY(-50%) rotate(0deg); }
+	100% { transform: translateY(-50%) rotate(360deg); }
+}
+
 /* ========================================
    TOP TASK HERO SECTION
    ======================================== */

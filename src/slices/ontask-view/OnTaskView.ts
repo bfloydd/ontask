@@ -368,11 +368,15 @@ export class OnTaskViewImpl extends ItemView {
 			return;
 		}
 		
-		// Remove existing load more button
+		// Remove existing load more button immediately
 		const existingLoadMoreSection = contentArea.querySelector('.ontask-load-more-section');
 		if (existingLoadMoreSection) {
 			existingLoadMoreSection.remove();
 		}
+		
+		// Show loading indicator
+		const loadingSection = this.domRenderingService.createLoadingIndicatorElement();
+		contentArea.appendChild(loadingSection);
 		
 		const settings = this.settingsService.getSettings();
 		const additionalTasks = await this.taskLoadingService.loadTasksWithFiltering(settings);
@@ -388,6 +392,12 @@ export class OnTaskViewImpl extends ItemView {
 		// Apply current filter to newly loaded tasks
 		if (this.currentFilter.trim() !== '') {
 			this.applyFilter();
+		}
+		
+		// Remove loading indicator
+		const loadingIndicator = contentArea.querySelector('.ontask-load-more-section');
+		if (loadingIndicator) {
+			loadingIndicator.remove();
 		}
 		
 		// Add new load more button if there are more tasks to load
