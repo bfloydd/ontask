@@ -565,27 +565,16 @@
 	background: var(--background-modifier-hover);
 }
 
-.ontask-context-menu,
-.ontask-filters-menu {
-	font-family: var(--font-interface);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	position: fixed;
-	z-index: 1000;
-	background: var(--background-primary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	padding: 12px;
-	max-width: 400px;
+/* Filters menu styling - now used as modal */
+.ontask-filters-modal {
+	max-width: 500px;
 }
 
-.ontask-filters-menu h3 {
-	margin: 0 0 12px 0;
+.ontask-filters-modal h2 {
+	margin: 0 0 16px 0;
 	color: var(--text-normal);
-	font-size: 16px;
+	font-size: 20px;
 	font-weight: 600;
-	padding-bottom: 8px;
 }
 
 .ontask-filters-checkboxes-container {
@@ -695,6 +684,28 @@
 .is-phone .ontask-context-menu-item {
 	padding: 6px 10px;
 	font-size: 15px;
+}
+
+/* Status display in context menu */
+.ontask-context-menu-status-display {
+	font-family: var(--font-monospace);
+	font-size: 11px;
+	padding: 2px 5px;
+	border-radius: 3px;
+	margin-right: 8px;
+	min-width: 16px;
+	text-align: center;
+	border: 1px solid var(--ontask-status-color, var(--background-modifier-border));
+	color: var(--ontask-status-color, var(--text-normal));
+	background-color: var(--ontask-status-background-color, var(--background-primary));
+	display: inline-block;
+}
+
+/* Dynamic status colors for custom statuses in context menu */
+.ontask-context-menu-status-display[data-dynamic-color][data-custom-status] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 1px solid var(--ontask-status-color);
 }
 
 /* ========================================

@@ -1,231 +1,82 @@
 import { EventSystem } from '../../events';
 import { StatusConfigService } from '../../settings/status-config';
+import { Menu, Modal, App } from 'obsidian';
 
 export interface ContextMenuServiceInterface {
 	showContextMenu(event: MouseEvent, checkbox: any): void;
 	showFiltersMenu(): void;
 }
 
-export class ContextMenuService implements ContextMenuServiceInterface {
-	private eventSystem: EventSystem;
+class FilterModal extends Modal {
 	private statusConfigService: StatusConfigService;
 	private settingsService: any;
 	private dataService: any;
-	private contentEl: HTMLElement;
-	private updateCheckboxStatusCallback: (checkbox: any, newStatus: string) => Promise<void>;
 	private refreshCheckboxesCallback: () => Promise<void>;
 	private resetTrackingCallback: () => void;
+	private statusConfigs: any[];
 
 	constructor(
-		eventSystem: EventSystem,
+		app: App,
 		statusConfigService: StatusConfigService,
 		settingsService: any,
 		dataService: any,
-		contentEl: HTMLElement,
-		updateCheckboxStatusCallback: (checkbox: any, newStatus: string) => Promise<void>,
 		refreshCheckboxesCallback: () => Promise<void>,
 		resetTrackingCallback: () => void
 	) {
-		this.eventSystem = eventSystem;
+		super(app);
 		this.statusConfigService = statusConfigService;
 		this.settingsService = settingsService;
 		this.dataService = dataService;
-		this.contentEl = contentEl;
-		this.updateCheckboxStatusCallback = updateCheckboxStatusCallback;
 		this.refreshCheckboxesCallback = refreshCheckboxesCallback;
 		this.resetTrackingCallback = resetTrackingCallback;
+		this.statusConfigs = this.statusConfigService.getStatusConfigs();
 	}
 
-	showContextMenu(event: MouseEvent, checkbox: any): void {
-		const existingMenu = document.querySelector('.ontask-context-menu');
-		if (existingMenu) {
-			existingMenu.remove();
-		}
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.empty();
+		contentEl.addClass('ontask-filters-modal');
 
-		const menu = this.createContextMenu(checkbox);
-		document.body.appendChild(menu);
-		this.positionContextMenu(menu, event);
-		this.setupMenuCloseHandlers(menu);
-	}
-
-	private createContextMenu(checkbox: any): HTMLElement {
-		const menu = document.createElement('div');
-		menu.className = 'ontask-context-menu';
-
-		const statuses = this.statusConfigService.getStatusConfigs();
-
-		for (const status of statuses) {
-			const menuItem = this.createMenuItem(status, checkbox);
-			menu.appendChild(menuItem);
-		}
-
-		return menu;
-	}
-
-	private createMenuItem(status: any, checkbox: any): HTMLElement {
-		const menuItem = document.createElement('div');
-		menuItem.className = 'ontask-context-menu-item';
-
-		const statusDisplay = this.createStatusDisplay(status);
-		const textContent = this.createTextContent(status);
-
-		menuItem.appendChild(statusDisplay);
-		menuItem.appendChild(textContent);
-
-		this.addHoverEffects(menuItem);
-
-		menuItem.addEventListener('click', () => {
-			this.updateCheckboxStatusCallback(checkbox, status.symbol);
-			menuItem.closest('.ontask-context-menu')?.remove();
-		}, { passive: true });
-
-		return menuItem;
-	}
-
-	private createStatusDisplay(status: any): HTMLElement {
-		const statusDisplay = document.createElement('div');
-		statusDisplay.className = 'ontask-checkbox-display';
-		statusDisplay.setAttribute('data-status', status.symbol);
-		statusDisplay.textContent = this.getStatusDisplayText(status.symbol);
-		// Apply colors from status config for all statuses
-		statusDisplay.style.setProperty('--ontask-status-color', status.color);
-		statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
+		// Title
+		const title = contentEl.createEl('h2', { text: 'Filter Statuses' });
 		
-		// Only apply dynamic styling attributes if this is a truly custom status configuration
-		// (not one of the built-in default statuses that have predefined colors)
-		const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(status.symbol);
-		if (!isBuiltInStatus) {
-			statusDisplay.setAttribute('data-dynamic-color', 'true');
-			statusDisplay.setAttribute('data-custom-status', 'true');
-		}
-
-		return statusDisplay;
-	}
-
-	private createTextContent(status: any): HTMLElement {
-		const textContent = document.createElement('div');
-		textContent.className = 'ontask-status-display-text-content';
-		
-		const nameEl = document.createElement('div');
-		nameEl.textContent = status.name;
-		nameEl.className = 'ontask-status-display-name';
-		
-		const descEl = document.createElement('div');
-		descEl.textContent = status.description;
-		descEl.className = 'ontask-status-display-description';
-		
-		textContent.appendChild(nameEl);
-		textContent.appendChild(descEl);
-
-		return textContent;
-	}
-
-	private addHoverEffects(menuItem: HTMLElement): void {
-	}
-
-	private setupMenuCloseHandlers(menu: HTMLElement): void {
-		const closeMenu = (e: MouseEvent) => {
-			if (!menu.contains(e.target as Node)) {
-				menu.remove();
-				document.removeEventListener('click', closeMenu, true);
-				document.removeEventListener('scroll', closeMenu, true);
-				document.removeEventListener('contextmenu', closeMenu, true);
-			}
-		};
-
-		requestAnimationFrame(() => {
-		document.addEventListener('click', closeMenu, { passive: true });
-		document.addEventListener('scroll', closeMenu, { passive: true, capture: true });
-		document.addEventListener('contextmenu', closeMenu, { passive: true });
-		});
-	}
-
-	private positionContextMenu(menu: HTMLElement, event: MouseEvent): void {
-		const viewportWidth = window.innerWidth;
-		const viewportHeight = window.innerHeight;
-		const menuRect = menu.getBoundingClientRect();
-		const menuWidth = menuRect.width;
-		const menuHeight = menuRect.height;
-		
-		let left = event.clientX;
-		let top = event.clientY;
-		
-		const isMobile = window.innerWidth <= 768;
-		const margin = isMobile ? 5 : 10;
-		
-		if (left + menuWidth > viewportWidth - margin) {
-			left = viewportWidth - menuWidth - margin;
-		}
-		
-		if (left < margin) {
-			left = margin;
-		}
-		
-		if (top + menuHeight > viewportHeight - margin) {
-			top = viewportHeight - menuHeight - margin;
-		}
-		
-		if (top < margin) {
-			top = margin;
-		}
-		menu.style.left = `${left}px`;
-		menu.style.top = `${top}px`;
-		
-		if (isMobile) {
-			requestAnimationFrame(() => {
-				const finalRect = menu.getBoundingClientRect();
-				if (finalRect.right > viewportWidth) {
-					menu.style.left = `${viewportWidth - finalRect.width - margin}px`;
-				}
-				if (finalRect.bottom > viewportHeight) {
-					menu.style.top = `${viewportHeight - finalRect.height - margin}px`;
-				}
-			});
-		}
-	}
-
-	showFiltersMenu(): void {
-		const existingMenu = document.querySelector('.ontask-filters-menu');
-		if (existingMenu) {
-			existingMenu.remove();
-			return;
-		}
-
-		const menu = this.createFiltersMenu();
-		document.body.appendChild(menu);
-		this.positionFilterMenu(menu);
-		this.setupMenuCloseHandlers(menu);
-	}
-
-	private createFiltersMenu(): HTMLElement {
-		const menu = document.createElement('div');
-		menu.className = 'ontask-filters-menu';
-		const settings = this.settingsService.getSettings();
-		const statusConfigs = this.statusConfigService.getStatusConfigs();
-
-		const checkboxesContainer = this.createStatusCheckboxes(menu, statusConfigs);
-		menu.appendChild(checkboxesContainer);
-
-		this.renderQuickFiltersSection(menu, checkboxesContainer);
-		this.createFilterButtons(menu, checkboxesContainer);
-
-		return menu;
-	}
-
-	private createStatusCheckboxes(menu: HTMLElement, statusConfigs: any[]): HTMLElement {
-		const checkboxesContainer = menu.createDiv();
-		checkboxesContainer.className = 'ontask-filters-checkboxes-container';
-
+		// Status checkboxes
+		const checkboxesContainer = contentEl.createDiv('ontask-filters-checkboxes-container');
 		const checkboxElements: { [key: string]: HTMLInputElement } = {};
 
-		for (const status of statusConfigs) {
+		for (const status of this.statusConfigs) {
 			const checkboxItem = this.createStatusCheckboxItem(status, checkboxElements);
 			checkboxesContainer.appendChild(checkboxItem);
 		}
 
-		(checkboxesContainer as any).checkboxElements = checkboxElements;
+		// Quick filters section
+		const quickFilters = this.dataService.getQuickFilters().filter((filter: any) => filter.enabled);
+		if (quickFilters.length > 0) {
+			contentEl.createEl('hr');
+			const quickFiltersContainer = contentEl.createDiv('ontask-filters-quick-filters-container');
+			quickFilters.forEach((filter: any) => {
+				const button = this.createQuickFilterButton(filter, checkboxElements);
+				quickFiltersContainer.appendChild(button);
+			});
+		}
 
-		return checkboxesContainer;
+		// Buttons
+		const buttonsContainer = contentEl.createDiv('ontask-filters-buttons-container');
+		const saveButton = buttonsContainer.createEl('button', { text: 'Save' });
+		saveButton.addClass('mod-cta');
+		saveButton.addEventListener('click', async () => {
+			await this.saveFilterSettings(checkboxElements);
+		}, { passive: true });
+
+		const cancelButton = buttonsContainer.createEl('button', { text: 'Cancel' });
+		cancelButton.addEventListener('click', () => {
+			this.close();
+		}, { passive: true });
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
 	}
 
 	private createStatusCheckboxItem(status: any, checkboxElements: { [key: string]: HTMLInputElement }): HTMLElement {
@@ -254,153 +105,162 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		return checkboxItem;
 	}
 
+	private createStatusDisplay(status: any): HTMLElement {
+		const statusDisplay = document.createElement('div');
+		statusDisplay.className = 'ontask-checkbox-display';
+		statusDisplay.setAttribute('data-status', status.symbol);
+		statusDisplay.textContent = status.symbol;
+		statusDisplay.style.setProperty('--ontask-status-color', status.color);
+		statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
+		
+		const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(status.symbol);
+		if (!isBuiltInStatus) {
+			statusDisplay.setAttribute('data-dynamic-color', 'true');
+			statusDisplay.setAttribute('data-custom-status', 'true');
+		}
+
+		return statusDisplay;
+	}
+
 	private createStatusLabel(status: any, checkbox: HTMLInputElement): HTMLElement {
 		const label = document.createElement('label');
 		label.htmlFor = `filter-${status.symbol}`;
 		label.className = 'ontask-filters-checkbox-label';
 
-		const nameEl = document.createElement('div');
-		nameEl.textContent = status.name;
+		const nameEl = label.createEl('div', { text: status.name });
 		nameEl.className = 'ontask-filters-checkbox-name';
 
-		const descEl = document.createElement('div');
-		descEl.textContent = status.description;
+		const descEl = label.createEl('div', { text: status.description });
 		descEl.className = 'ontask-filters-checkbox-description';
-
-		label.appendChild(nameEl);
-		label.appendChild(descEl);
 
 		return label;
 	}
 
-	private createFilterButtons(menu: HTMLElement, checkboxesContainer: HTMLElement): void {
-		const buttonsContainer = menu.createDiv();
-		buttonsContainer.className = 'ontask-filters-buttons-container';
-
-		const saveButton = buttonsContainer.createEl('button', { text: 'Save' });
-		saveButton.addClass('mod-cta');
-		saveButton.addEventListener('click', async () => {
-			await this.saveFilterSettings(checkboxesContainer, menu);
-		}, { passive: true });
-	}
-
-	private async saveFilterSettings(checkboxesContainer: HTMLElement, menu: HTMLElement): Promise<void> {
-		const checkboxElements = (checkboxesContainer as any).checkboxElements;
-		
-		const newFilters: Record<string, boolean> = {};
-		for (const [symbol, checkbox] of Object.entries(checkboxElements)) {
-			newFilters[symbol] = (checkbox as HTMLInputElement).checked;
-		}
-
-		for (const [symbol, filtered] of Object.entries(newFilters)) {
-			await this.statusConfigService.updateStatusFiltered(symbol, filtered);
-		}
-		
-		menu.remove();
-		this.resetTrackingCallback();
-		await this.refreshCheckboxesCallback();
-	}
-
-	private renderQuickFiltersSection(menu: HTMLElement, checkboxesContainer: HTMLElement): void {
-		const quickFilters = this.dataService.getQuickFilters().filter((filter: any) => filter.enabled);
-		
-		if (quickFilters.length === 0) {
-			return;
-		}
-
-		const separator = menu.createDiv();
-		separator.className = 'ontask-filters-separator';
-
-		const quickFiltersContainer = menu.createDiv();
-		quickFiltersContainer.className = 'ontask-filters-quick-filters-container';
-
-		quickFilters.forEach((filter: any) => {
-			const button = this.createQuickFilterButton(filter, checkboxesContainer);
-			quickFiltersContainer.appendChild(button);
-		});
-	}
-
-	private createQuickFilterButton(filter: any, checkboxesContainer: HTMLElement): HTMLElement {
+	private createQuickFilterButton(filter: any, checkboxElements: { [key: string]: HTMLInputElement }): HTMLElement {
 		const button = document.createElement('button');
 		button.textContent = filter.name;
 		button.className = 'ontask-quick-filter-button';
 
 		button.addEventListener('click', () => {
-			this.applyQuickFilter(filter, checkboxesContainer);
+			filter.statusSymbols.forEach((symbol: string) => {
+				const checkbox = checkboxElements[symbol];
+				if (checkbox) {
+					checkbox.checked = true;
+				}
+			});
+
+			Object.keys(checkboxElements).forEach(symbol => {
+				if (!filter.statusSymbols.includes(symbol)) {
+					checkboxElements[symbol].checked = false;
+				}
+			});
 		}, { passive: true });
 
 		return button;
 	}
 
-	private applyQuickFilter(filter: any, checkboxesContainer: HTMLElement): void {
-		const checkboxElements = (checkboxesContainer as any).checkboxElements;
+	private async saveFilterSettings(checkboxElements: { [key: string]: HTMLInputElement }): Promise<void> {
+		for (const [symbol, checkbox] of Object.entries(checkboxElements)) {
+			await this.statusConfigService.updateStatusFiltered(symbol, checkbox.checked);
+		}
 		
-		filter.statusSymbols.forEach((symbol: string) => {
-			const checkbox = checkboxElements[symbol];
-			if (checkbox) {
-				checkbox.checked = true;
-			}
-		});
+		this.resetTrackingCallback();
+		await this.refreshCheckboxesCallback();
+		this.close();
+	}
+}
 
-		Object.keys(checkboxElements).forEach(symbol => {
-			if (!filter.statusSymbols.includes(symbol)) {
-				checkboxElements[symbol].checked = false;
-			}
-		});
+export class ContextMenuService implements ContextMenuServiceInterface {
+	private eventSystem: EventSystem;
+	private statusConfigService: StatusConfigService;
+	private settingsService: any;
+	private dataService: any;
+	private contentEl: HTMLElement;
+	private updateCheckboxStatusCallback: (checkbox: any, newStatus: string) => Promise<void>;
+	private refreshCheckboxesCallback: () => Promise<void>;
+	private resetTrackingCallback: () => void;
+	private filterModal: FilterModal | null = null;
+	private app: App;
+
+	constructor(
+		app: App,
+		eventSystem: EventSystem,
+		statusConfigService: StatusConfigService,
+		settingsService: any,
+		dataService: any,
+		contentEl: HTMLElement,
+		updateCheckboxStatusCallback: (checkbox: any, newStatus: string) => Promise<void>,
+		refreshCheckboxesCallback: () => Promise<void>,
+		resetTrackingCallback: () => void
+	) {
+		this.app = app;
+		this.eventSystem = eventSystem;
+		this.statusConfigService = statusConfigService;
+		this.settingsService = settingsService;
+		this.dataService = dataService;
+		this.contentEl = contentEl;
+		this.updateCheckboxStatusCallback = updateCheckboxStatusCallback;
+		this.refreshCheckboxesCallback = refreshCheckboxesCallback;
+		this.resetTrackingCallback = resetTrackingCallback;
 	}
 
-	private positionFilterMenu(menu: HTMLElement): void {
-		const filtersButton = this.contentEl.querySelector('.ontask-header-button') as HTMLElement;
-		if (!filtersButton) {
-			this.centerPositionMenu(menu);
+	showContextMenu(event: MouseEvent, checkbox: any): void {
+		const menu = new Menu();
+		const statuses = this.statusConfigService.getStatusConfigs();
+
+		for (const status of statuses) {
+			menu.addItem((item) => {
+				// Set title with status symbol and name
+				item.setTitle(status.name)
+					.setChecked(false)
+					.onClick(async () => {
+						await this.updateCheckboxStatusCallback(checkbox, status.symbol);
+					});
+
+				// Access the menu item's DOM to precisely control appearance
+				const menuEl = (item as any).dom as HTMLElement;
+				if (menuEl) {
+					// Create a styled status display element
+					const statusDisplay = document.createElement('span');
+					statusDisplay.className = 'ontask-context-menu-status-display';
+					statusDisplay.textContent = status.symbol;
+					statusDisplay.style.setProperty('--ontask-status-color', status.color);
+					statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
+					
+					const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(status.symbol);
+					if (!isBuiltInStatus) {
+						statusDisplay.setAttribute('data-dynamic-color', 'true');
+						statusDisplay.setAttribute('data-custom-status', 'true');
+					}
+					
+					// Find the title element in the menu item
+					const titleEl = menuEl.querySelector('.menu-item-title');
+					if (titleEl) {
+						titleEl.insertBefore(statusDisplay, titleEl.firstChild);
+					}
+				}
+			});
+		}
+
+		menu.showAtMouseEvent(event);
+	}
+
+	showFiltersMenu(): void {
+		if (this.filterModal) {
+			this.filterModal.close();
+			this.filterModal = null;
 			return;
 		}
 
-		const buttonRect = filtersButton.getBoundingClientRect();
-		const menuRect = menu.getBoundingClientRect();
-		
-		const viewportWidth = window.innerWidth;
-		const viewportHeight = window.innerHeight;
-		const menuWidth = menuRect.width;
-		const menuHeight = menuRect.height;
-		let left = buttonRect.left;
-		let top = buttonRect.bottom + 8;
-		
-		if (left + menuWidth > viewportWidth - 10) {
-			left = viewportWidth - menuWidth - 10;
-		}
-		
-		if (left < 10) {
-			left = 10;
-		}
-		
-		if (top + menuHeight > viewportHeight - 10) {
-			top = buttonRect.top - menuHeight - 8;
-		}
-		
-		if (top < 10) {
-			top = 10;
-		}
-		
-		menu.style.left = `${left}px`;
-		menu.style.top = `${top}px`;
-	}
-
-	private centerPositionMenu(menu: HTMLElement): void {
-		const viewportWidth = window.innerWidth;
-		const viewportHeight = window.innerHeight;
-		const menuRect = menu.getBoundingClientRect();
-		const menuWidth = menuRect.width;
-		const menuHeight = menuRect.height;
-
-		const left = (viewportWidth - menuWidth) / 2;
-		const top = (viewportHeight - menuHeight) / 2;
-
-		menu.style.left = `${Math.max(10, left)}px`;
-		menu.style.top = `${Math.max(10, top)}px`;
-	}
-
-	private getStatusDisplayText(statusSymbol: string): string {
-		return statusSymbol;
+		this.filterModal = new FilterModal(
+			this.app,
+			this.statusConfigService,
+			this.settingsService,
+			this.dataService,
+			this.refreshCheckboxesCallback,
+			this.resetTrackingCallback
+		);
+		this.filterModal.open();
 	}
 }
+

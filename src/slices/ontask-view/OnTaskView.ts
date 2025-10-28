@@ -61,6 +61,7 @@ export class OnTaskViewImpl extends ItemView {
 		this.logger = logger;
 		
 		this.contextMenuService = new ContextMenuService(
+			this.app,
 			this.eventSystem,
 			this.statusConfigService,
 			this.settingsService,
