@@ -68,9 +68,9 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 			fragment.appendChild(topTaskSection);
 		}
 
-		// Add filter section after top task
-		if (currentFilter !== undefined && onFilterChange && onClearFilter) {
-			const filterSection = this.createFilterSectionElement(currentFilter, onFilterChange, onClearFilter);
+		// Add filter section after top task (always create it, but start collapsed)
+		if (onFilterChange && onClearFilter) {
+			const filterSection = this.createFilterSectionElement(currentFilter || '', onFilterChange, onClearFilter);
 			fragment.appendChild(filterSection);
 		}
 
@@ -322,7 +322,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 
 	createFilterSectionElement(currentFilter: string, onFilterChange: (filter: string) => void, onClearFilter: () => void): HTMLElement {
 		const filterSection = document.createElement('div');
-		filterSection.className = 'ontask-filter-section ontask-file-section';
+		filterSection.className = 'ontask-filter-section ontask-file-section ontask-filter-collapsed';
 		
 		const filterContainer = filterSection.createDiv('ontask-filter-container');
 		

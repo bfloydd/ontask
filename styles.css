@@ -487,14 +487,34 @@
    ======================================== */
 
 .is-mobile .ontask-header {
-	flex-direction: column;
-	gap: 10px;
-	align-items: stretch;
+	flex-direction: row;
+	gap: 8px;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .is-mobile .ontask-buttons-container {
 	justify-content: center;
 	flex-wrap: wrap;
+}
+
+.is-mobile .ontask-buttons-left,
+.is-mobile .ontask-buttons-right {
+	gap: 6px;
+}
+
+.is-mobile .ontask-header-button {
+	padding: 0px 4px 0px 4px;
+	gap: 4px;
+	height: 22px;
+	font-size: 12px;
+}
+
+.is-phone .ontask-header-button {
+	padding: 0px 3px 0px 3px;
+	gap: 3px;
+	height: 20px;
+	font-size: 11px;
 }
 
 .is-mobile .ontask-file-header h3,
@@ -1332,13 +1352,30 @@
    ======================================== */
 
 .ontask-filter-section {
-	margin: 16px 0;
-	padding: 12px;
 	border: none !important;
 	border-radius: 0 !important;
 	box-shadow: none !important;
 	background: transparent !important;
-	overflow: visible !important;
+	overflow: hidden;
+	transition: all 0.3s ease;
+	max-height: 0;
+	opacity: 0;
+	margin: 0;
+	padding: 0;
+}
+
+.ontask-filter-section.ontask-filter-expanded {
+	max-height: 100px;
+	opacity: 1;
+	margin: 16px 0;
+	padding: 12px;
+}
+
+.ontask-filter-section.ontask-filter-collapsed {
+	max-height: 0;
+	opacity: 0;
+	margin: 0;
+	padding: 0;
 }
 
 .ontask-filter-container {
@@ -1384,9 +1421,14 @@
 }
 
 /* Mobile adjustments */
-.is-phone .ontask-filter-section {
+.is-mobile .ontask-filter-section.ontask-filter-expanded {
 	margin: 12px 0;
 	padding: 10px;
+}
+
+.is-phone .ontask-filter-section.ontask-filter-expanded {
+	margin: 10px 0;
+	padding: 8px;
 }
 
 .is-phone .ontask-filter-container {

@@ -38,6 +38,7 @@ export class OnTaskViewImpl extends ItemView {
 	private loadMoreButton: HTMLButtonElement | null = null;
 	private lastCheckboxContent: Map<string, string> = new Map(); // Track checkbox content to detect actual changes
 	private currentFilter: string = '';
+	private isSearchFilterVisible: boolean = false;
 	
 
 
@@ -136,6 +137,12 @@ export class OnTaskViewImpl extends ItemView {
 		
 		// Right button group
 		const rightButtonsContainer = header.createDiv('ontask-buttons-right');
+		const searchButton = rightButtonsContainer.createEl('button');
+		searchButton.addClass('ontask-header-button');
+		searchButton.innerHTML = '<svg class="lucide lucide-search" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
+		searchButton.title = 'Search Tasks';
+		searchButton.addEventListener('click', () => this.toggleSearchFilter(), { passive: true });
+		
 		const filtersButton = rightButtonsContainer.createEl('button');
 		filtersButton.addClass('ontask-header-button');
 		filtersButton.innerHTML = '<svg class="lucide lucide-filter" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3"/></svg>';
@@ -189,6 +196,31 @@ export class OnTaskViewImpl extends ItemView {
 		}
 		
 		this.applyFilter();
+	}
+
+	private toggleSearchFilter(): void {
+		this.isSearchFilterVisible = !this.isSearchFilterVisible;
+		
+		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
+		if (contentArea) {
+			const filterSection = contentArea.querySelector('.ontask-filter-section') as HTMLElement;
+			if (filterSection) {
+				if (this.isSearchFilterVisible) {
+					filterSection.classList.add('ontask-filter-expanded');
+					filterSection.classList.remove('ontask-filter-collapsed');
+					// Focus the input field
+					const filterInput = filterSection.querySelector('.ontask-filter-input') as HTMLInputElement;
+					if (filterInput) {
+						setTimeout(() => filterInput.focus(), 100);
+					}
+				} else {
+					filterSection.classList.add('ontask-filter-collapsed');
+					filterSection.classList.remove('ontask-filter-expanded');
+					// Clear filter when hiding
+					this.clearFilter();
+				}
+			}
+		}
 	}
 
 	private applyFilter(): void {
