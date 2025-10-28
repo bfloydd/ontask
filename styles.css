@@ -68,6 +68,18 @@
 	color: var(--text-normal);
 }
 
+.ontask-buttons-left {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.ontask-buttons-right {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
 .ontask-buttons-container {
 	display: flex;
 	gap: 8px;
