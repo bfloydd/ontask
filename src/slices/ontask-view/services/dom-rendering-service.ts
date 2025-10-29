@@ -398,6 +398,18 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		return loadingSection;
 	}
 
+	createNoMoreTasksIndicatorElement(): HTMLElement {
+		const noMoreSection = document.createElement('div');
+		noMoreSection.className = 'ontask-load-more-section';
+		
+		const noMoreIndicator = document.createElement('div');
+		noMoreIndicator.textContent = 'No more tasks to load';
+		noMoreIndicator.className = 'ontask-no-more-tasks-indicator';
+		noMoreSection.appendChild(noMoreIndicator);
+		
+		return noMoreSection;
+	}
+
 	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
 		
 		const tasksByFile = new Map<string, any[]>();

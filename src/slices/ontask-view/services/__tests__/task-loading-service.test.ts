@@ -111,7 +111,7 @@ describe('TaskLoadingService', () => {
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(3); // Should stop at exactly 3 tasks
+			expect(result.tasks).toHaveLength(3); // Should stop at exactly 3 tasks
 			expect(mockApp.vault.read).toHaveBeenCalledTimes(1); // Should only read 1 file (file1.md has 3 tasks)
 			expect(mockApp.vault.read).toHaveBeenCalledWith(mockFiles[0]);
 			expect(mockApp.vault.read).not.toHaveBeenCalledWith(mockFiles[1]); // Should not read file2.md
@@ -146,10 +146,10 @@ describe('TaskLoadingService', () => {
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(2); // Should stop at exactly 2 tasks
+			expect(result.tasks).toHaveLength(2); // Should stop at exactly 2 tasks
 			expect(mockApp.vault.read).toHaveBeenCalledTimes(2); // Should read both files
-			expect(result[0].lineContent).toBe('- [ ] Task 1');
-			expect(result[1].lineContent).toBe('- [ ] Task 2');
+			expect(result.tasks[0].lineContent).toBe('- [ ] Task 1');
+			expect(result.tasks[1].lineContent).toBe('- [ ] Task 2');
 			// Should not process Task 3 and Task 4 from file2.md
 		});
 
@@ -176,7 +176,7 @@ describe('TaskLoadingService', () => {
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(0); // Should return empty array
+			expect(result.tasks).toHaveLength(0); // Should return empty array
 			expect(mockApp.vault.read).toHaveBeenCalledTimes(2); // Should read all files
 		});
 
@@ -234,7 +234,7 @@ describe('TaskLoadingService', () => {
 
 			// First load - should stop at file1.md with 3 tasks
 			const firstResult = await taskLoadingService.loadTasksWithFiltering(settings);
-			expect(firstResult).toHaveLength(3);
+			expect(firstResult.tasks).toHaveLength(3);
 			expect(mockApp.vault.read).toHaveBeenCalledTimes(1);
 
 			// Reset mocks for second load
@@ -246,7 +246,7 @@ describe('TaskLoadingService', () => {
 
 			// Second load - should continue from file2.md
 			const secondResult = await taskLoadingService.loadTasksWithFiltering(settings);
-			expect(secondResult).toHaveLength(3);
+			expect(secondResult.tasks).toHaveLength(3);
 			// The service may read multiple files to find the continuation point
 			expect(mockApp.vault.read).toHaveBeenCalled();
 			expect(mockApp.vault.read).toHaveBeenCalledWith(mockFiles[1]); // Should read file2.md
@@ -276,13 +276,13 @@ describe('TaskLoadingService', () => {
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(10); // Should stop at exactly 10 tasks
+			expect(result.tasks).toHaveLength(10); // Should stop at exactly 10 tasks
 			expect(mockApp.vault.read).toHaveBeenCalledTimes(2); // Should read both files
 			// Verify we got tasks from both files
-			expect(result[0].lineContent).toBe('- [ ] Task 1');
-			expect(result[4].lineContent).toBe('- [ ] Task 5');
-			expect(result[5].lineContent).toBe('- [ ] Task 6');
-			expect(result[9].lineContent).toBe('- [ ] Task 10');
+			expect(result.tasks[0].lineContent).toBe('- [ ] Task 1');
+			expect(result.tasks[4].lineContent).toBe('- [ ] Task 5');
+			expect(result.tasks[5].lineContent).toBe('- [ ] Task 6');
+			expect(result.tasks[9].lineContent).toBe('- [ ] Task 10');
 		});
 
 		it('should only find tasks matching allowed statuses', async () => {
@@ -314,10 +314,10 @@ describe('TaskLoadingService', () => {
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(3); // Should only find 3 tasks (space, x, /)
-			expect(result[0].lineContent).toBe('- [ ] To-do task');
-			expect(result[1].lineContent).toBe('- [x] Completed task');
-			expect(result[2].lineContent).toBe('- [/] In progress task');
+			expect(result.tasks).toHaveLength(3); // Should only find 3 tasks (space, x, /)
+			expect(result.tasks[0].lineContent).toBe('- [ ] To-do task');
+			expect(result.tasks[1].lineContent).toBe('- [x] Completed task');
+			expect(result.tasks[2].lineContent).toBe('- [/] In progress task');
 		});
 
 		it('should find no tasks when no statuses are allowed', async () => {
@@ -355,7 +355,7 @@ Some regular text without checkboxes`;
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(0); // Should find no tasks when no statuses are allowed
+			expect(result.tasks).toHaveLength(0); // Should find no tasks when no statuses are allowed
 			expect(mockApp.vault.read).toHaveBeenCalledTimes(1); // Should still read the file
 		});
 
@@ -385,9 +385,9 @@ Some regular text without checkboxes`;
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(2); // Should find both space and dot tasks
-			expect(result[0].lineContent).toBe('- [ ] Space to-do task');
-			expect(result[1].lineContent).toBe('- [.] Dot to-do task');
+			expect(result.tasks).toHaveLength(2); // Should find both space and dot tasks
+			expect(result.tasks[0].lineContent).toBe('- [ ] Space to-do task');
+			expect(result.tasks[1].lineContent).toBe('- [.] Dot to-do task');
 		});
 
 		it('should skip files that cannot be found', async () => {
@@ -414,7 +414,7 @@ Some regular text without checkboxes`;
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(2); // Should find 2 tasks from 2 files (1 task each)
+			expect(result.tasks).toHaveLength(2); // Should find 2 tasks from 2 files (1 task each)
 			expect(mockApp.vault.read).toHaveBeenCalledTimes(2); // Should only read 2 files
 			expect(mockApp.vault.read).toHaveBeenCalledWith(mockFiles[0]);
 			expect(mockApp.vault.read).toHaveBeenCalledWith(mockFiles[2]);
@@ -450,11 +450,11 @@ Some regular text without checkboxes`;
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
 
 			// Assert
-			expect(result).toHaveLength(3); // Should find 3 tasks despite error
+			expect(result.tasks).toHaveLength(3); // Should find 3 tasks despite error
 			expect(mockApp.vault.read).toHaveBeenCalledTimes(3); // Should attempt to read all files
-			expect(result[0].lineContent).toBe('- [ ] Task 1');
-			expect(result[1].lineContent).toBe('- [ ] Task 2');
-			expect(result[2].lineContent).toBe('- [ ] Task 3');
+			expect(result.tasks[0].lineContent).toBe('- [ ] Task 1');
+			expect(result.tasks[1].lineContent).toBe('- [ ] Task 2');
+			expect(result.tasks[2].lineContent).toBe('- [ ] Task 3');
 
 			// Restore console.error
 			consoleSpy.mockRestore();

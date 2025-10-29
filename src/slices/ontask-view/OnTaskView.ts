@@ -293,7 +293,8 @@ export class OnTaskViewImpl extends ItemView {
 			loadingEl.textContent = 'Loading checkboxes...';
 			
 			await this.taskLoadingService.initializeFileTracking(settings.onlyShowToday);
-			this.checkboxes = await this.taskLoadingService.loadTasksWithFiltering(settings);
+			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
+			this.checkboxes = result.tasks;
 			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(this.checkboxes);
 			
 			loadingEl.remove();
@@ -379,12 +380,12 @@ export class OnTaskViewImpl extends ItemView {
 		contentArea.appendChild(loadingSection);
 		
 		const settings = this.settingsService.getSettings();
-		const additionalTasks = await this.taskLoadingService.loadTasksWithFiltering(settings);
+		const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
 		
-		this.checkboxes.push(...additionalTasks);
-		this.displayedTasksCount += additionalTasks.length;
+		this.checkboxes.push(...result.tasks);
+		this.displayedTasksCount += result.tasks.length;
 		
-		this.domRenderingService.renderAdditionalTasks(contentArea, additionalTasks.map(task => ({
+		this.domRenderingService.renderAdditionalTasks(contentArea, result.tasks.map(task => ({
 			checkbox: task,
 			filePath: task.file?.path || ''
 		})));
@@ -400,10 +401,15 @@ export class OnTaskViewImpl extends ItemView {
 			loadingIndicator.remove();
 		}
 		
-		// Add new load more button if there are more tasks to load
+		// Add appropriate indicator based on whether there are more tasks
 		if (!settings.onlyShowToday) {
-			const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
-			contentArea.appendChild(loadMoreSection);
+			if (result.hasMoreTasks) {
+				const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
+				contentArea.appendChild(loadMoreSection);
+			} else {
+				const noMoreSection = this.domRenderingService.createNoMoreTasksIndicatorElement();
+				contentArea.appendChild(noMoreSection);
+			}
 		}
 	}
 

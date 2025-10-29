@@ -5,8 +5,13 @@ import { StatusConfigService } from '../../settings/status-config';
 import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
 
+export interface TaskLoadingResult {
+	tasks: any[];
+	hasMoreTasks: boolean;
+}
+
 export interface TaskLoadingServiceInterface {
-	loadTasksWithFiltering(settings: any): Promise<any[]>;
+	loadTasksWithFiltering(settings: any): Promise<TaskLoadingResult>;
 	getFilesFromStrategies(onlyShowToday: boolean): Promise<string[]>;
 	initializeFileTracking(onlyShowToday: boolean): Promise<void>;
 	resetTracking(): void;
@@ -14,6 +19,7 @@ export interface TaskLoadingServiceInterface {
 	getCurrentTaskIndex(): number;
 	setCurrentFileIndex(index: number): void;
 	setCurrentTaskIndex(index: number): void;
+	hasMoreTasksToLoad(): boolean;
 }
 
 export class TaskLoadingService implements TaskLoadingServiceInterface {
@@ -47,7 +53,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		return this.streamsService;
 	}
 
-	async loadTasksWithFiltering(settings: any): Promise<any[]> {
+	async loadTasksWithFiltering(settings: any): Promise<TaskLoadingResult> {
 		const targetTasks = settings.loadMoreLimit;
 		const loadedTasks: any[] = [];
 		const statusFilters = this.statusConfigService.getStatusFilters();
@@ -104,7 +110,10 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 						this.currentFileIndex = fileIndex;
 						this.currentTaskIndex = fileTasks.indexOf(task) + 1;
 						this.logger.debug(`Target reached! Stopped at file ${fileIndex + 1}/${this.trackedFiles.length}, task ${this.currentTaskIndex}/${fileTasks.length} - Final progress: ${loadedTasks.length}/${targetTasks}`);
-						return loadedTasks;
+						
+						// Check if there are more tasks available
+						const hasMoreTasks = this.hasMoreTasksToLoad();
+						return { tasks: loadedTasks, hasMoreTasks };
 					}
 				}
 				
@@ -123,7 +132,10 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		}
 		
 		this.logger.debug(`Task loading completed: ${loadedTasks.length}/${targetTasks} tasks loaded from ${this.trackedFiles.length} files`);
-		return loadedTasks;
+		
+		// If we've processed all files, there are no more tasks
+		const hasMoreTasks = this.currentFileIndex < this.trackedFiles.length;
+		return { tasks: loadedTasks, hasMoreTasks };
 	}
 
 	async getFilesFromStrategies(onlyShowToday: boolean): Promise<string[]> {
@@ -209,6 +221,29 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 
 	setCurrentTaskIndex(index: number): void {
 		this.currentTaskIndex = index;
+	}
+
+	hasMoreTasksToLoad(): boolean {
+		// If we haven't initialized file tracking yet, assume there might be more
+		if (this.trackedFiles.length === 0) {
+			return true;
+		}
+		
+		// If we've reached the end of all files, there are no more tasks
+		if (this.currentFileIndex >= this.trackedFiles.length) {
+			return false;
+		}
+		
+		// If we're at the last file and have checked all tasks in it, there are no more tasks
+		if (this.currentFileIndex === this.trackedFiles.length - 1) {
+			// We can't easily check if we've reached the end of tasks in the last file
+			// without reading the file content, so we'll be conservative and return true
+			// The actual check will happen during loadTasksWithFiltering
+			return true;
+		}
+		
+		// If we're not at the last file, there are definitely more tasks
+		return true;
 	}
 
 	private getAllowedStatuses(statusFilters: Record<string, boolean>): string[] {

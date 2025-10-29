@@ -280,11 +280,11 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			const settings = this.settingsService.getSettings();
 			
 			await this.taskLoadingService.initializeFileTracking(settings.onlyShowToday);
-			const checkboxes = await this.taskLoadingService.loadTasksWithFiltering(settings);
+			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
 			
-			this.processTopTasks(checkboxes);
+			this.processTopTasks(result.tasks);
 			
-			const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
+			const topTask = result.tasks.find(checkbox => checkbox.isTopTask);
 			
 			if (topTask) {
 				this.topTaskMemory = topTask;
