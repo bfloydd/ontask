@@ -8,6 +8,8 @@ export class QuickFiltersView {
 	private dataService: DataService;
 	private statusConfigService: StatusConfigService;
 	private containerEl: HTMLElement;
+	private draggedElement: HTMLElement | null = null;
+	private dragOverElement: HTMLElement | null = null;
 
 	constructor(app: App, dataService: DataService, statusConfigService: StatusConfigService, containerEl: HTMLElement) {
 		this.app = app;
@@ -56,15 +58,27 @@ export class QuickFiltersView {
 			return;
 		}
 
-		quickFilters.forEach(filter => {
-			this.renderQuickFilterItem(filter);
+		// Create a container for draggable items
+		const filtersContainer = this.containerEl.createDiv();
+		filtersContainer.addClass('quick-filters-draggable-container');
+
+		quickFilters.forEach((filter, index) => {
+			this.renderQuickFilterItem(filter, filtersContainer, index);
 		});
 	}
 
-	private renderQuickFilterItem(filter: QuickFilter): void {
-		const settingItem = this.containerEl.createDiv();
+	private renderQuickFilterItem(filter: QuickFilter, container: HTMLElement, index: number): void {
+		const settingItem = container.createDiv();
 		settingItem.addClass('setting-item');
 		settingItem.addClass('quick-filter-item');
+		settingItem.setAttribute('data-filter-id', filter.id);
+		settingItem.setAttribute('draggable', 'true');
+
+		// Drag handle icon
+		const dragHandle = settingItem.createDiv();
+		dragHandle.addClass('quick-filter-drag-handle');
+		dragHandle.setAttribute('data-icon', 'grip-vertical');
+		dragHandle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>';
 
 		const setting = new Setting(settingItem)
 			.setName(filter.name);
@@ -114,6 +128,86 @@ export class QuickFiltersView {
 				}
 			}
 		});
+
+		// Set up drag and drop event handlers
+		this.setupDragAndDrop(settingItem);
+	}
+
+	private setupDragAndDrop(element: HTMLElement): void {
+		element.addEventListener('dragstart', (e: DragEvent) => {
+			this.draggedElement = element;
+			element.addClass('quick-filter-dragging');
+			if (e.dataTransfer) {
+				e.dataTransfer.effectAllowed = 'move';
+				e.dataTransfer.setData('text/html', element.innerHTML);
+			}
+		}, { passive: true });
+
+		element.addEventListener('dragend', () => {
+			element.removeClass('quick-filter-dragging');
+			if (this.dragOverElement) {
+				this.dragOverElement.removeClass('quick-filter-drag-over');
+				this.dragOverElement = null;
+			}
+			this.draggedElement = null;
+		}, { passive: true });
+
+		element.addEventListener('dragover', (e: DragEvent) => {
+			if (e.preventDefault) {
+				e.preventDefault();
+			}
+			if (e.dataTransfer) {
+				e.dataTransfer.dropEffect = 'move';
+			}
+			
+			if (this.draggedElement && element !== this.draggedElement) {
+				if (this.dragOverElement && this.dragOverElement !== element) {
+					this.dragOverElement.removeClass('quick-filter-drag-over');
+				}
+				element.addClass('quick-filter-drag-over');
+				this.dragOverElement = element;
+			}
+		}, { passive: false });
+
+		element.addEventListener('dragleave', () => {
+			if (element !== this.draggedElement) {
+				element.removeClass('quick-filter-drag-over');
+				if (this.dragOverElement === element) {
+					this.dragOverElement = null;
+				}
+			}
+		}, { passive: true });
+
+		element.addEventListener('drop', async (e: DragEvent) => {
+			if (e.stopPropagation) {
+				e.stopPropagation();
+			}
+
+			if (this.draggedElement && element !== this.draggedElement) {
+				element.removeClass('quick-filter-drag-over');
+				
+				// Get all filter items in order
+				const container = element.closest('.quick-filters-draggable-container');
+				if (!container) return;
+
+				const allItems = Array.from(container.querySelectorAll('.quick-filter-item'));
+				const draggedIndex = allItems.indexOf(this.draggedElement);
+				const targetIndex = allItems.indexOf(element);
+
+				// Reorder the array
+				const quickFilters = this.dataService.getQuickFilters();
+				const [movedFilter] = quickFilters.splice(draggedIndex, 1);
+				quickFilters.splice(targetIndex, 0, movedFilter);
+
+				// Save the new order
+				await this.dataService.reorderQuickFilters(quickFilters);
+				
+				// Re-render to reflect the new order
+				this.render();
+			}
+
+			return false;
+		}, { passive: false });
 	}
 
 

@@ -1236,6 +1236,56 @@
 	background-color: var(--ontask-status-background-color);
 }
 
+/* Drag-and-drop styles for quick filters */
+.quick-filters-draggable-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.quick-filter-drag-handle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: grab;
+	color: var(--text-muted);
+	padding: 4px;
+	margin-right: 4px;
+	flex-shrink: 0;
+	opacity: 0.5;
+	transition: opacity 0.2s ease;
+	touch-action: none;
+}
+
+.quick-filter-drag-handle svg {
+	width: 16px;
+	height: 16px;
+	pointer-events: none;
+}
+
+.quick-filter-item:hover .quick-filter-drag-handle {
+	opacity: 1;
+}
+
+.quick-filter-item[draggable="true"] {
+	cursor: grab;
+	user-select: none;
+}
+
+.quick-filter-item[draggable="true"]:active {
+	cursor: grabbing;
+}
+
+.quick-filter-item.quick-filter-dragging {
+	opacity: 0.5;
+	cursor: grabbing;
+}
+
+.quick-filter-item.quick-filter-drag-over {
+	border-color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
 /* ========================================
    ERROR MESSAGES
    ======================================== */
@@ -1323,6 +1373,13 @@
 	font-size: 13px;
 }
 
+.is-mobile .quick-filter-drag-handle {
+	padding: 8px;
+	min-width: 32px;
+	min-height: 32px;
+	opacity: 0.7;
+}
+
 .is-mobile .ontask-tab-button {
 	padding: 10px 18px;
 	font-size: 16px;
@@ -1340,6 +1397,13 @@
 .is-phone .quick-filter-status-badge {
 	padding: 2px 6px;
 	font-size: 12px;
+}
+
+.is-phone .quick-filter-drag-handle {
+	padding: 10px;
+	min-width: 36px;
+	min-height: 36px;
+	opacity: 0.8;
 }
 
 .is-phone .ontask-tab-button {

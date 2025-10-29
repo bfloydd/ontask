@@ -37,6 +37,7 @@ export interface DataService {
 	addQuickFilter(filter: QuickFilter): Promise<void>;
 	updateQuickFilter(id: string, filter: QuickFilter): Promise<void>;
 	removeQuickFilter(id: string): Promise<void>;
+	reorderQuickFilters(filters: QuickFilter[]): Promise<void>;
 	
 	// Data persistence
 	saveData(): Promise<void>;

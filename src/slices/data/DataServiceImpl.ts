@@ -144,4 +144,9 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 		this.data.quickFilters = this.data.quickFilters.filter((f: QuickFilter) => f.id !== id);
 		await this.saveData();
 	}
+
+	async reorderQuickFilters(filters: QuickFilter[]): Promise<void> {
+		this.data.quickFilters = [...filters];
+		await this.saveData();
+	}
 }
