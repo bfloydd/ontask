@@ -1172,6 +1172,23 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+.ontask-quick-filter-selected {
+	background: var(--interactive-accent) !important;
+	color: var(--text-on-accent) !important;
+	border-color: var(--interactive-accent) !important;
+	font-weight: 600;
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+/* Specific styling for quick filter buttons in the modal */
+.ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
+	background: var(--interactive-accent) !important;
+	color: var(--text-on-accent) !important;
+	border-color: var(--interactive-accent) !important;
+	font-weight: 600;
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
 .quick-filter-item {
 	background: var(--background-secondary);
 	border: 1px solid var(--background-modifier-border);

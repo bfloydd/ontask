@@ -86,11 +86,17 @@ class FilterModal extends Modal {
 		if (quickFilters.length > 0) {
 			const quickFiltersContainer = contentEl.createDiv('ontask-filters-quick-filters-container');
 			
+			// Store quick filter buttons for live updates
+			const quickFilterButtons: { [key: string]: any } = {};
+			
 			for (const filter of quickFilters) {
 				new Setting(quickFiltersContainer)
-					.addButton(button => button
-						.setButtonText(filter.name)
-						.onClick(() => {
+					.addButton(button => {
+						button.setButtonText(filter.name);
+						quickFilterButtons[filter.name] = button;
+						
+						button.onClick(() => {
+							// Update status toggles
 							filter.statusSymbols.forEach((symbol: string) => {
 								const toggle = toggleElements[symbol];
 								if (toggle) {
@@ -103,8 +109,22 @@ class FilterModal extends Modal {
 									toggleElements[symbol].setValue(false);
 								}
 							});
-						}));
+							
+							// Update quick filter button highlighting
+							this.updateQuickFilterHighlighting(quickFilterButtons, toggleElements);
+						});
+					});
 			}
+			
+			// Add change listeners to all status toggles for live updates
+			Object.values(toggleElements).forEach((toggle: any) => {
+				toggle.onChange(() => {
+					this.updateQuickFilterHighlighting(quickFilterButtons, toggleElements);
+				});
+			});
+			
+			// Initial highlighting update
+			this.updateQuickFilterHighlighting(quickFilterButtons, toggleElements);
 		}
 
 		// Buttons
@@ -125,6 +145,38 @@ class FilterModal extends Modal {
 		contentEl.empty();
 	}
 
+
+	private updateQuickFilterHighlighting(quickFilterButtons: { [key: string]: any }, toggleElements: { [key: string]: any }): void {
+		// Get current active status symbols from toggles
+		const activeStatusSymbols = Object.keys(toggleElements).filter(symbol => toggleElements[symbol].getValue());
+		
+		// Get all quick filters
+		const quickFilters = this.dataService.getQuickFilters().filter((filter: any) => filter.enabled);
+		
+		// Update highlighting for each quick filter button
+		quickFilters.forEach((filter: any) => {
+			const button = quickFilterButtons[filter.name];
+			if (button) {
+				const filterMatchesCurrent = this.doesQuickFilterMatchCurrentSelection(filter.statusSymbols, activeStatusSymbols);
+				
+				if (filterMatchesCurrent) {
+					button.buttonEl.addClass('ontask-quick-filter-selected');
+				} else {
+					button.buttonEl.removeClass('ontask-quick-filter-selected');
+				}
+			}
+		});
+	}
+
+	private doesQuickFilterMatchCurrentSelection(filterStatusSymbols: string[], activeStatusSymbols: string[]): boolean {
+		// A quick filter matches if all its status symbols are active and no other statuses are active
+		// This means the current selection exactly matches the quick filter's configuration
+		if (filterStatusSymbols.length !== activeStatusSymbols.length) {
+			return false;
+		}
+		
+		return filterStatusSymbols.every(symbol => activeStatusSymbols.includes(symbol));
+	}
 
 	private async saveFilterSettings(toggleElements: { [key: string]: any }): Promise<void> {
 		for (const [symbol, toggle] of Object.entries(toggleElements)) {
