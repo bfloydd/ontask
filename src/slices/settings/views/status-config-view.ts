@@ -1,6 +1,7 @@
 import { App, Setting, Modal } from 'obsidian';
 import { StatusConfig } from '../SettingsServiceInterface';
 import { StatusConfigService } from '../status-config';
+import { setupDragAndDrop } from '../../../shared/drag-and-drop-utils';
 
 const NON_EDITABLE_SYMBOLS = ['/', '!', '+', '.', 'x'];
 
@@ -49,12 +50,11 @@ export class StatusConfigView {
 		// Check if this is a non-editable symbol
 		const isNonEditableSymbol = NON_EDITABLE_SYMBOLS.includes(config.symbol);
 
-		// Drag handle
+		// Drag handle (visual indicator only - the entire item is draggable)
 		const dragHandle = itemEl.createEl('div', { 
 			cls: 'status-config-drag-handle',
 			text: '⋮⋮'
 		});
-		dragHandle.setAttribute('draggable', 'true');
 
 		// Status preview
 		const previewEl = itemEl.createEl('div', { cls: 'status-config-preview' });
@@ -129,7 +129,23 @@ export class StatusConfigView {
 		}
 		
 		// Drag and drop
-		this.setupDragAndDrop(itemEl, index);
+		setupDragAndDrop<StatusConfig>({
+			itemElement: itemEl,
+			itemIndex: index,
+			draggingClass: 'dragging',
+			dragOverClass: 'status-config-drag-over',
+			dropIndicatorClass: 'status-config-drop-indicator',
+			containerSelector: '.status-config-list',
+			itemSelector: '.status-config-item',
+			getItems: () => this.statusConfigs,
+			saveItems: async (items) => {
+				await this.statusConfigService.reorderStatusConfigs(items);
+				this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
+			},
+			onReorder: () => {
+				this.render();
+			}
+		});
 	}
 
 	private renderAddButton(containerEl: HTMLElement): void {
@@ -347,36 +363,5 @@ export class StatusConfigView {
 
 	private async saveAllStatuses(): Promise<void> {
 		await this.statusConfigService.reorderStatusConfigs([...this.statusConfigs]);
-	}
-
-	private setupDragAndDrop(itemEl: HTMLElement, index: number): void {
-		itemEl.addEventListener('dragstart', (e) => {
-			e.dataTransfer?.setData('text/plain', index.toString());
-			itemEl.classList.add('dragging');
-		}, { passive: true });
-
-		itemEl.addEventListener('dragend', () => {
-			itemEl.classList.remove('dragging');
-		}, { passive: true });
-
-		itemEl.addEventListener('dragover', (e) => {
-			e.preventDefault();
-		}, { passive: false });
-
-		itemEl.addEventListener('drop', async (e) => {
-			e.preventDefault();
-			const draggedIndex = parseInt(e.dataTransfer?.getData('text/plain') || '0');
-			
-			if (draggedIndex !== index) {
-				// Reorder the array
-				const draggedItem = this.statusConfigs[draggedIndex];
-				this.statusConfigs.splice(draggedIndex, 1);
-				this.statusConfigs.splice(index, 0, draggedItem);
-				
-				await this.statusConfigService.reorderStatusConfigs([...this.statusConfigs]);
-				this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
-				this.render();
-			}
-		}, { passive: false });
 	}
 }

@@ -2,14 +2,13 @@
 import { App, Setting, Modal } from 'obsidian';
 import { DataService, QuickFilter } from '../../data/DataServiceInterface';
 import { StatusConfigService } from '../status-config';
+import { setupDragAndDrop } from '../../../shared/drag-and-drop-utils';
 
 export class QuickFiltersView {
 	private app: App;
 	private dataService: DataService;
 	private statusConfigService: StatusConfigService;
 	private containerEl: HTMLElement;
-	private draggedElement: HTMLElement | null = null;
-	private dragOverElement: HTMLElement | null = null;
 
 	constructor(app: App, dataService: DataService, statusConfigService: StatusConfigService, containerEl: HTMLElement) {
 		this.app = app;
@@ -130,84 +129,22 @@ export class QuickFiltersView {
 		});
 
 		// Set up drag and drop event handlers
-		this.setupDragAndDrop(settingItem);
-	}
-
-	private setupDragAndDrop(element: HTMLElement): void {
-		element.addEventListener('dragstart', (e: DragEvent) => {
-			this.draggedElement = element;
-			element.addClass('quick-filter-dragging');
-			if (e.dataTransfer) {
-				e.dataTransfer.effectAllowed = 'move';
-				e.dataTransfer.setData('text/html', element.innerHTML);
-			}
-		}, { passive: true });
-
-		element.addEventListener('dragend', () => {
-			element.removeClass('quick-filter-dragging');
-			if (this.dragOverElement) {
-				this.dragOverElement.removeClass('quick-filter-drag-over');
-				this.dragOverElement = null;
-			}
-			this.draggedElement = null;
-		}, { passive: true });
-
-		element.addEventListener('dragover', (e: DragEvent) => {
-			if (e.preventDefault) {
-				e.preventDefault();
-			}
-			if (e.dataTransfer) {
-				e.dataTransfer.dropEffect = 'move';
-			}
-			
-			if (this.draggedElement && element !== this.draggedElement) {
-				if (this.dragOverElement && this.dragOverElement !== element) {
-					this.dragOverElement.removeClass('quick-filter-drag-over');
-				}
-				element.addClass('quick-filter-drag-over');
-				this.dragOverElement = element;
-			}
-		}, { passive: false });
-
-		element.addEventListener('dragleave', () => {
-			if (element !== this.draggedElement) {
-				element.removeClass('quick-filter-drag-over');
-				if (this.dragOverElement === element) {
-					this.dragOverElement = null;
-				}
-			}
-		}, { passive: true });
-
-		element.addEventListener('drop', async (e: DragEvent) => {
-			if (e.stopPropagation) {
-				e.stopPropagation();
-			}
-
-			if (this.draggedElement && element !== this.draggedElement) {
-				element.removeClass('quick-filter-drag-over');
-				
-				// Get all filter items in order
-				const container = element.closest('.quick-filters-draggable-container');
-				if (!container) return;
-
-				const allItems = Array.from(container.querySelectorAll('.quick-filter-item'));
-				const draggedIndex = allItems.indexOf(this.draggedElement);
-				const targetIndex = allItems.indexOf(element);
-
-				// Reorder the array
-				const quickFilters = this.dataService.getQuickFilters();
-				const [movedFilter] = quickFilters.splice(draggedIndex, 1);
-				quickFilters.splice(targetIndex, 0, movedFilter);
-
-				// Save the new order
-				await this.dataService.reorderQuickFilters(quickFilters);
-				
-				// Re-render to reflect the new order
+		setupDragAndDrop<QuickFilter>({
+			itemElement: settingItem,
+			itemIndex: index,
+			draggingClass: 'quick-filter-dragging',
+			dragOverClass: 'quick-filter-drag-over',
+			dropIndicatorClass: 'quick-filter-drop-indicator',
+			containerSelector: '.quick-filters-draggable-container',
+			itemSelector: '.quick-filter-item',
+			getItems: () => this.dataService.getQuickFilters(),
+			saveItems: async (items) => {
+				await this.dataService.reorderQuickFilters(items);
+			},
+			onReorder: () => {
 				this.render();
 			}
-
-			return false;
-		}, { passive: false });
+		});
 	}
 
 

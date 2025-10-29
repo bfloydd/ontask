@@ -986,6 +986,22 @@
 	transform: rotate(2deg);
 }
 
+.status-config-item.status-config-drag-over {
+	border-color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.status-config-drop-indicator {
+	height: 2px;
+	background: var(--interactive-accent);
+	border-radius: 2px;
+	margin: -1px 0;
+	box-shadow: 0 0 4px var(--interactive-accent-hover);
+	animation: drop-indicator-pulse 1.5s ease-in-out infinite;
+	pointer-events: none;
+}
+
 .status-config-drag-handle {
 	color: var(--text-muted);
 	cursor: grab;
@@ -1139,6 +1155,27 @@
 	background-color: var(--ontask-config-background-color);
 }
 
+div.setting-item.quick-filter-item
+{
+	border-top: 1px solid var(--background-modifier-border);
+	/* border-bottom: none; */
+	/* border-left: none; */
+	/* border-right: none; */
+	/* border-radius: 0; */
+	padding: 2px 4px 2px 4px;
+	/* margin: 0; */
+	/* box-shadow: none; */
+	/* transition: none; */
+}
+
+div.setting-item.mod-toggle	{
+	border-top: none;
+}
+
+div.status-config-item {
+	padding: 4px 4px 4px 4px;
+}
+
 /* ========================================
    FILTERS & QUICK FILTERS
    ======================================== */
@@ -1284,6 +1321,27 @@
 	border-color: var(--interactive-accent);
 	background: var(--background-modifier-hover);
 	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.quick-filter-drop-indicator {
+	height: 2px;
+	background: var(--interactive-accent);
+	border-radius: 2px;
+	margin: -1px 0;
+	box-shadow: 0 0 4px var(--interactive-accent-hover);
+	animation: drop-indicator-pulse 1.5s ease-in-out infinite;
+	pointer-events: none;
+}
+
+@keyframes drop-indicator-pulse {
+	0%, 100% {
+		opacity: 1;
+		box-shadow: 0 0 4px var(--interactive-accent-hover);
+	}
+	50% {
+		opacity: 0.7;
+		box-shadow: 0 0 8px var(--interactive-accent-hover);
+	}
 }
 
 /* ========================================
