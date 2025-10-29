@@ -19,6 +19,7 @@ export class QuickFiltersView {
 
 	render(): void {
 		this.containerEl.empty();
+		this.containerEl.addClass('ontask-quick-filters-view');
 
 		// Header
 		const header = this.containerEl.createDiv();

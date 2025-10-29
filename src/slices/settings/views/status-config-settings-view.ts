@@ -17,7 +17,7 @@ export class StatusConfigSettingsView {
 		this.containerEl.empty();
 
 		// Create a container for the status configuration
-		const statusConfigContainer = this.containerEl.createEl('div', { cls: 'status-config-container' });
+		const statusConfigContainer = this.containerEl.createEl('div', { cls: 'status-config-container ontask-status-config-view' });
 		
 		// Initialize and render the status configuration view
 		const statusConfigView = new StatusConfigView(statusConfigContainer, this.statusConfigService, this.app);

@@ -1155,24 +1155,16 @@
 	background-color: var(--ontask-config-background-color);
 }
 
-div.setting-item.quick-filter-item
-{
+.ontask-quick-filters-view div.setting-item.quick-filter-item {
 	border-top: 1px solid var(--background-modifier-border);
-	/* border-bottom: none; */
-	/* border-left: none; */
-	/* border-right: none; */
-	/* border-radius: 0; */
 	padding: 2px 4px 2px 4px;
-	/* margin: 0; */
-	/* box-shadow: none; */
-	/* transition: none; */
 }
 
-div.setting-item.mod-toggle	{
+.ontask-quick-filters-view div.setting-item.mod-toggle	{
 	border-top: none;
 }
 
-div.status-config-item {
+.ontask-status-config-view div.status-config-item {
 	padding: 4px 4px 4px 4px;
 }
 
