@@ -95,6 +95,7 @@
 .status-config-edit-btn,
 .status-config-delete-btn,
 .status-config-add-btn,
+.quick-filter-add-btn,
 .ontask-quick-filter-button {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
@@ -117,6 +118,7 @@
 .ontask-load-more-button:hover,
 .status-config-edit-btn:hover,
 .status-config-add-btn:hover,
+.quick-filter-add-btn:hover,
 .ontask-quick-filter-button:hover {
 	background: var(--interactive-accent-hover);
 }
@@ -125,6 +127,7 @@
 .ontask-load-more-button:active,
 .status-config-edit-btn:active,
 .status-config-add-btn:active,
+.quick-filter-add-btn:active,
 .ontask-quick-filter-button:active {
 	transform: translateY(1px);
 }
@@ -320,13 +323,11 @@
 	justify-content: center;
 }
 
-/* Dynamic status styling - all statuses use CSS custom properties from data.json */
 .ontask-checkbox-display[data-status] {
 	color: var(--ontask-status-color, var(--text-on-accent));
 	background: var(--ontask-status-background-color, var(--interactive-accent));
 	border-color: var(--ontask-status-color, var(--interactive-accent));
 }
-
 
 .ontask-checkbox-text {
 	font-family: var(--font-monospace);
@@ -631,7 +632,6 @@
 	background: var(--background-modifier-hover);
 }
 
-/* Filters menu styling - now used as modal */
 .ontask-filters-modal {
 	max-width: 500px;
 }
@@ -693,14 +693,12 @@
 	justify-content: center;
 }
 
-/* Quick filter buttons in modal - remove Setting wrapper styling */
 .ontask-filters-quick-filters-container .setting-item {
 	padding: 0;
 	border: none;
 	background: none;
 }
 
-/* Filter modal setting items - reduce padding and remove border */
 .ontask-filters-modal .setting-item {
 	padding: 0.5em 0;
 	border-top: none;
@@ -789,7 +787,6 @@
 	font-size: 15px;
 }
 
-/* Status display in context menu */
 .ontask-context-menu-status-display {
 	font-family: var(--font-monospace);
 	font-size: 11px;
@@ -804,14 +801,12 @@
 	display: inline-block;
 }
 
-/* Dynamic status colors for custom statuses in context menu */
 .ontask-context-menu-status-display[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
 	border: 1px solid var(--ontask-status-color);
 }
 
-/* Status icon in Setting components (filter modal) */
 .ontask-status-icon-inline {
 	font-family: var(--font-monospace);
 	font-size: 11px;
@@ -827,19 +822,17 @@
 	flex-shrink: 0;
 }
 
-/* Dynamic status colors for custom statuses in settings */
+
 .ontask-status-icon-inline[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
 	border: 1px solid var(--ontask-status-color);
 }
 
-/* Ensure Setting components with status icons display inline in modals */
 .modal .setting-item-name {
 	display: flex;
 	align-items: center;
 }
-
 
 
 /* ========================================
@@ -1098,6 +1091,19 @@
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.quick-filter-add-btn {
+	border-radius: 6px;
+	padding: 10px 16px;
+	font-size: 14px;
+	font-weight: 500;
+	width: 100%;
+}
+
+.quick-filter-add-btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
 .status-config-modal-preview {
 	margin-top: 15px;
 	padding: 15px;
@@ -1238,10 +1244,6 @@
 
 .quick-filter-controls {
 	grid-column: 4;
-}
-
-.quick-filter-item:first-child {
-	/* border-top: none; */
 }
 
 .quick-filter-item.quick-filter-disabled {
@@ -1425,6 +1427,9 @@
 	}
 }
 
+
+
+
 /* ========================================
    ERROR MESSAGES
    ======================================== */
@@ -1493,6 +1498,7 @@
 	gap: 8px;
 	margin-top: 16px;
 }
+
 
 /* ========================================
    ADDITIONAL MOBILE RESPONSIVE STYLES
@@ -1568,8 +1574,6 @@
 	vertical-align: middle;
 }
 
-
-/* Different colors for different rank levels */
 .ontask-task-ranking[data-rank="1"] {
 	background: linear-gradient(135deg, #ffd700, #ffed4e);
 	border-color: #f59e0b;
@@ -1588,7 +1592,6 @@
 	color: #374151;
 }
 
-/* Mobile adjustments */
 .is-mobile .ontask-task-ranking {
 	font-size: 12px;
 	padding: 3px 7px;

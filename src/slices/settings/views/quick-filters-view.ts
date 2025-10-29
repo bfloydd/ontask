@@ -22,24 +22,10 @@ export class QuickFiltersView {
 		this.containerEl.addClass('ontask-quick-filters-view');
 
 		// Header
-		const header = this.containerEl.createDiv();
-		header.addClass('setting-item');
-		header.createEl('h3', { text: 'Quick Filters' });
-		header.createEl('p', { 
+		this.containerEl.createEl('p', { 
 			text: 'Create collections of status filters that can be quickly applied in the OnTask view.',
 			cls: 'setting-item-description'
 		});
-
-		// Add new quick filter button
-		const addButton = this.containerEl.createDiv();
-		addButton.addClass('setting-item');
-		new Setting(addButton)
-			.setName('Add Quick Filter')
-			.setDesc('Create a new quick filter collection')
-			.addButton(button => button
-				.setButtonText('Add Filter')
-				.setCta()
-				.onClick(() => this.showAddQuickFilterModal()));
 
 		// Render existing quick filters
 		this.renderQuickFilters();
@@ -47,24 +33,26 @@ export class QuickFiltersView {
 
 	private renderQuickFilters(): void {
 		const quickFilters = this.dataService.getQuickFilters();
+
+		// Create a container for draggable items
+		const filtersContainer = this.containerEl.createDiv();
+		filtersContainer.addClass('quick-filters-draggable-container');
 		
 		if (quickFilters.length === 0) {
-			const emptyState = this.containerEl.createDiv();
+			const emptyState = filtersContainer.createDiv();
 			emptyState.addClass('setting-item');
 			emptyState.createEl('p', { 
 				text: 'No quick filters created yet. Click "Add Filter" to create your first one.',
 				cls: 'setting-item-description'
 			});
-			return;
+		} else {
+			quickFilters.forEach((filter, index) => {
+				this.renderQuickFilterItem(filter, filtersContainer, index);
+			});
 		}
 
-		// Create a container for draggable items
-		const filtersContainer = this.containerEl.createDiv();
-		filtersContainer.addClass('quick-filters-draggable-container');
-
-		quickFilters.forEach((filter, index) => {
-			this.renderQuickFilterItem(filter, filtersContainer, index);
-		});
+		// Add new quick filter button at the bottom
+		this.renderAddButton(filtersContainer);
 	}
 
 	private renderQuickFilterItem(filter: QuickFilter, container: HTMLElement, index: number): void {
@@ -145,6 +133,14 @@ export class QuickFiltersView {
 		});
 	}
 
+	private renderAddButton(containerEl: HTMLElement): void {
+		const addBtn = containerEl.createEl('button', { 
+			cls: 'quick-filter-add-btn',
+			text: '+ Add Quick Filter'
+		});
+		
+		addBtn.addEventListener('click', () => this.showAddQuickFilterModal(), { passive: true });
+	}
 
 	private showAddQuickFilterModal(): void {
 		this.showQuickFilterModal();

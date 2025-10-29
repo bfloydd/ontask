@@ -23,7 +23,6 @@ export class StatusConfigView {
 
 		// Header
 		const headerEl = this.containerEl.createEl('div', { cls: 'status-config-header' });
-		headerEl.createEl('h3', { text: 'Status Configuration' });
 		headerEl.createEl('p', { 
 			text: 'Customize the appearance and order of task statuses. Drag to reorder, click to edit.',
 			cls: 'setting-item-description'
