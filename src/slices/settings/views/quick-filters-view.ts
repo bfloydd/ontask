@@ -69,8 +69,10 @@ export class QuickFiltersView {
 
 	private renderQuickFilterItem(filter: QuickFilter, container: HTMLElement, index: number): void {
 		const settingItem = container.createDiv();
-		settingItem.addClass('setting-item');
 		settingItem.addClass('quick-filter-item');
+		if (!filter.enabled) {
+			settingItem.addClass('quick-filter-disabled');
+		}
 		settingItem.setAttribute('data-filter-id', filter.id);
 		settingItem.setAttribute('draggable', 'true');
 
@@ -80,31 +82,12 @@ export class QuickFiltersView {
 		dragHandle.setAttribute('data-icon', 'grip-vertical');
 		dragHandle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>';
 
-		const setting = new Setting(settingItem)
-			.setName(filter.name);
+		// Filter name
+		const nameEl = settingItem.createDiv();
+		nameEl.addClass('quick-filter-name');
+		nameEl.textContent = filter.name;
 
-		// Enable/disable toggle
-		setting.addToggle(toggle => toggle
-			.setValue(filter.enabled)
-			.onChange(async (value) => {
-				await this.dataService.updateQuickFilter(filter.id, { ...filter, enabled: value });
-				this.render(); // Re-render to update the UI
-			}));
-
-		// Edit button
-		setting.addButton(button => button
-			.setButtonText('Edit')
-			.setIcon('edit')
-			.onClick(() => this.showEditQuickFilterModal(filter)));
-
-		// Delete button
-		setting.addButton(button => button
-			.setButtonText('Delete')
-			.setIcon('trash')
-			.setWarning()
-			.onClick(() => this.showDeleteConfirmation(filter)));
-
-		// Status symbols display
+		// Status symbols display (moved before controls)
 		const statusDisplay = settingItem.createDiv();
 		statusDisplay.addClass('quick-filter-statuses');
 		// Status display styles are now handled by CSS
@@ -128,6 +111,20 @@ export class QuickFiltersView {
 				}
 			}
 		});
+
+		// Control container for edit, delete buttons (toggle removed) - placed after status badges
+		const controlsContainer = settingItem.createDiv();
+		controlsContainer.addClass('quick-filter-controls');
+
+		// Edit button
+		const editButton = controlsContainer.createEl('button', { cls: 'quick-filter-edit-btn' });
+		editButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+		editButton.addEventListener('click', () => this.showEditQuickFilterModal(filter), { passive: true });
+
+		// Delete button
+		const deleteButton = controlsContainer.createEl('button', { cls: 'quick-filter-delete-btn mod-warning' });
+		deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
+		deleteButton.addEventListener('click', () => this.showDeleteConfirmation(filter), { passive: true });
 
 		// Set up drag and drop event handlers
 		setupDragAndDrop<QuickFilter>({
@@ -166,6 +163,7 @@ export class QuickFiltersView {
 
 		// Local variables to track form state
 		let filterName = existingFilter?.name || '';
+		let filterEnabled = existingFilter?.enabled ?? true;
 		const selectedStatuses = new Set(existingFilter?.statusSymbols || []);
 
 		// Name input
@@ -177,6 +175,16 @@ export class QuickFiltersView {
 				.setValue(filterName)
 				.onChange(value => {
 					filterName = value;
+				}));
+
+		// Enable/disable toggle
+		const enabledSetting = new Setting(content)
+			.setName('Enabled')
+			.setDesc('When disabled, this filter will not appear in the filter menu')
+			.addToggle(toggle => toggle
+				.setValue(filterEnabled)
+				.onChange(value => {
+					filterEnabled = value;
 				}));
 
 		// Status selection
@@ -241,7 +249,7 @@ export class QuickFiltersView {
 					id: existingFilter?.id || this.generateId(),
 					name: trimmedName,
 					statusSymbols: Array.from(selectedStatuses),
-					enabled: existingFilter?.enabled ?? true
+					enabled: filterEnabled
 				};
 
 				if (existingFilter) {
