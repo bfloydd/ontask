@@ -91,20 +91,21 @@ export class StatusConfigView {
 			text: config.name
 		});
 		
-		// Add visual indicator for ranking or non-editable symbols
+		// Add description on the same line
+		const descriptionEl = infoEl.createEl('span', { 
+			cls: 'status-config-description',
+			text: ` - ${config.description}`
+		});
+		
+		// Add visual indicator for ranking after description
 		if (config.topTaskRanking !== undefined) {
-			const indicatorEl = nameEl.createEl('span', {
+			const indicatorEl = infoEl.createEl('span', {
 				cls: 'status-config-ranking-indicator',
-				text: ` (Top task rank #${config.topTaskRanking})`,
+				text: ` - Top task rank #${config.topTaskRanking}`,
 				attr: { title: 'This status participates in top task selection with this priority ranking' }
 			});
 			indicatorEl.addClass('status-config-indicator');
 		}
-		
-		infoEl.createEl('div', { 
-			cls: 'status-config-description',
-			text: config.description
-		});
 
 		// Edit button
 		const editBtn = itemEl.createEl('button', { 
