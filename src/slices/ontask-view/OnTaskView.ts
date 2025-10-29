@@ -12,6 +12,7 @@ import { TopTaskProcessingService } from './services/top-task-processing-service
 import { EventHandlingService } from './services/event-handling-service';
 import { FileOperationsService } from './services/file-operations-service';
 import { MobileTouchService } from './services/mobile-touch-service';
+import { ScrollToTopService } from './services/scroll-to-top-service';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -29,14 +30,15 @@ export class OnTaskViewImpl extends ItemView {
 	private eventHandlingService: EventHandlingService;
 	private fileOperationsService: FileOperationsService;
 	private mobileTouchService: MobileTouchService;
+	private scrollToTopService: ScrollToTopService;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
 	private onlyTodayButton: HTMLButtonElement;
 	private isRefreshing: boolean = false;
 	private isUpdatingStatus: boolean = false;
-	private displayedTasksCount: number = 10; // Will be updated from settings
+	private displayedTasksCount: number = 10;
 	private loadMoreButton: HTMLButtonElement | null = null;
-	private lastCheckboxContent: Map<string, string> = new Map(); // Track checkbox content to detect actual changes
+	private lastCheckboxContent: Map<string, string> = new Map(); 
 	private currentFilter: string = '';
 	private isSearchFilterVisible: boolean = false;
 	
@@ -97,6 +99,8 @@ export class OnTaskViewImpl extends ItemView {
 		);
 		
 		this.mobileTouchService = new MobileTouchService(this.contextMenuService);
+		
+		this.scrollToTopService = new ScrollToTopService(this.eventSystem, this.app);
 		
 		this.eventHandlingService = new EventHandlingService(
 			this.eventSystem,
@@ -167,10 +171,14 @@ export class OnTaskViewImpl extends ItemView {
 		
 		await this.refreshCheckboxes();
 		this.eventHandlingService.setupEventListeners();
+		
+		this.scrollToTopService.initialize(this.contentEl);
 	}
 
 	async onClose(): Promise<void> {
 		this.eventHandlingService.cleanupEventListeners();
+		
+		this.scrollToTopService.destroy();
 		
 		if (this.refreshTimeout) {
 			clearTimeout(this.refreshTimeout);

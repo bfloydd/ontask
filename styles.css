@@ -1399,6 +1399,69 @@
 }
 
 /* ========================================
+   SCROLL TO TOP BUTTON
+   ======================================== */
+
+.ontask-scroll-to-top-button {
+    position: fixed;
+    bottom: 35px;
+    right: 20px;
+	width: 48px;
+	height: 48px;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	font-size: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	transition: all 0.3s ease;
+	z-index: 9999;
+	opacity: 0;
+	transform: translateY(10px);
+	backdrop-filter: blur(10px);
+}
+
+.ontask-scroll-to-top-button:hover {
+	background: var(--interactive-accent-hover);
+	transform: translateY(-2px);
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.ontask-scroll-to-top-button:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ontask-scroll-to-top-button svg {
+	transition: transform 0.2s ease;
+}
+
+.ontask-scroll-to-top-button:hover svg {
+	transform: translateY(-1px);
+}
+
+/* Mobile adjustments */
+.is-mobile .ontask-scroll-to-top-button {
+    bottom: 48px;
+	right: 16px;
+	width: 44px;
+	height: 44px;
+	font-size: 14px;
+}
+
+.is-phone .ontask-scroll-to-top-button {
+    bottom: 40px;
+	right: 12px;
+	width: 40px;
+	height: 40px;
+	font-size: 13px;
+}
+
+/* ========================================
    FILTER SECTION
    ======================================== */
 
