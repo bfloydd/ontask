@@ -110,6 +110,9 @@
    SLICE: shared (common button patterns)
    ======================================== */
 
+/* Common button base class - extracted shared properties
+ * Buttons can extend this class directly or inherit via specific button classes */
+.ontask-button-base,
 .ontask-header-button,
 .ontask-load-more-button,
 .status-config-edit-btn,
@@ -134,6 +137,8 @@
 	height: 25px;
 }
 
+/* Common button hover state */
+.ontask-button-base:hover,
 .ontask-header-button:hover,
 .ontask-load-more-button:hover,
 .status-config-edit-btn:hover,
@@ -143,6 +148,8 @@
 	background: var(--interactive-accent-hover);
 }
 
+/* Common button active state */
+.ontask-button-base:active,
 .ontask-header-button:active,
 .ontask-load-more-button:active,
 .status-config-edit-btn:active,
@@ -261,21 +268,7 @@
 	margin-left: auto;
 }
 
-/* Dynamic status display colors - only for custom status configurations
- * Note: Dual attribute selector needed for specificity to override default styles */
-.ontask-checkbox-display[data-dynamic-color][data-custom-status] {
-	color: var(--ontask-status-color);
-	background-color: var(--ontask-status-background-color);
-	border: 1px solid var(--ontask-status-color);
-}
-
-/* Dynamic status display colors for top task items - only for custom status configurations
- * Note: Nested selector with dual attributes for higher specificity to override hero styles */
-.ontask-toptask-hero-item .ontask-checkbox-display[data-dynamic-color][data-custom-status] {
-	color: var(--ontask-status-color);
-	background-color: var(--ontask-status-background-color);
-	border: 2px solid var(--ontask-status-color);
-}
+/* Note: Dynamic color selectors for checkbox display have been moved to DYNAMIC COLORS section */
 
 /* ========================================
    TASK ITEMS & CHECKBOXES
@@ -537,19 +530,15 @@
 	opacity: 1;
 }
 
-/* Dynamic top task section colors */
-.ontask-toptask-hero-section[data-dynamic-color] {
-	--ontask-toptask-color: var(--ontask-dynamic-color);
-	--ontask-toptask-shadow-color: var(--ontask-dynamic-shadow-color);
-	--ontask-toptask-status-color: var(--ontask-dynamic-status-color);
-}
+/* Note: Dynamic color selectors for top task hero section have been moved to DYNAMIC COLORS section */
 
 /* ========================================
    MOBILE RESPONSIVE STYLES
    SLICE: mobile-responsiveness
-   Note: Mobile overrides for ontask-view components (initial section)
+   Note: Mobile overrides grouped by component to maintain proper cascade order
    ======================================== */
 
+/* --- Mobile: Main View Header & Controls --- */
 .is-mobile .ontask-header {
 	flex-direction: row;
 	gap: 8px;
@@ -581,6 +570,7 @@
 	font-size: 11px;
 }
 
+/* --- Mobile: File Sections & Task Containers --- */
 .is-mobile .ontask-file-header h3,
 .is-mobile .ontask-toptask-hero-header {
 	flex-direction: column;
@@ -612,6 +602,7 @@
 	padding: 10px;
 }
 
+/* --- Mobile: Load More Functionality --- */
 .is-mobile .ontask-load-more-section {
 	padding: 15px;
 }
@@ -832,6 +823,7 @@
 	transform: translateX(1px);
 }
 
+/* --- Mobile: Context Menus & Dropdowns --- */
 .is-mobile .ontask-context-menu {
 	min-width: 250px;
 	max-width: 90vw;
@@ -879,13 +871,7 @@
 	display: inline-block;
 }
 
-/* Dynamic color for context menu status display
- * Note: Dual attribute selector ensures proper override of default status colors */
-.ontask-context-menu-status-display[data-dynamic-color][data-custom-status] {
-	color: var(--ontask-status-color);
-	background-color: var(--ontask-status-background-color);
-	border: 1px solid var(--ontask-status-color);
-}
+/* Note: Dynamic color selectors for context menu status display have been moved to DYNAMIC COLORS section */
 
 .ontask-status-icon-inline {
 	font-family: var(--font-monospace);
@@ -903,13 +889,7 @@
 }
 
 
-/* Dynamic color for inline status icon
- * Note: Dual attribute selector ensures proper override of default status colors */
-.ontask-status-icon-inline[data-dynamic-color][data-custom-status] {
-	color: var(--ontask-status-color);
-	background-color: var(--ontask-status-background-color);
-	border: 1px solid var(--ontask-status-color);
-}
+/* Note: Dynamic color selectors for inline status icon have been moved to DYNAMIC COLORS section */
 
 .modal .setting-item-name {
 	display: flex;
@@ -968,6 +948,7 @@
 	opacity: 0.7;
 }
 
+/* --- Mobile: Top Task Hero Overlay --- */
 .is-mobile .ontask-toptask-hero-overlay {
 	padding: 3px 8px;
 	font-size: 13px;
@@ -1264,16 +1245,65 @@
 	border-color: var(--background-modifier-border-hover);
 }
 
-/* Dynamic status config colors
- * Note: Attribute selector allows runtime color customization via data attribute */
+/* Note: Dynamic color selectors for status config symbol have been moved to DYNAMIC COLORS section */
+
+
+.ontask-status-config-view div.status-config-item {
+	padding: 4px 4px 4px 4px;
+}
+
+/* ========================================
+   DYNAMIC COLORS (Runtime Customization)
+   SLICE: shared (cross-slice dynamic styling)
+   Note: All dynamic color selectors grouped here for maintainability.
+   These use [data-dynamic-color] attribute for runtime color customization.
+   ======================================== */
+
+/* Status config symbol dynamic colors */
 .status-config-symbol[data-dynamic-color] {
 	color: var(--ontask-config-color);
 	background-color: var(--ontask-config-background-color);
 }
 
+/* Checkbox display dynamic colors - standard task items */
+.ontask-checkbox-display[data-dynamic-color][data-custom-status] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 1px solid var(--ontask-status-color);
+}
 
-.ontask-status-config-view div.status-config-item {
-	padding: 4px 4px 4px 4px;
+/* Checkbox display dynamic colors - top task hero items (higher specificity) */
+.ontask-toptask-hero-item .ontask-checkbox-display[data-dynamic-color][data-custom-status] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 2px solid var(--ontask-status-color);
+}
+
+/* Top task hero section dynamic colors (CSS variable setup) */
+.ontask-toptask-hero-section[data-dynamic-color] {
+	--ontask-toptask-color: var(--ontask-dynamic-color);
+	--ontask-toptask-shadow-color: var(--ontask-dynamic-shadow-color);
+	--ontask-toptask-status-color: var(--ontask-dynamic-status-color);
+}
+
+/* Context menu status display dynamic colors */
+.ontask-context-menu-status-display[data-dynamic-color][data-custom-status] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 1px solid var(--ontask-status-color);
+}
+
+/* Inline status icon dynamic colors */
+.ontask-status-icon-inline[data-dynamic-color][data-custom-status] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
+	border: 1px solid var(--ontask-status-color);
+}
+
+/* Quick filter status badge dynamic colors */
+.quick-filter-status-badge[data-dynamic-color] {
+	color: var(--ontask-status-color);
+	background-color: var(--ontask-status-background-color);
 }
 
 /* ========================================
@@ -1496,12 +1526,7 @@
 	flex-shrink: 0;
 }
 
-/* Dynamic quick filter status badge colors
- * Note: Attribute selector enables runtime color customization for status badges */
-.quick-filter-status-badge[data-dynamic-color] {
-	color: var(--ontask-status-color);
-	background-color: var(--ontask-status-background-color);
-}
+/* Note: Dynamic color selectors for quick filter status badge have been moved to DYNAMIC COLORS section */
 
 /* Drag-and-drop styles for quick filters */
 .quick-filters-draggable-container {
@@ -1657,6 +1682,7 @@
    Note: Additional mobile overrides for filters and settings components
    ======================================== */
 
+/* --- Mobile: Quick Filters & Settings --- */
 .is-mobile .ontask-quick-filter-button {
 	padding: 6px 10px;
 	font-size: 14px;
@@ -1746,6 +1772,7 @@
 	color: #374151;
 }
 
+/* --- Mobile: Task Ranking Badges --- */
 .is-mobile .ontask-task-ranking {
 	font-size: 12px;
 	padding: 3px 7px;
@@ -1805,7 +1832,7 @@
 	transform: translateY(-1px);
 }
 
-/* Mobile adjustments */
+/* --- Mobile: Scroll to Top Button --- */
 .is-mobile .ontask-scroll-to-top-button {
     bottom: 48px;
 	right: 16px;
@@ -1900,7 +1927,7 @@
 	background: var(--background-modifier-hover);
 }
 
-/* Mobile adjustments */
+/* --- Mobile: Filter Section --- */
 .is-mobile .ontask-filter-section.ontask-filter-expanded {
 	margin: 12px 0;
 	padding: 10px;
