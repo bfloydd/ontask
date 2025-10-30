@@ -23,15 +23,6 @@ export class GeneralSettingsView {
 		const settings = this.settingsService.getSettings();
 
 		new Setting(this.containerEl)
-			.setName('Only show today')
-			.setDesc('When enabled, only tasks from today\'s files will be displayed in the task view')
-			.addToggle(toggle => toggle
-				.setValue(settings.onlyShowToday)
-				.onChange(async (value) => {
-					await this.settingsService.updateSetting('onlyShowToday', value);
-				}));
-
-		new Setting(this.containerEl)
 			.setName('Show top task in editor')
 			.setDesc('When enabled, the current top task will be displayed at the top of every editor page below the heading')
 			.addToggle(toggle => toggle
