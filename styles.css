@@ -1,5 +1,23 @@
 /* ========================================
+   CSS CONSTANTS & COMMON VALUES
+   ======================================== */
+/*
+ * Common design tokens used throughout:
+ * - Border radius: 4px (standard), 3px (small), 6px (medium), 8px (large), 10px (hero)
+ * - Transitions: 0.2s ease (standard), 0.3s ease (slower), 0.15s ease (faster)
+ * - Gap spacing: 4px (tight), 6px (normal), 8px (standard), 12px (loose)
+ * - Padding: 8px (standard), 12px (comfortable), 16px (spacious), 20px (large)
+ * - Font sizes: 11px (small), 12px (normal), 13px (small-medium), 14px (standard), 16px (large)
+ * 
+ * CSS Variables (Obsidian theme compatibility):
+ * - Colors: var(--text-normal), var(--text-muted), var(--text-error), var(--interactive accepts)
+ * - Backgrounds: var(--background-primary), var(--background-secondary), var(--background-modifier-*)
+ * - Borders: var(--background-modifier-border), var(--background-modifier-border-hover)
+ */
+
+/* ========================================
    WARNING & STATUS MESSAGES
+   SLICE: shared (common utilities)
    ======================================== */
 
 .ontask-warning {
@@ -54,6 +72,7 @@
 
 /* ========================================
    MAIN VIEW HEADER & CONTROLS
+   SLICE: ontask-view
    ======================================== */
 
 .ontask-header {
@@ -88,6 +107,7 @@
 
 /* ========================================
    BUTTONS & INTERACTIVE ELEMENTS
+   SLICE: shared (common button patterns)
    ======================================== */
 
 .ontask-header-button,
@@ -134,6 +154,7 @@
 
 /* ========================================
    FILE SECTIONS & TASK CONTAINERS
+   SLICE: ontask-view
    ======================================== */
 
 .ontask-file-section {
@@ -197,6 +218,7 @@
 
 /* ========================================
    STATUS DISPLAY ELEMENTS
+   SLICE: status-config
    ======================================== */
 
 .ontask-status-display {
@@ -239,14 +261,16 @@
 	margin-left: auto;
 }
 
-/* Dynamic status display colors - only for custom status configurations */
+/* Dynamic status display colors - only for custom status configurations
+ * Note: Dual attribute selector needed for specificity to override default styles */
 .ontask-checkbox-display[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
 	border: 1px solid var(--ontask-status-color);
 }
 
-/* Dynamic status display colors for top task items - only for custom status configurations */
+/* Dynamic status display colors for top task items - only for custom status configurations
+ * Note: Nested selector with dual attributes for higher specificity to override hero styles */
 .ontask-toptask-hero-item .ontask-checkbox-display[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
@@ -255,6 +279,7 @@
 
 /* ========================================
    TASK ITEMS & CHECKBOXES
+   SLICE: task-display
    ======================================== */
 
 .ontask-checkboxes-list {
@@ -340,6 +365,7 @@
 
 /* ========================================
    LOAD MORE FUNCTIONALITY
+   SLICE: ontask-view
    ======================================== */
 
 .ontask-load-more-section {
@@ -405,6 +431,7 @@
 
 /* ========================================
    TOP TASK HERO SECTION
+   SLICE: ontask-view
    ======================================== */
 
 .ontask-toptask-hero-section {
@@ -519,6 +546,8 @@
 
 /* ========================================
    MOBILE RESPONSIVE STYLES
+   SLICE: mobile-responsiveness
+   Note: Mobile overrides for ontask-view components (initial section)
    ======================================== */
 
 .is-mobile .ontask-header {
@@ -599,6 +628,7 @@
 
 /* ========================================
    CONTEXT MENUS & DROPDOWNS
+   SLICE: filters
    ======================================== */
 
 .ontask-color-menu {
@@ -695,7 +725,9 @@
 	justify-content: center;
 }
 
-/* More specific selector to override Obsidian's .setting-item defaults within the filter modal */
+/* More specific selector to override Obsidian's .setting-item defaults within the filter modal
+ * HIGH SPECIFICITY: Required to override Obsidian's default .setting-item styles
+ * Uses !important as Obsidian's core CSS has high specificity for setting components */
 .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item {
 	padding: 0 !important;
 	border: none !important;
@@ -709,7 +741,8 @@
 	width: auto !important;
 }
 
-/* Hide the setting-item-name which might be creating spacing */
+/* Hide the setting-item-name which might be creating spacing
+ * HIGH SPECIFICITY: Required to override Obsidian's default spacing from .setting-item-name */
 .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-name {
 	display: none !important;
 	width: 0 !important;
@@ -717,7 +750,8 @@
 	padding: 0 !important;
 }
 
-/* Hide setting-item-info if it exists */
+/* Hide setting-item-info if it exists
+ * HIGH SPECIFICITY: Required to override Obsidian's default spacing from .setting-item-info */
 .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-info {
 	display: none !important;
 	width: 0 !important;
@@ -730,7 +764,8 @@
 	border-top: none;
 }
 
-/* Override the general modal setting-item rule for quick filters - must come after */
+/* Override the general modal setting-item rule for quick filters - must come after
+ * HIGH SPECIFICITY: Duplicate selector ensures proper cascade order for quick filters */
 .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item {
 	padding: 0 !important;
 }
@@ -844,6 +879,8 @@
 	display: inline-block;
 }
 
+/* Dynamic color for context menu status display
+ * Note: Dual attribute selector ensures proper override of default status colors */
 .ontask-context-menu-status-display[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
@@ -866,6 +903,8 @@
 }
 
 
+/* Dynamic color for inline status icon
+ * Note: Dual attribute selector ensures proper override of default status colors */
 .ontask-status-icon-inline[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
@@ -880,6 +919,7 @@
 
 /* ========================================
    TOP TASK HERO OVERLAY
+   SLICE: ontask-view
    ======================================== */
 
 .ontask-toptask-hero-overlay {
@@ -963,8 +1003,12 @@
 
 /* ========================================
    STATUS CONFIGURATION MODAL
+   SLICE: status-config
    ======================================== */
 
+/* Disabled status config symbol styling
+ * HIGH SPECIFICITY: Uses !important to prevent accidental overriding of disabled state
+ * Required for locked/default status symbols that cannot be modified */
 .status-config-modal-symbol-disabled {
 	background: var(--background-modifier-border) !important;
 	color: var(--text-muted) !important;
@@ -1220,7 +1264,8 @@
 	border-color: var(--background-modifier-border-hover);
 }
 
-/* Dynamic status config colors */
+/* Dynamic status config colors
+ * Note: Attribute selector allows runtime color customization via data attribute */
 .status-config-symbol[data-dynamic-color] {
 	color: var(--ontask-config-color);
 	background-color: var(--ontask-config-background-color);
@@ -1233,6 +1278,7 @@
 
 /* ========================================
    FILTERS & QUICK FILTERS
+   SLICE: filters
    ======================================== */
 
 .ontask-filters-menu h3 {
@@ -1272,7 +1318,9 @@
 	/* box-shadow: 0 0 0 2px var(--interactive-accent-hover); */
 }
 
-/* Specific styling for quick filter buttons in the modal */
+/* Specific styling for quick filter buttons in the modal
+ * HIGH SPECIFICITY: Chained selectors required to override Obsidian's button styles within modals
+ * Ensures selected state is visible despite Obsidian's default modal button styling */
 .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
 	background: var(--interactive-accent) !important;
 	color: var(--text-on-accent) !important;
@@ -1281,9 +1329,10 @@
 	/* box-shadow: 0 0 0 2px var(--interactive-accent-hover); */
 }
 
-/* Config button styling - inline with quick filter buttons */
-/* Removed margin-left: auto since we're centering the entire group */
-
+/* Config button styling - inline with quick filter buttons
+ * Removed margin-left: auto since we're centering the entire group
+ * HIGH SPECIFICITY: Uses !important to override Obsidian's default button styles in settings
+ * Required for consistent button appearance within Obsidian's modal system */
 .ontask-config-button {
 	background: var(--background-secondary) !important;
 	color: var(--text-normal) !important;
@@ -1355,7 +1404,9 @@
 	scrollbar-color: var(--background-modifier-border-hover) transparent;
 }
 
-/* Hide any default checkbox styling from Setting component */
+/* Hide any default checkbox styling from Setting component
+ * HIGH SPECIFICITY: Uses !important to completely hide Obsidian's default checkboxes
+ * Required because we use custom visual checkboxes (badges) instead */
 .quick-filter-item input[type="checkbox"],
 .quick-filter-item .setting-item-control input[type="checkbox"] {
 	display: none !important;
@@ -1445,7 +1496,8 @@
 	flex-shrink: 0;
 }
 
-/* Dynamic quick filter status badge colors */
+/* Dynamic quick filter status badge colors
+ * Note: Attribute selector enables runtime color customization for status badges */
 .quick-filter-status-badge[data-dynamic-color] {
 	color: var(--ontask-status-color);
 	background-color: var(--ontask-status-background-color);
@@ -1527,6 +1579,7 @@
 
 /* ========================================
    ERROR MESSAGES
+   SLICE: shared (common utilities)
    ======================================== */
 
 .ontask-error-message {
@@ -1555,6 +1608,7 @@
 
 /* ========================================
    SETTINGS INTERFACE
+   SLICE: settings
    ======================================== */
 
 .ontask-settings-tabs {
@@ -1599,6 +1653,8 @@
 
 /* ========================================
    ADDITIONAL MOBILE RESPONSIVE STYLES
+   SLICE: mobile-responsiveness
+   Note: Additional mobile overrides for filters and settings components
    ======================================== */
 
 .is-mobile .ontask-quick-filter-button {
@@ -1655,6 +1711,7 @@
 
 /* ========================================
    TASK RANKING BADGES
+   SLICE: task-display
    ======================================== */
 
 .ontask-task-ranking {
@@ -1703,6 +1760,7 @@
 
 /* ========================================
    SCROLL TO TOP BUTTON
+   SLICE: ontask-view
    ======================================== */
 
 .ontask-scroll-to-top-button {
@@ -1766,8 +1824,13 @@
 
 /* ========================================
    FILTER SECTION
+   SLICE: filters
+   Note: Filter input section for text-based filtering
    ======================================== */
 
+/* Filter section container
+ * HIGH SPECIFICITY: Uses !important to override default Obsidian view container styles
+ * Required to achieve transparent/expandable filter input design */
 .ontask-filter-section {
 	border: none !important;
 	border-radius: 0 !important;
