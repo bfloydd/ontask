@@ -30,6 +30,12 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 		this.renderTabContent(containerEl);
 	}
 
+	// Method to navigate to a specific tab
+	navigateToTab(tabId: 'general' | 'status' | 'quick-filters'): void {
+		this.currentTab = tabId;
+		this.display(); // Re-render with new tab
+	}
+
 	private renderTabNavigation(containerEl: HTMLElement): void {
 		const tabContainer = containerEl.createDiv();
 		tabContainer.addClass('ontask-settings-tabs');

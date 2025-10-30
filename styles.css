@@ -76,7 +76,7 @@
 
 .ontask-buttons-right {
 	display: flex;
-	gap: 8px;
+	gap: 5px;
 	align-items: center;
 }
 
@@ -684,19 +684,45 @@
 	margin: 12px 0;
 }
 
-.ontask-filters-quick-filters-container {
+.ontask-filters-modal .ontask-filters-quick-filters-container {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0px;
+	gap: 5px;
 	padding: 2px;
+	padding-bottom: 5px;
 	border-bottom: 1px solid var(--background-modifier-border);
+	align-items: center;
 	justify-content: center;
 }
 
-.ontask-filters-quick-filters-container .setting-item {
-	padding: 0;
-	border: none;
-	background: none;
+/* More specific selector to override Obsidian's .setting-item defaults within the filter modal */
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item {
+	padding: 0 !important;
+	border: none !important;
+	background: none !important;
+	margin: 0 !important;
+	margin-right: 0 !important;
+	margin-left: 0 !important;
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+	flex-shrink: 0;
+	width: auto !important;
+}
+
+/* Hide the setting-item-name which might be creating spacing */
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-name {
+	display: none !important;
+	width: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* Hide setting-item-info if it exists */
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-info {
+	display: none !important;
+	width: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 .ontask-filters-modal .setting-item {
@@ -704,11 +730,27 @@
 	border-top: none;
 }
 
-.ontask-filters-quick-filters-container .setting-item-control {
-	flex: none;
+/* Override the general modal setting-item rule for quick filters - must come after */
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item {
+	padding: 0 !important;
 }
 
-.ontask-filters-quick-filters-container .setting-item-control button {
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control {
+	flex: none;
+	margin: 0 !important;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+	padding: 0 !important;
+}
+
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button {
+	margin: 0 !important;
+	margin-left: 0 !important;
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+	margin-right: 0 !important;
 	padding: 6px 12px;
 	background: var(--background-secondary);
 	color: var(--text-normal);
@@ -718,12 +760,13 @@
 	transition: all 0.2s ease;
 }
 
-.ontask-filters-quick-filters-container .setting-item-control button:hover {
+
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button:hover {
 	background: var(--background-modifier-hover);
 	border-color: var(--background-modifier-border-hover);
 }
 
-.ontask-filters-quick-filters-container .setting-item-control button:active {
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button:active {
 	background: var(--background-modifier-active);
 }
 
@@ -1225,17 +1268,48 @@
 	background: var(--interactive-accent) !important;
 	color: var(--text-on-accent) !important;
 	border-color: var(--interactive-accent) !important;
-	font-weight: 600;
-	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+	/* font-weight: 600; */
+	/* box-shadow: 0 0 0 2px var(--interactive-accent-hover); */
 }
 
 /* Specific styling for quick filter buttons in the modal */
-.ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
+.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
 	background: var(--interactive-accent) !important;
 	color: var(--text-on-accent) !important;
 	border-color: var(--interactive-accent) !important;
-	font-weight: 600;
-	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+	/* font-weight: 600; */
+	/* box-shadow: 0 0 0 2px var(--interactive-accent-hover); */
+}
+
+/* Config button styling - inline with quick filter buttons */
+/* Removed margin-left: auto since we're centering the entire group */
+
+.ontask-config-button {
+	background: var(--background-secondary) !important;
+	color: var(--text-normal) !important;
+	border: 1px solid var(--background-modifier-border) !important;
+	font-size: 14px !important;
+	padding: 6px !important;
+	border-radius: 4px !important;
+	transition: all 0.2s ease !important;
+	min-width: 32px !important;
+	height: 32px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+.ontask-config-button:hover {
+	background: var(--interactive-hover) !important;
+	color: var(--text-normal) !important;
+	border-color: var(--background-modifier-border-hover) !important;
+	transform: translateY(-1px) !important;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ontask-config-button:active {
+	transform: translateY(0) !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
 }
 
 .quick-filter-item {

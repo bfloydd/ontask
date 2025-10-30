@@ -72,7 +72,8 @@ export class OnTaskViewImpl extends ItemView {
 			this.contentEl,
 			(checkbox: any, newStatus: string) => this.fileOperationsService.updateCheckboxStatus(checkbox, newStatus),
 			() => this.refreshCheckboxes(),
-			() => this.taskLoadingService.resetTracking()
+			() => this.taskLoadingService.resetTracking(),
+			this.plugin
 		);
 		
 		this.domRenderingService = new DOMRenderingService(

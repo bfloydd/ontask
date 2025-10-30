@@ -14,6 +14,7 @@ class FilterModal extends Modal {
 	private refreshCheckboxesCallback: () => Promise<void>;
 	private resetTrackingCallback: () => void;
 	private statusConfigs: any[];
+	private plugin: any;
 
 	constructor(
 		app: App,
@@ -21,7 +22,8 @@ class FilterModal extends Modal {
 		settingsService: any,
 		dataService: any,
 		refreshCheckboxesCallback: () => Promise<void>,
-		resetTrackingCallback: () => void
+		resetTrackingCallback: () => void,
+		plugin: any
 	) {
 		super(app);
 		this.statusConfigService = statusConfigService;
@@ -29,6 +31,7 @@ class FilterModal extends Modal {
 		this.dataService = dataService;
 		this.refreshCheckboxesCallback = refreshCheckboxesCallback;
 		this.resetTrackingCallback = resetTrackingCallback;
+		this.plugin = plugin;
 		this.statusConfigs = this.statusConfigService.getStatusConfigs();
 	}
 
@@ -116,6 +119,27 @@ class FilterModal extends Modal {
 					});
 			}
 			
+			// Add config button to the same row as quick filter buttons
+			new Setting(quickFiltersContainer)
+				.addButton(button => {
+					button.setButtonText('⚙️')
+						.setClass('ontask-config-button')
+						.onClick(() => {
+							this.close();
+							// Open settings and navigate to Quick Filters tab
+							(this.app as any).setting.open();
+							(this.app as any).setting.openTabById(this.plugin.manifest.id);
+							
+							// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
+							setTimeout(() => {
+								const settingsTab = this.plugin.settingsTab;
+								if (settingsTab && settingsTab.navigateToTab) {
+									settingsTab.navigateToTab('quick-filters');
+								}
+							}, 100);
+						});
+				});
+			
 			// Add change listeners to all status toggles for live updates
 			Object.values(toggleElements).forEach((toggle: any) => {
 				toggle.onChange(() => {
@@ -200,6 +224,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 	private resetTrackingCallback: () => void;
 	private filterModal: FilterModal | null = null;
 	private app: App;
+	private plugin: any;
 
 	constructor(
 		app: App,
@@ -210,7 +235,8 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		contentEl: HTMLElement,
 		updateCheckboxStatusCallback: (checkbox: any, newStatus: string) => Promise<void>,
 		refreshCheckboxesCallback: () => Promise<void>,
-		resetTrackingCallback: () => void
+		resetTrackingCallback: () => void,
+		plugin: any
 	) {
 		this.app = app;
 		this.eventSystem = eventSystem;
@@ -221,6 +247,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		this.updateCheckboxStatusCallback = updateCheckboxStatusCallback;
 		this.refreshCheckboxesCallback = refreshCheckboxesCallback;
 		this.resetTrackingCallback = resetTrackingCallback;
+		this.plugin = plugin;
 	}
 
 	showContextMenu(event: MouseEvent, checkbox: any): void {
@@ -279,7 +306,8 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 			this.settingsService,
 			this.dataService,
 			this.refreshCheckboxesCallback,
-			this.resetTrackingCallback
+			this.resetTrackingCallback,
+			this.plugin
 		);
 		
 		// Store the modal and clear reference when it closes

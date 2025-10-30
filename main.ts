@@ -20,6 +20,7 @@ export default class OnTask extends Plugin {
 	private dataService: DataService;
 	private statusConfigService: StatusConfigService;
 	private loggingService: LoggingService;
+	private settingsTab: OnTaskSettingsTab;
 
 	async onload() {
 		this.container = new DIContainerImpl();
@@ -43,7 +44,8 @@ export default class OnTask extends Plugin {
 		await this.orchestrator.initialize();
 		await this.editorIntegrationService.initialize();
 		
-		this.addSettingTab(new OnTaskSettingsTab(this.app, this, this.settingsService, this.statusConfigService, this.dataService));
+		this.settingsTab = new OnTaskSettingsTab(this.app, this, this.settingsService, this.statusConfigService, this.dataService);
+		this.addSettingTab(this.settingsTab);
 	}
 
 	getLogger() {
