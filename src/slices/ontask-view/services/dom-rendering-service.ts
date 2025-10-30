@@ -55,7 +55,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void {
 		if (checkboxes.length === 0) {
 			const emptyEl = contentArea.createDiv('ontask-empty');
-			emptyEl.textContent = 'No checkboxes found.';
+			emptyEl.textContent = 'No tasks found.';
 			return;
 		}
 
