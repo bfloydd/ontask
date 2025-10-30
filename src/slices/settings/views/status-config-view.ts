@@ -158,21 +158,37 @@ export class StatusConfigView {
 	}
 
 	private async editStatus(config: StatusConfig, index: number): Promise<void> {
-		// Create modal for editing
+		this.showStatusModal(config, index);
+	}
+
+	private async addNewStatus(): Promise<void> {
+		this.showStatusModal();
+	}
+
+	private showStatusModal(existingConfig?: StatusConfig, index?: number): void {
 		const modal = new Modal(this.app);
-		modal.titleEl.setText('Edit Status');
+		modal.titleEl.textContent = existingConfig ? 'Edit Status' : 'Add Status';
 		
 		const contentEl = modal.contentEl;
 		contentEl.empty();
 
+		// Create a working copy of the config for editing
+		const workingConfig: StatusConfig = existingConfig ? { ...existingConfig } : {
+			symbol: '+',
+			name: 'New Status',
+			description: 'A new status',
+			color: '#6b7280',
+			backgroundColor: 'transparent'
+		};
+
 		// Symbol input
-		const isNonEditableSymbol = NON_EDITABLE_SYMBOLS.includes(config.symbol);
+		const isNonEditableSymbol = existingConfig && NON_EDITABLE_SYMBOLS.includes(workingConfig.symbol);
 		let symbolDescription: string;
 		
 		if (isNonEditableSymbol) {
-			if (config.symbol === '.') {
+			if (workingConfig.symbol === '.') {
 				symbolDescription = 'Single character symbol for this status (read-only - this is the default task symbol)';
-			} else if (config.symbol === 'x') {
+			} else if (workingConfig.symbol === 'x') {
 				symbolDescription = 'Single character symbol for this status (read-only - this is the done/completed symbol)';
 			} else {
 				symbolDescription = 'Single character symbol for this status (read-only - this is a top task symbol)';
@@ -188,7 +204,7 @@ export class StatusConfigView {
 		if (isNonEditableSymbol) {
 			// Make symbol read-only for non-editable symbols
 			symbolSetting.addText(text => {
-				text.setValue(config.symbol)
+				text.setValue(workingConfig.symbol)
 					.setDisabled(true)
 					.setPlaceholder('e.g., x, !, ?');
 				// Add visual styling for disabled state
@@ -196,9 +212,9 @@ export class StatusConfigView {
 			});
 		} else {
 			symbolSetting.addText(text => text
-				.setValue(config.symbol)
+				.setValue(workingConfig.symbol)
 				.setPlaceholder('e.g., x, !, ?')
-				.onChange(value => config.symbol = value));
+				.onChange(value => workingConfig.symbol = value));
 		}
 
 		// Name input
@@ -206,35 +222,35 @@ export class StatusConfigView {
 			.setName('Name')
 			.setDesc('Display name for this status')
 			.addText(text => text
-				.setValue(config.name)
+				.setValue(workingConfig.name)
 				.setPlaceholder('e.g., Done, Important')
-				.onChange(value => config.name = value));
+				.onChange(value => workingConfig.name = value));
 
 		// Description input
 		new Setting(contentEl)
 			.setName('Description')
 			.setDesc('Description of what this status means')
 			.addText(text => text
-				.setValue(config.description)
+				.setValue(workingConfig.description)
 				.setPlaceholder('e.g., Task is completed')
-				.onChange(value => config.description = value));
+				.onChange(value => workingConfig.description = value));
 
 		// Top Task Ranking input
 		new Setting(contentEl)
 			.setName('Top Task Ranking')
 			.setDesc('Priority for top task selection (lower = higher priority). Leave blank to exclude from top task selection.')
 			.addText(text => {
-				text.setValue(config.topTaskRanking?.toString() || '')
+				text.setValue(workingConfig.topTaskRanking?.toString() || '')
 					.setPlaceholder('e.g., 1, 2, 3')
 					.inputEl.type = 'number';
 				text.inputEl.min = '1';
 				text.inputEl.step = '1';
 				text.onChange(value => {
 					if (value.trim() === '') {
-						config.topTaskRanking = undefined;
+						workingConfig.topTaskRanking = undefined;
 					} else {
 						const ranking = parseInt(value, 10);
-						config.topTaskRanking = isNaN(ranking) ? undefined : ranking;
+						workingConfig.topTaskRanking = isNaN(ranking) ? undefined : ranking;
 					}
 				});
 			});
@@ -244,49 +260,49 @@ export class StatusConfigView {
 			.setName('Text Color')
 			.setDesc('Color of the text/symbol')
 			.addText(text => text
-				.setValue(config.color)
+				.setValue(workingConfig.color)
 				.setPlaceholder('#ffffff')
-				.onChange(value => config.color = value));
+				.onChange(value => workingConfig.color = value));
 
 		// Background color input
 		new Setting(contentEl)
 			.setName('Background Color')
 			.setDesc('Background color (optional)')
 			.addText(text => text
-				.setValue(config.backgroundColor || '')
+				.setValue(workingConfig.backgroundColor || '')
 				.setPlaceholder('#10b981 or transparent')
-				.onChange(value => config.backgroundColor = value || 'transparent'));
+				.onChange(value => workingConfig.backgroundColor = value || 'transparent'));
 
 		// Preview
 		const previewEl = contentEl.createEl('div', { cls: 'status-config-modal-preview' });
 		previewEl.createEl('h4', { text: 'Preview:' });
 		const previewStatus = previewEl.createEl('span', { 
 			cls: 'status-config-modal-symbol',
-			text: config.symbol
+			text: workingConfig.symbol
 		});
 		// Only apply dynamic styling if this is a truly custom status configuration
 		// (not one of the built-in default statuses that have predefined colors)
-		const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(config.symbol);
+		const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(workingConfig.symbol);
 		
 		if (!isBuiltInStatus) {
 			previewStatus.setAttribute('data-dynamic-color', 'true');
 			previewStatus.setAttribute('data-custom-status', 'true');
-			previewStatus.style.setProperty('--ontask-config-color', config.color);
-			previewStatus.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
+			previewStatus.style.setProperty('--ontask-config-color', workingConfig.color);
+			previewStatus.style.setProperty('--ontask-config-background-color', workingConfig.backgroundColor || 'transparent');
 		}
 
 		// Update preview on change
 		const updatePreview = () => {
-			previewStatus.textContent = config.symbol;
+			previewStatus.textContent = workingConfig.symbol;
 			// Only apply dynamic styling if this is a truly custom status configuration
 			// (not one of the built-in default statuses that have predefined colors)
-			const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(config.symbol);
+			const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(workingConfig.symbol);
 			
 			if (!isBuiltInStatus) {
 				previewStatus.setAttribute('data-dynamic-color', 'true');
 				previewStatus.setAttribute('data-custom-status', 'true');
-				previewStatus.style.setProperty('--ontask-config-color', config.color);
-				previewStatus.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
+				previewStatus.style.setProperty('--ontask-config-color', workingConfig.color);
+				previewStatus.style.setProperty('--ontask-config-background-color', workingConfig.backgroundColor || 'transparent');
 			} else {
 				previewStatus.removeAttribute('data-dynamic-color');
 				previewStatus.removeAttribute('data-custom-status');
@@ -301,39 +317,33 @@ export class StatusConfigView {
 		// Buttons
 		const buttonContainer = contentEl.createEl('div', { cls: 'status-config-modal-buttons' });
 		
+		const cancelBtn = buttonContainer.createEl('button', { 
+			text: 'Cancel'
+		});
+		
 		const saveBtn = buttonContainer.createEl('button', { 
 			cls: 'mod-cta',
 			text: 'Save'
 		});
-		
-		const cancelBtn = buttonContainer.createEl('button', { 
-			text: 'Cancel'
-		});
-
-		saveBtn.addEventListener('click', async () => {
-			await this.saveStatus(config, index);
-			modal.close();
-		}, { passive: true });
 
 		cancelBtn.addEventListener('click', () => {
 			modal.close();
 		}, { passive: true });
 
+		saveBtn.addEventListener('click', async () => {
+			if (existingConfig && index !== undefined) {
+				// Editing existing status
+				await this.saveStatus(workingConfig, index);
+			} else {
+				// Adding new status
+				await this.statusConfigService.addStatusConfig(workingConfig);
+				this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
+				this.render();
+			}
+			modal.close();
+		}, { passive: true });
+
 		modal.open();
-	}
-
-	private async addNewStatus(): Promise<void> {
-		const newStatus: StatusConfig = {
-			symbol: '+',
-			name: 'New Status',
-			description: 'A new status',
-			color: '#6b7280',
-			backgroundColor: 'transparent'
-		};
-
-		await this.statusConfigService.addStatusConfig(newStatus);
-		this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
-		this.render();
 	}
 
 	private async deleteStatus(index: number): Promise<void> {

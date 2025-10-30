@@ -1104,6 +1104,27 @@
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* Quick Filter Modal (scoped) */
+.ontask-quick-filter-modal .setting-item.mod-toggle {
+	border: none;
+}
+
+.ontask-quick-filter-modal .setting-item:nth-child(1) {
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.ontask-quick-filter-modal .setting-item.mod-toggle {
+	padding: 0.5em 0;
+}
+
+.ontask-quick-filter-modal .setting-item.mod-toggle:nth-child(2) {
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+
+
+
+
 .status-config-modal-preview {
 	margin-top: 15px;
 	padding: 15px;
@@ -1496,7 +1517,9 @@
 	display: flex;
 	justify-content: flex-end;
 	gap: 8px;
-	margin-top: 16px;
+	/* margin-top: 16px; */
+	border-top: 1px solid var(--background-modifier-border);
+	padding-top: 16px;
 }
 
 

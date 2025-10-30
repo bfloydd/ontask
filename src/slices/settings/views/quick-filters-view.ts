@@ -156,6 +156,8 @@ export class QuickFiltersView {
 
 		const content = modal.contentEl;
 		content.empty();
+		// Add a unique class to scope styles within this modal only
+		content.addClass('ontask-quick-filter-modal');
 
 		// Local variables to track form state
 		let filterName = existingFilter?.name || '';
@@ -186,16 +188,10 @@ export class QuickFiltersView {
 		// Status selection
 		const statusConfigs = this.statusConfigService.getStatusConfigs();
 
-		content.createEl('h4', { text: 'Select Statuses' });
-		content.createEl('p', { 
-			text: 'Choose which statuses should be checked when this filter is applied.',
-			cls: 'setting-item-description'
-		});
-
 		statusConfigs.forEach(statusConfig => {
 			const statusSetting = new Setting(content)
-				.setName(statusConfig.name)
-				.setDesc(statusConfig.description);
+				.setName(`${statusConfig.name} (${statusConfig.description})`)
+				.setDesc('');
 
 			statusSetting.addToggle(toggle => toggle
 				.setValue(selectedStatuses.has(statusConfig.symbol))
@@ -211,6 +207,9 @@ export class QuickFiltersView {
 		// Buttons
 		const buttonContainer = content.createDiv();
 		buttonContainer.addClass('ontask-button-container');
+
+		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
+		cancelButton.addEventListener('click', () => modal.close(), { passive: true });
 
 		const saveButton = buttonContainer.createEl('button', { text: 'Save' });
 		saveButton.addClass('mod-cta');
@@ -268,9 +267,6 @@ export class QuickFiltersView {
 				errorMessage.setAttribute('data-dynamic-error', 'true');
 			}
 		}, { passive: true });
-
-		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
-		cancelButton.addEventListener('click', () => modal.close(), { passive: true });
 
 		modal.open();
 	}
