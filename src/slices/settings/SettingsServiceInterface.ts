@@ -36,18 +36,18 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 
 export const DEFAULT_STATUS_CONFIGS: StatusConfig[] = [
 	{ symbol: '.', name: 'To-do', description: 'Not started', color: '#6b7280', backgroundColor: 'transparent', filtered: true },
-	{ symbol: '+', name: 'Next', description: 'Next up, on deck', color: '#fff', backgroundColor: 'brown', filtered: true, topTaskRanking: 3 },
-	{ symbol: '/', name: 'In Progress', description: 'Incomplete', color: '#ffffff', backgroundColor: '#dc2626', filtered: true, topTaskRanking: 1 },
-	{ symbol: 'x', name: 'Done', description: 'Completed', color: '#ffffff', backgroundColor: '#10b981', filtered: true },
-	{ symbol: '!', name: 'Important', description: 'Top task', color: '#ffffff', backgroundColor: '#ef4444', filtered: true, topTaskRanking: 2 },
-	{ symbol: '*', name: 'Star', description: 'Marked', color: '#ffffff', backgroundColor: '#8b5cf6', filtered: true },
+	{ symbol: '/', name: 'In progress', description: 'Incomplete', color: '#ffffff', backgroundColor: '#dc2626', filtered: true, topTaskRanking: 1 },
+	{ symbol: '+', name: 'Next', description: 'On Deck', color: '#ffffff', backgroundColor: 'darkred', filtered: true, topTaskRanking: 2 },
+	{ symbol: '!', name: 'Important', description: 'Upcoming', color: '#ffffff', backgroundColor: '#ef4444', filtered: true, topTaskRanking: 3 },
+	{ symbol: 'x', name: 'Done', description: 'Completed', color: '#ffffff', backgroundColor: '#10b981', filtered: false },
+	{ symbol: '*', name: 'Star', description: 'Special', color: '#ffffff', backgroundColor: '#8b5cf6', filtered: true, topTaskRanking: 4 },
 	{ symbol: '?', name: 'Question', description: 'Needs clarification', color: '#ffffff', backgroundColor: '#f59e0b', filtered: true },
-	{ symbol: 'r', name: 'Review', description: 'In review', color: '#ffffff', backgroundColor: '#6b7280', filtered: true },
-	{ symbol: 'b', name: 'Blocked', description: 'Can\'t continue', color: '#ffffff', backgroundColor: '#dc2626', filtered: true },
-	{ symbol: '<', name: 'Scheduled', description: 'On the calendar', color: '#ffffff', backgroundColor: '#059669', filtered: true },
-	{ symbol: '>', name: 'Forward', description: 'Another day', color: '#ffffff', backgroundColor: '#7c3aed', filtered: true },
-	{ symbol: '#', name: 'Backburner', description: 'Indefinitely delayed', color: '#ffffff', backgroundColor: '#7c3aed', filtered: true },
-	{ symbol: '-', name: 'Cancelled', description: 'Not doing', color: '#ffffff', backgroundColor: '#9ca3af', filtered: true }
+	{ symbol: 'r', name: 'Review', description: 'Needs review', color: '#ffffff', backgroundColor: '#6b7280', filtered: true },
+	{ symbol: 'b', name: 'Blocked', description: 'Can\'t continue', color: '#ffffff', backgroundColor: '#dc2626', filtered: false },
+	{ symbol: '>', name: 'Forward', description: 'Another day', color: '#ffffff', backgroundColor: '#7c3aed', filtered: false },
+	{ symbol: '<', name: 'Scheduled', description: 'On the calendar', color: '#ffffff', backgroundColor: '#059669', filtered: false },
+	{ symbol: '#', name: 'Backburner', description: 'Delayed', color: '#ffffff', backgroundColor: '#7c3aed', filtered: false },
+	{ symbol: '-', name: 'Cancelled', description: 'Not doing', color: '#ffffff', backgroundColor: '#9ca3af', filtered: false }
 ];
 
 export interface SettingsChangeEvent {
