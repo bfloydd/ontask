@@ -403,7 +403,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		noMoreSection.className = 'ontask-load-more-section';
 		
 		const noMoreIndicator = document.createElement('div');
-		noMoreIndicator.textContent = 'No more tasks to load';
+		noMoreIndicator.textContent = 'No more tasks';
 		noMoreIndicator.className = 'ontask-no-more-tasks-indicator';
 		noMoreSection.appendChild(noMoreIndicator);
 		

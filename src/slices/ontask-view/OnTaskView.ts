@@ -298,7 +298,7 @@ export class OnTaskViewImpl extends ItemView {
 			this.taskLoadingService.resetTracking();
 			
 			const loadingEl = contentArea.createDiv('ontask-loading');
-			loadingEl.textContent = 'Loading checkboxes...';
+			loadingEl.textContent = 'Loading tasks...';
 			
 			await this.taskLoadingService.initializeFileTracking(settings.onlyShowToday);
 			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
@@ -324,7 +324,7 @@ export class OnTaskViewImpl extends ItemView {
 			if (contentArea) {
 				contentArea.empty();
 				const errorEl = contentArea.createDiv('ontask-error');
-				errorEl.textContent = 'Error loading checkboxes. Please try again.';
+				errorEl.textContent = 'Error loading tasks. Please try again.';
 			}
 		} finally {
 			this.isRefreshing = false;
