@@ -4,7 +4,7 @@ import { Logger } from '../../logging/Logger';
 
 export interface FileOperationsServiceInterface {
 	toggleCheckbox(checkbox: any, isCompleted: boolean): Promise<void>;
-	updateCheckboxStatus(checkbox: any, newStatus: string): Promise<void>;
+	updateCheckboxStatus(checkbox: any, newStatus: string, onInPlaceUpdate?: (newLineContent: string) => void): Promise<void>;
 }
 
 export class FileOperationsService implements FileOperationsServiceInterface {
@@ -74,7 +74,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 		}
 	}
 
-	async updateCheckboxStatus(checkbox: any, newStatus: string): Promise<void> {
+	async updateCheckboxStatus(checkbox: any, newStatus: string, onInPlaceUpdate?: (newLineContent: string) => void): Promise<void> {
 		this.isUpdatingStatus = true;
 		
 		try {
@@ -94,10 +94,30 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 				
 				lines[lineIndex] = updatedLine;
 				await this.app.vault.modify(file, lines.join('\n'));
-				this.scheduleRefreshCallback();
+				
+				// If in-place update callback is provided, read the updated content and call it
+				// Otherwise, use the standard refresh callback
+				if (onInPlaceUpdate) {
+					// Read the file again to get the exact updated line content
+					const updatedContent = await this.app.vault.read(file);
+					const updatedLines = updatedContent.split('\n');
+					if (lineIndex >= 0 && lineIndex < updatedLines.length) {
+						const newLineContent = updatedLines[lineIndex];
+						onInPlaceUpdate(newLineContent);
+					} else {
+						// Fallback to refresh if line reading fails
+						this.scheduleRefreshCallback();
+					}
+				} else {
+					this.scheduleRefreshCallback();
+				}
 			}
 		} catch (error) {
 			console.error('File Operations Service: Error updating checkbox status:', error);
+			// Fallback to refresh on error
+			if (!onInPlaceUpdate) {
+				this.scheduleRefreshCallback();
+			}
 		} finally {
 			this.isUpdatingStatus = false;
 		}

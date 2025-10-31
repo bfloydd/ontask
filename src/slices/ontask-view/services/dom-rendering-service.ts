@@ -110,6 +110,12 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		const checkboxEl = document.createElement('div');
 		checkboxEl.addClass('ontask-checkbox-item');
 		
+		// Add data attributes for identification during in-place updates
+		if (checkbox.file?.path) {
+			checkboxEl.setAttribute('data-file-path', checkbox.file.path);
+		}
+		checkboxEl.setAttribute('data-line-number', checkbox.lineNumber?.toString() || '');
+		
 		if (checkbox.isTopTask) {
 			checkboxEl.addClass('ontask-toptask-hero');
 		}

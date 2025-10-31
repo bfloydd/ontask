@@ -71,7 +71,11 @@ export class OnTaskViewImpl extends ItemView {
 			this.settingsService,
 			this.dataService,
 			this.contentEl,
-			(checkbox: any, newStatus: string) => this.fileOperationsService.updateCheckboxStatus(checkbox, newStatus),
+			(checkbox: any, newStatus: string) => this.fileOperationsService.updateCheckboxStatus(
+				checkbox, 
+				newStatus, 
+				(newLineContent: string) => this.updateCheckboxRowInPlace(checkbox, newLineContent)
+			),
 			() => this.refreshCheckboxes(),
 			() => this.taskLoadingService.resetTracking(),
 			this.plugin
@@ -333,6 +337,185 @@ export class OnTaskViewImpl extends ItemView {
 		}
 	}
 
+	private updateCheckboxRowInPlace(checkbox: any, newLineContent: string): void {
+		try {
+			const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
+			if (!contentArea) {
+				this.logger.debug('[OnTask View] Content area not found for in-place update, falling back to refresh');
+				this.scheduleRefresh();
+				return;
+			}
+
+			// Store the previous top task to detect changes
+			const previousTopTask = this.checkboxes.find(cb => cb.isTopTask);
+
+			// Update the checkbox object's lineContent
+			checkbox.lineContent = newLineContent;
+
+			// Find the DOM element using data attributes
+			const filePath = checkbox.file?.path || '';
+			const lineNumber = checkbox.lineNumber?.toString() || '';
+			// Use querySelector with proper escaping for file paths that may contain special characters
+			const allCheckboxItems = contentArea.querySelectorAll('.ontask-checkbox-item');
+			let checkboxElement: HTMLElement | null = null;
+			for (const item of Array.from(allCheckboxItems)) {
+				const itemPath = item.getAttribute('data-file-path');
+				const itemLineNumber = item.getAttribute('data-line-number');
+				if (itemPath === filePath && itemLineNumber === lineNumber) {
+					checkboxElement = item as HTMLElement;
+					break;
+				}
+			}
+
+			if (!checkboxElement) {
+				this.logger.debug('[OnTask View] Checkbox element not found for in-place update, falling back to refresh');
+				this.scheduleRefresh();
+				return;
+			}
+
+			// Re-process top tasks to determine if top task has changed
+			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(this.checkboxes);
+			const newTopTask = this.checkboxes.find(cb => cb.isTopTask);
+			const topTaskChanged = previousTopTask !== newTopTask;
+
+			// Parse the new line content
+			const { statusSymbol, remainingText } = this.parseCheckboxLine(newLineContent);
+			
+			// Ensure topTaskRanking is cleared if the checkbox no longer matches any ranked status
+			// (processTopTasksFromDisplayedTasks only sets it on matching tasks, but doesn't clear it from non-matching ones)
+			const rankedConfigs = this.topTaskProcessingService.getTopTaskConfig();
+			const matchesRankedStatus = rankedConfigs.some(config => 
+				this.topTaskProcessingService.isTopTaskByConfig(checkbox, config)
+			);
+			if (!matchesRankedStatus) {
+				checkbox.topTaskRanking = undefined;
+			}
+
+			// Update the status display element
+			const statusDisplay = checkboxElement.querySelector('.ontask-checkbox-display') as HTMLElement;
+			if (statusDisplay) {
+				statusDisplay.setAttribute('data-status', statusSymbol);
+				statusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
+
+				// Update colors from status config
+				const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
+				const statusBackgroundColor = this.statusConfigService.getStatusBackgroundColor(statusSymbol);
+				const statusConfig = this.statusConfigService.getStatusConfig(statusSymbol);
+
+				if (statusConfig) {
+					statusDisplay.style.setProperty('--ontask-status-color', statusColor);
+					statusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
+
+					// Handle dynamic styling attributes
+					const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(statusSymbol);
+					if (!isBuiltInStatus) {
+						statusDisplay.setAttribute('data-dynamic-color', 'true');
+						statusDisplay.setAttribute('data-custom-status', 'true');
+					} else {
+						statusDisplay.removeAttribute('data-dynamic-color');
+						statusDisplay.removeAttribute('data-custom-status');
+					}
+				}
+			}
+
+			// Update checkbox element's top task class
+			if (checkbox.isTopTask) {
+				checkboxElement.addClass('ontask-toptask-hero');
+			} else {
+				checkboxElement.removeClass('ontask-toptask-hero');
+			}
+
+			// Update the task text element
+			const textEl = checkboxElement.querySelector('.ontask-checkbox-text') as HTMLElement;
+			if (textEl) {
+				textEl.textContent = remainingText || 'Task';
+				// Remove existing ranking badge if any
+				const existingRanking = textEl.querySelector('.ontask-task-ranking');
+				if (existingRanking) {
+					existingRanking.remove();
+				}
+				// Add ranking badge if task has topTaskRanking
+				if (checkbox.topTaskRanking !== undefined) {
+					const rankingElement = document.createElement('span');
+					rankingElement.textContent = `Rank ${checkbox.topTaskRanking}`;
+					rankingElement.addClass('ontask-task-ranking');
+					rankingElement.setAttribute('data-rank', checkbox.topTaskRanking.toString());
+					textEl.appendChild(rankingElement);
+				}
+			}
+
+			// Update top task section if top task changed or if this is the current top task
+			if (topTaskChanged || checkbox.isTopTask) {
+				this.domRenderingService.updateTopTaskSection(contentArea, this.checkboxes);
+			}
+
+			// If top task changed, update both the previous and new top task elements
+			if (topTaskChanged) {
+				// Update the previous top task element (if it exists and isn't the current checkbox)
+				if (previousTopTask && previousTopTask !== checkbox) {
+					const previousTopTaskFilePath = previousTopTask.file?.path || '';
+					const previousTopTaskLineNumber = previousTopTask.lineNumber?.toString() || '';
+					for (const item of Array.from(allCheckboxItems)) {
+						const itemPath = item.getAttribute('data-file-path');
+						const itemLineNumber = item.getAttribute('data-line-number');
+						if (itemPath === previousTopTaskFilePath && itemLineNumber === previousTopTaskLineNumber) {
+							const previousTopTaskElement = item as HTMLElement;
+							previousTopTaskElement.removeClass('ontask-toptask-hero');
+							// Remove ranking badge if it exists
+							const prevTextEl = previousTopTaskElement.querySelector('.ontask-checkbox-text') as HTMLElement;
+							if (prevTextEl) {
+								const prevRanking = prevTextEl.querySelector('.ontask-task-ranking');
+								if (prevRanking) {
+									prevRanking.remove();
+								}
+							}
+							break;
+						}
+					}
+				}
+
+				// Update the new top task element (if it exists and isn't the current checkbox)
+				if (newTopTask && newTopTask !== checkbox) {
+					const newTopTaskFilePath = newTopTask.file?.path || '';
+					const newTopTaskLineNumber = newTopTask.lineNumber?.toString() || '';
+					for (const item of Array.from(allCheckboxItems)) {
+						const itemPath = item.getAttribute('data-file-path');
+						const itemLineNumber = item.getAttribute('data-line-number');
+						if (itemPath === newTopTaskFilePath && itemLineNumber === newTopTaskLineNumber) {
+							const newTopTaskElement = item as HTMLElement;
+							newTopTaskElement.addClass('ontask-toptask-hero');
+							// Add ranking badge if task has topTaskRanking
+							const newTextEl = newTopTaskElement.querySelector('.ontask-checkbox-text') as HTMLElement;
+							if (newTextEl && newTopTask.topTaskRanking !== undefined) {
+								// Remove existing ranking badge if any
+								const existingRanking = newTextEl.querySelector('.ontask-task-ranking');
+								if (existingRanking) {
+									existingRanking.remove();
+								}
+								const rankingElement = document.createElement('span');
+								rankingElement.textContent = `Rank ${newTopTask.topTaskRanking}`;
+								rankingElement.addClass('ontask-task-ranking');
+								rankingElement.setAttribute('data-rank', newTopTask.topTaskRanking.toString());
+								newTextEl.appendChild(rankingElement);
+							}
+							break;
+						}
+					}
+				}
+			}
+
+			// Update content tracking
+			const checkboxKey = `${filePath}:${lineNumber}`;
+			this.lastCheckboxContent.set(checkboxKey, newLineContent.trim());
+
+			this.logger.debug('[OnTask View] Successfully updated checkbox row in-place for', filePath, 'line', lineNumber);
+		} catch (error) {
+			console.error('OnTask View: Error updating checkbox row in-place:', error);
+			// Fall back to full refresh on error
+			this.scheduleRefresh();
+		}
+	}
+
 	private updateTopTaskSection(): void {
 		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
 		if (!contentArea) {
@@ -566,7 +749,11 @@ export class OnTaskViewImpl extends ItemView {
 			});
 			
 			if (checkboxData) {
-				promises.push(this.fileOperationsService.updateCheckboxStatus(checkboxData, selectedStatus));
+				promises.push(this.fileOperationsService.updateCheckboxStatus(
+					checkboxData, 
+					selectedStatus,
+					(newLineContent: string) => this.updateCheckboxRowInPlace(checkboxData, newLineContent)
+				));
 			}
 		}
 		
