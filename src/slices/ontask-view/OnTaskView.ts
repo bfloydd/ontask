@@ -408,11 +408,14 @@ export class OnTaskViewImpl extends ItemView {
 					// Handle dynamic styling attributes
 					// Always apply dynamic color since CSS variables are set for all statuses
 					statusDisplay.setAttribute('data-dynamic-color', 'true');
-					if (!StatusConfigService.isBuiltInStatus(statusSymbol)) {
-						statusDisplay.setAttribute('data-custom-status', 'true');
-					} else {
-						statusDisplay.removeAttribute('data-custom-status');
-					}
+				}
+
+				// Handle data-custom-status attribute based on built-in status
+				// This should be outside the statusConfig check since isBuiltInStatus doesn't depend on it
+				if (!StatusConfigService.isBuiltInStatus(statusSymbol)) {
+					statusDisplay.setAttribute('data-custom-status', 'true');
+				} else {
+					statusDisplay.removeAttribute('data-custom-status');
 				}
 			}
 

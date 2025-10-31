@@ -22,6 +22,7 @@ import { TFile, WorkspaceLeaf } from 'obsidian';
 import { SettingsService } from '../../settings';
 import { StatusConfigService } from '../../settings/status-config';
 import { DataService } from '../../data/DataServiceInterface';
+import * as StatusConfigModule from '../../settings/status-config';
 import { EventSystem } from '../../events';
 import { Logger } from '../../logging/Logger';
 import { TaskLoadingService } from '../services/task-loading-service';
@@ -116,6 +117,8 @@ describe('updateCheckboxRowInPlace - Integration Tests', () => {
 			{ symbol: '!', name: 'Important', color: '#ef4444', backgroundColor: 'transparent', topTaskRanking: 2 },
 			{ symbol: '/', name: 'In Progress', color: '#3b82f6', backgroundColor: 'transparent', topTaskRanking: 1 },
 			{ symbol: '+', name: 'In Progress Alt', color: '#8b5cf6', backgroundColor: 'transparent', topTaskRanking: 3 },
+			{ symbol: '*', name: 'Star', color: '#8b5cf6', backgroundColor: 'transparent', topTaskRanking: 4 },
+			{ symbol: '?', name: 'Question', color: '#f59e0b', backgroundColor: 'transparent' },
 			{ symbol: 'CUSTOM', name: 'Custom Status', color: '#f59e0b', backgroundColor: '#fef3c7' }
 		];
 
@@ -132,7 +135,7 @@ describe('updateCheckboxRowInPlace - Integration Tests', () => {
 				const config = mockStatusConfigs.find(c => c.symbol === symbol);
 				return config?.backgroundColor || 'transparent';
 			}),
-			getStatusFilters: jest.fn().mockReturnValue({ ' ': true, 'x': true, '!': true, '/': true, '+': true, 'CUSTOM': true })
+			getStatusFilters: jest.fn().mockReturnValue({ ' ': true, 'x': true, '!': true, '/': true, '+': true, '*': true, '?': true, 'CUSTOM': true })
 		} as any;
 
 		// Mock DataService
@@ -406,27 +409,59 @@ describe('updateCheckboxRowInPlace - Integration Tests', () => {
 
 	describe('Scenario 3: Test with different status symbols (built-in and custom)', () => {
 		it('should handle built-in status symbols correctly', () => {
-			// Test non-top-task built-in statuses (these should never have dynamic color attributes)
+			// Test non-top-task built-in statuses
 			const nonTopTaskBuiltInStatuses = ['x', '?', '*'];
 			
 			for (const status of nonTopTaskBuiltInStatuses) {
+				// Verify these are actually built-in statuses
+				expect(StatusConfigService.isBuiltInStatus(status)).toBe(true);
+				
 				// Arrange - create fresh checkbox and element for each status
 				const checkbox = createMockCheckbox('test.md', 5, '- [ ] To-do task');
 				(view as any).checkboxes = [checkbox];
 				mockContentArea.innerHTML = ''; // Clear previous state
 				const checkboxEl = createCheckboxElement(checkbox);
+				
+				// Verify initial element doesn't have data-custom-status
+				const initialStatusDisplay = checkboxEl.querySelector('.ontask-checkbox-display') as HTMLElement;
+				if (initialStatusDisplay) {
+					// Explicitly ensure it doesn't have the attribute before update
+					initialStatusDisplay.removeAttribute('data-custom-status');
+					expect(initialStatusDisplay?.hasAttribute('data-custom-status')).toBe(false);
+				}
+				
 				mockContentArea.appendChild(checkboxEl);
 
 				// Act
 				view['updateCheckboxRowInPlace'](checkbox, `- [${status}] ${status} task`);
 
-				// Assert
-				const statusDisplay = mockContentArea.querySelector('.ontask-checkbox-display') as HTMLElement;
+				// Assert - query the element again after update to ensure we get the updated one
+				// Find the checkbox element by data attributes (same way the implementation does)
+				const allCheckboxItems = mockContentArea.querySelectorAll('.ontask-checkbox-item');
+				let updatedCheckboxElement: HTMLElement | null = null;
+				for (const item of Array.from(allCheckboxItems)) {
+					const itemPath = item.getAttribute('data-file-path');
+					const itemLineNumber = item.getAttribute('data-line-number');
+					if (itemPath === checkbox.file.path && itemLineNumber === checkbox.lineNumber.toString()) {
+						updatedCheckboxElement = item as HTMLElement;
+						break;
+					}
+				}
+				
+				expect(updatedCheckboxElement).toBeTruthy();
+				const statusDisplay = updatedCheckboxElement?.querySelector('.ontask-checkbox-display') as HTMLElement;
+				expect(statusDisplay).toBeTruthy();
 				expect(statusDisplay?.getAttribute('data-status')).toBe(status);
 				
-				// Built-in statuses without topTaskRanking should not have data-dynamic-color attribute
-				expect(statusDisplay?.hasAttribute('data-dynamic-color')).toBe(false);
+				// Verify isBuiltInStatus is working correctly
+				expect(StatusConfigService.isBuiltInStatus(status)).toBe(true);
+				
+				// All statuses should have data-dynamic-color since CSS variables are set for all statuses
+				expect(statusDisplay?.hasAttribute('data-dynamic-color')).toBe(true);
+				expect(statusDisplay?.getAttribute('data-dynamic-color')).toBe('true');
+				// Built-in statuses should NOT have data-custom-status (should be explicitly removed)
 				expect(statusDisplay?.hasAttribute('data-custom-status')).toBe(false);
+				expect(statusDisplay?.getAttribute('data-custom-status')).toBeNull();
 			}
 			
 			// Note: Top-task built-in statuses (/, !, +) are tested in Scenario 2
@@ -469,7 +504,10 @@ describe('updateCheckboxRowInPlace - Integration Tests', () => {
 
 			// Assert
 			const updatedStatusDisplay = mockContentArea.querySelector('.ontask-checkbox-display') as HTMLElement;
-			expect(updatedStatusDisplay?.hasAttribute('data-dynamic-color')).toBe(false);
+			// data-dynamic-color should remain true for all statuses (CSS variables are set for all)
+			expect(updatedStatusDisplay?.hasAttribute('data-dynamic-color')).toBe(true);
+			expect(updatedStatusDisplay?.getAttribute('data-dynamic-color')).toBe('true');
+			// data-custom-status should be removed for built-in statuses
 			expect(updatedStatusDisplay?.hasAttribute('data-custom-status')).toBe(false);
 		});
 	});
