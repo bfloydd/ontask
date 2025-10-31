@@ -87,15 +87,15 @@ export class QuickFiltersView {
 				const statusBadge = statusDisplay.createSpan();
 				statusBadge.addClass('quick-filter-status-badge');
 				statusBadge.textContent = statusConfig.name;
-				// Apply colors from status config for all statuses
-				statusBadge.style.setProperty('--ontask-status-color', statusConfig.color);
-				statusBadge.style.setProperty('--ontask-status-background-color', statusConfig.backgroundColor || 'transparent');
+				// Apply colors directly via inline styles for all statuses
+				statusBadge.style.color = statusConfig.color;
+				statusBadge.style.backgroundColor = statusConfig.backgroundColor || 'transparent';
 				
-				// Only apply dynamic styling attributes if this is a truly custom status configuration
-				// (not one of the built-in default statuses that have predefined colors)
-				const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(symbol);
-				if (!isBuiltInStatus) {
-					statusBadge.setAttribute('data-dynamic-color', 'true');
+				// Always apply dynamic styling attributes since CSS variables are set for all statuses
+				statusBadge.setAttribute('data-dynamic-color', 'true');
+				
+				// Only set custom-status attribute for truly custom status configurations
+				if (!StatusConfigService.isBuiltInStatus(symbol)) {
 					statusBadge.setAttribute('data-custom-status', 'true');
 				}
 			}

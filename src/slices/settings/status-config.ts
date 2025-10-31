@@ -1,4 +1,4 @@
-import { StatusConfig } from './SettingsServiceInterface';
+import { StatusConfig, DEFAULT_STATUS_CONFIGS } from './SettingsServiceInterface';
 import { DataService } from '../data/DataServiceInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
 
@@ -7,6 +7,20 @@ export type { StatusConfig };
 
 // Service class to handle status configuration
 export class StatusConfigService extends PluginAwareSliceService {
+	/**
+	 * Built-in status symbols that are defined by default in the plugin.
+	 * These symbols are derived from DEFAULT_STATUS_CONFIGS to ensure consistency.
+	 */
+	static readonly BUILT_IN_STATUS_SYMBOLS: readonly string[] = DEFAULT_STATUS_CONFIGS.map(config => config.symbol);
+
+	/**
+	 * Check if a status symbol is a built-in (default) status.
+	 * @param symbol - The status symbol to check
+	 * @returns true if the symbol is a built-in status, false otherwise
+	 */
+	static isBuiltInStatus(symbol: string): boolean {
+		return StatusConfigService.BUILT_IN_STATUS_SYMBOLS.includes(symbol);
+	}
 	private dataService: DataService;
 
 	constructor(dataService: DataService, plugin: any) {
