@@ -61,9 +61,10 @@ class FilterModal extends Modal {
 			statusDisplay.style.setProperty('--ontask-status-color', status.color);
 			statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
 			
-			const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(status.symbol);
-			if (!isBuiltInStatus) {
-				statusDisplay.setAttribute('data-dynamic-color', 'true');
+			// Always apply dynamic styling attributes since CSS variables are set for all statuses
+			statusDisplay.setAttribute('data-dynamic-color', 'true');
+			// Only set custom-status attribute for truly custom status configurations
+			if (!StatusConfigService.isBuiltInStatus(status.symbol)) {
 				statusDisplay.setAttribute('data-custom-status', 'true');
 			}
 			
@@ -273,9 +274,10 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 					statusDisplay.style.setProperty('--ontask-status-color', status.color);
 					statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
 					
-					const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(status.symbol);
-					if (!isBuiltInStatus) {
-						statusDisplay.setAttribute('data-dynamic-color', 'true');
+					// Always apply dynamic styling attributes since CSS variables are set for all statuses
+					statusDisplay.setAttribute('data-dynamic-color', 'true');
+					// Only set custom-status attribute for truly custom status configurations
+					if (!StatusConfigService.isBuiltInStatus(status.symbol)) {
 						statusDisplay.setAttribute('data-custom-status', 'true');
 					}
 					

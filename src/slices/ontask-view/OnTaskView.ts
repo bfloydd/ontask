@@ -406,12 +406,11 @@ export class OnTaskViewImpl extends ItemView {
 					statusDisplay.style.setProperty('--ontask-status-background-color', statusBackgroundColor);
 
 					// Handle dynamic styling attributes
-					const isBuiltInStatus = ['x', '!', '?', '*', 'r', 'b', '<', '>', '-', '/', '+', '.', '#'].includes(statusSymbol);
-					if (!isBuiltInStatus) {
-						statusDisplay.setAttribute('data-dynamic-color', 'true');
+					// Always apply dynamic color since CSS variables are set for all statuses
+					statusDisplay.setAttribute('data-dynamic-color', 'true');
+					if (!StatusConfigService.isBuiltInStatus(statusSymbol)) {
 						statusDisplay.setAttribute('data-custom-status', 'true');
 					} else {
-						statusDisplay.removeAttribute('data-dynamic-color');
 						statusDisplay.removeAttribute('data-custom-status');
 					}
 				}

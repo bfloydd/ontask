@@ -1324,6 +1324,12 @@
 	background-color: var(--ontask-config-background-color);
 }
 
+/* Status config modal preview symbol dynamic colors */
+.status-config-modal-symbol[data-dynamic-color] {
+	color: var(--ontask-config-color);
+	background-color: var(--ontask-config-background-color);
+}
+
 /* Checkbox display dynamic colors - standard task items */
 .ontask-checkbox-display[data-dynamic-color][data-custom-status] {
 	color: var(--ontask-status-color);
