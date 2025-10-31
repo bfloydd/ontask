@@ -279,7 +279,8 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		try {
 			const settings = this.settingsService.getSettings();
 			
-			await this.taskLoadingService.initializeFileTracking(settings.onlyShowToday);
+			const onlyShowToday = settings.dateFilter === 'today';
+			await this.taskLoadingService.initializeFileTracking(onlyShowToday);
 			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
 			
 			this.processTopTasks(result.tasks);

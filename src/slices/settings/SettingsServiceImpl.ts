@@ -31,7 +31,14 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 	}
 
 	private async migrateFromOldStructure(loadedSettings: any): Promise<void> {
-		// Reserved for future migrations
+		// Migrate from onlyShowToday boolean to dateFilter string
+		if (loadedSettings && 'onlyShowToday' in loadedSettings && !('dateFilter' in loadedSettings)) {
+			this.settings.dateFilter = loadedSettings.onlyShowToday ? 'today' : 'all';
+			// Remove old property
+			delete (this.settings as any).onlyShowToday;
+			await this.getPlugin()!.saveData(this.settings);
+			this.logger.debug('[OnTask Settings] Migrated onlyShowToday to dateFilter');
+		}
 	}
 
 	getSettings(): OnTaskSettings {

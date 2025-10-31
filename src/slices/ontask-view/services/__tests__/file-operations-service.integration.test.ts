@@ -164,6 +164,9 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 
 			mockApp.vault.read = jest.fn().mockRejectedValue(new Error('File read error'));
 
+			// Suppress console.error for this test since we're intentionally testing error handling
+			const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
 			// Act
 			await fileOperationsService.updateCheckboxStatus(
 				checkbox,
@@ -175,6 +178,9 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			expect(mockInPlaceUpdateCallback).not.toHaveBeenCalled();
 			// Note: scheduleRefreshCallback is only called if onInPlaceUpdate is not provided
 			// But on error, we don't call it either way to avoid double-refresh
+			
+			// Restore console.error
+			consoleSpy.mockRestore();
 		});
 	});
 

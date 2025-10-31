@@ -137,6 +137,65 @@
 	height: 25px;
 }
 
+/* ========================================
+   SEGMENTED CONTROL
+   SLICE: ontask-view (date filter control)
+   ======================================== */
+
+.ontask-segmented-control {
+	display: inline-flex;
+	gap: 0;
+	border-radius: 4px;
+	overflow: hidden;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+}
+
+.ontask-segmented-button {
+	background: transparent;
+	color: var(--text-normal);
+	border: none;
+	border-right: 1px solid var(--background-modifier-border);
+	padding: 4px 12px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+	height: 25px;
+}
+
+.ontask-segmented-button:last-child {
+	border-right: none;
+}
+
+.ontask-segmented-button:hover {
+	background: var(--background-modifier-hover);
+}
+
+.ontask-segmented-button.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+/* Remove border between active and adjacent buttons for seamless look */
+.ontask-segmented-button.is-active + .ontask-segmented-button {
+	border-left-color: var(--interactive-accent);
+}
+
+/* Mobile touch support */
+.is-mobile .ontask-segmented-button {
+	padding: 6px 14px;
+	min-height: 32px;
+}
+
+.is-phone .ontask-segmented-button {
+	padding: 8px 16px;
+	font-size: 13px;
+}
+
 /* Common button hover state */
 .ontask-button-base:hover,
 .ontask-header-button:hover,

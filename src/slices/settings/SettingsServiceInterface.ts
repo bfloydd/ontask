@@ -9,7 +9,7 @@ export interface StatusConfig {
 }
 
 export interface OnTaskSettings {
-	onlyShowToday: boolean;
+	dateFilter: 'all' | 'today';
 	topTaskColor: string;
 	useThemeDefaultColor: boolean;
 	showTopTaskInEditor: boolean;
@@ -22,7 +22,7 @@ export interface OnTaskSettings {
 }
 
 export const DEFAULT_SETTINGS: OnTaskSettings = {
-	onlyShowToday: false,
+	dateFilter: 'all',
 	topTaskColor: '#ff6b6b',
 	useThemeDefaultColor: true,
 	showTopTaskInEditor: true,

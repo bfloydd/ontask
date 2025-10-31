@@ -34,7 +34,8 @@ export class OnTaskViewImpl extends ItemView {
 	private scrollToTopService: ScrollToTopService;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
-	private onlyTodayButton: HTMLButtonElement;
+	private dateFilterControl: HTMLElement | null = null;
+	private dateFilterButtons: Map<string, HTMLButtonElement> = new Map();
 	private isRefreshing: boolean = false;
 	private isUpdatingStatus: boolean = false;
 	private displayedTasksCount: number = 10;
@@ -140,10 +141,7 @@ export class OnTaskViewImpl extends ItemView {
 		
 		// Left button group
 		const leftButtonsContainer = header.createDiv('ontask-buttons-left');
-		this.onlyTodayButton = leftButtonsContainer.createEl('button', { text: 'Show All' });
-		this.onlyTodayButton.addClass('ontask-header-button');
-		this.onlyTodayButton.innerHTML = IconService.getIcon('calendar') + ' Show All';
-		this.onlyTodayButton.addEventListener('click', () => this.toggleOnlyToday(), { passive: true });
+		this.createDateFilterControl(leftButtonsContainer);
 		
 		// Right button group
 		const rightButtonsContainer = header.createDiv('ontask-buttons-right');
@@ -171,7 +169,7 @@ export class OnTaskViewImpl extends ItemView {
 		configureButton.title = 'Settings';
 		configureButton.addEventListener('click', () => this.openSettings(), { passive: true });
 		
-		this.updateButtonStates();
+		this.updateDateFilterState();
 		
 		const contentArea = this.contentEl.createDiv('ontask-content');
 		
@@ -306,16 +304,17 @@ export class OnTaskViewImpl extends ItemView {
 			const loadingEl = contentArea.createDiv('ontask-loading');
 			loadingEl.textContent = 'Loading tasks...';
 			
-			await this.taskLoadingService.initializeFileTracking(settings.onlyShowToday);
+			const onlyShowToday = settings.dateFilter === 'today';
+			await this.taskLoadingService.initializeFileTracking(onlyShowToday);
 			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
 			this.checkboxes = result.tasks;
 			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(this.checkboxes);
 			
 			loadingEl.remove();
 			
-			this.domRenderingService.renderCheckboxes(contentArea, this.checkboxes, this.displayedTasksCount, this.currentFilter, (filter: string) => this.onFilterChange(filter), () => this.clearFilter(), () => this.loadMoreTasks(), settings.onlyShowToday);
+			this.domRenderingService.renderCheckboxes(contentArea, this.checkboxes, this.displayedTasksCount, this.currentFilter, (filter: string) => this.onFilterChange(filter), () => this.clearFilter(), () => this.loadMoreTasks(), onlyShowToday);
 			
-			this.updateButtonStates();
+			this.updateDateFilterState();
 			this.initializeCheckboxContentTracking();
 			
 			this.logger.debug('[OnTask View] Emitting view:refreshed event with', this.checkboxes.length, 'checkboxes');
@@ -595,7 +594,7 @@ export class OnTaskViewImpl extends ItemView {
 		}
 		
 		// Add appropriate indicator based on whether there are more tasks
-		if (!settings.onlyShowToday) {
+		if (settings.dateFilter !== 'today') {
 			if (result.hasMoreTasks) {
 				const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(() => this.loadMoreTasks());
 				contentArea.appendChild(loadMoreSection);
@@ -779,11 +778,32 @@ export class OnTaskViewImpl extends ItemView {
 		});
 	}
 
-	private async toggleOnlyToday(): Promise<void> {
-		const settings = this.settingsService.getSettings();
-		const newValue = !settings.onlyShowToday;
-		await this.settingsService.updateSetting('onlyShowToday', newValue);
-		this.updateButtonStates();
+	private createDateFilterControl(container: HTMLElement): void {
+		this.dateFilterControl = container.createDiv('ontask-segmented-control');
+		
+		const options: Array<{ value: 'all' | 'today'; label: string; icon: 'calendar' }> = [
+			{ value: 'today', label: 'Today', icon: 'calendar' },
+			{ value: 'all', label: 'Show All', icon: 'calendar' }
+		];
+		
+		options.forEach((option) => {
+			const button = this.dateFilterControl!.createEl('button', {
+				cls: 'ontask-segmented-button',
+				attr: { 'data-value': option.value }
+			});
+			button.innerHTML = IconService.getIcon(option.icon) + ' ' + option.label;
+			
+			button.addEventListener('click', () => this.setDateFilter(option.value), { passive: true });
+			
+			this.dateFilterButtons.set(option.value, button);
+		});
+		
+		this.updateDateFilterState();
+	}
+
+	private async setDateFilter(value: 'all' | 'today'): Promise<void> {
+		await this.settingsService.updateSetting('dateFilter', value);
+		this.updateDateFilterState();
 		this.refreshCheckboxes();
 	}
 
@@ -792,16 +812,16 @@ export class OnTaskViewImpl extends ItemView {
 		this.eventSystem.emit('ui:toggle-top-task-visibility', {});
 	}
 
-	private updateButtonStates(): void {
+	private updateDateFilterState(): void {
 		const settings = this.settingsService.getSettings();
 		
-		if (this.onlyTodayButton) {
-			if (settings.onlyShowToday) {
-				this.onlyTodayButton.innerHTML = IconService.getIcon('calendar') + ' Today';
+		this.dateFilterButtons.forEach((button, value) => {
+			if (settings.dateFilter === value) {
+				button.classList.add('is-active');
 			} else {
-				this.onlyTodayButton.innerHTML = IconService.getIcon('calendar') + ' Show All';
+				button.classList.remove('is-active');
 			}
-		}
+		});
 	}
 
 	private parseCheckboxLine(line: string): { statusSymbol: string; remainingText: string } {

@@ -19,7 +19,7 @@ Manages plugin configuration settings. Separate from status configuration (handl
 ## Settings Schema
 ```typescript
 interface OnTaskSettings {
-  onlyShowToday: boolean;
+  dateFilter: 'all' | 'today';
   topTaskColor: string;
   showTopTaskInEditor: boolean;
   checkboxSource: 'streams' | 'daily-notes' | 'folder';
@@ -31,7 +31,7 @@ interface OnTaskSettings {
 ```
 
 ## Settings Categories
-- **Display**: `onlyShowToday`, `topTaskColor`, `hideCompletedTasks`
+- **Display**: `dateFilter`, `topTaskColor`, `hideCompletedTasks`
 - **UI Integration**: `showTopTaskInEditor`
 - **Data Source**: `checkboxSource`, `customFolderPath`, `includeSubfolders`
 - **Performance**: `loadMoreLimit`
