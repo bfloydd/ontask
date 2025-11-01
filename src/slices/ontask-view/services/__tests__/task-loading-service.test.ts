@@ -12,7 +12,7 @@ jest.mock('../../../logging/Logger', () => ({
 
 import { TaskLoadingService } from '../TaskLoadingService';
 import { SettingsService } from '../../../settings';
-import { StatusConfigService } from '../../../settings/status-config';
+import { StatusConfigService } from '../../../settings/StatusConfig';
 
 // Mock dependencies
 const mockStreamsService = {

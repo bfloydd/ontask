@@ -4,7 +4,7 @@ import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
 import { StreamsService } from '../streams';
 import { EventSystem } from '../events';
 import { DataService } from '../data';
-import { StatusConfigService } from '../settings/status-config';
+import { StatusConfigService } from '../settings/StatusConfig';
 import { LoggingService } from '../logging';
 
 export interface PluginOrchestrator {

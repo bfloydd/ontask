@@ -6,7 +6,7 @@ import { EditorIntegrationServiceImpl } from './src/slices/editor/EditorIntegrat
 import { DIContainer, DIContainerImpl, ServiceConfiguration, SERVICE_IDS } from './src/slices/di';
 import { StreamsService } from './src/slices/streams';
 import { DataService } from './src/slices/data';
-import { StatusConfigService } from './src/slices/settings/status-config';
+import { StatusConfigService } from './src/slices/settings/StatusConfig';
 import { LoggingService } from './src/slices/logging';
 
 export default class OnTask extends Plugin {

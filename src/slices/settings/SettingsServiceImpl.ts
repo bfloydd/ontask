@@ -1,7 +1,7 @@
 import { App, Plugin } from 'obsidian';
 import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './SettingsServiceInterface';
 import { EventSystem } from '../events';
-import { SettingsAwareSliceService } from '../../shared/base-slice';
+import { SettingsAwareSliceService } from '../../shared/BaseSlice';
 import { Logger } from '../logging/Logger';
 
 export class SettingsServiceImpl extends SettingsAwareSliceService implements SettingsService {

@@ -1,11 +1,11 @@
 import { EventSystem } from '../../events';
-import { StatusConfigService } from '../../settings/status-config';
+import { StatusConfigService } from '../../settings/StatusConfig';
 import { Menu, Modal, App, Setting, Plugin } from 'obsidian';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 import { SettingsService } from '../../settings';
 import { DataService } from '../../data/DataServiceInterface';
-import { OnTaskSettingsTab } from '../../settings/views/settings-view';
-import { AppWithSettings } from '../../types';
+import { OnTaskSettingsTab } from '../../settings/views/SettingsView';
+import { AppWithSettings } from '../../../types';
 
 interface OnTaskPlugin extends Plugin {
 	settingsTab?: OnTaskSettingsTab;

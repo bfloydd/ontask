@@ -1,7 +1,7 @@
 import { App, Setting, Modal } from 'obsidian';
 import { StatusConfig } from '../SettingsServiceInterface';
-import { StatusConfigService } from '../status-config';
-import { setupDragAndDrop } from '../../../shared/drag-and-drop-utils';
+import { StatusConfigService } from '../StatusConfig';
+import { setupDragAndDrop } from '../../../shared/DragAndDropUtils';
 
 const NON_EDITABLE_SYMBOLS = ['/', '!', '+', '.', 'x'];
 
@@ -372,3 +372,5 @@ export class StatusConfigView {
 		await this.statusConfigService.reorderStatusConfigs([...this.statusConfigs]);
 	}
 }
+
+

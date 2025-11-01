@@ -1,7 +1,7 @@
 import { SettingsService } from '../settings';
 import { EventSystem } from '../events';
 import { Logger } from '../logging/Logger';
-import { IconService } from '../../shared/icon-service';
+import { IconService } from '../../shared/IconService';
 
 /**
  * Date filter control utility class for OnTaskView that manages

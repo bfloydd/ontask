@@ -1,10 +1,10 @@
 import { App, MarkdownView, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
 import { SettingsService } from '../settings/SettingsServiceInterface';
-import { StatusConfigService } from '../settings/status-config';
+import { StatusConfigService } from '../settings/StatusConfig';
 import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
 import { EventSystem } from '../events/EventSystemInterface';
-import { PluginAwareSliceService } from '../../shared/base-slice';
+import { PluginAwareSliceService } from '../../shared/BaseSlice';
 import { Logger } from '../logging/Logger';
 
 export class EditorIntegrationServiceImpl extends PluginAwareSliceService implements EditorIntegrationService {

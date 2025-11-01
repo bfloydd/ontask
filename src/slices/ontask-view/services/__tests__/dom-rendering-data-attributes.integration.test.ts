@@ -7,7 +7,7 @@
 
 import { DOMRenderingService } from '../DOMRenderingService';
 import { TFile } from 'obsidian';
-import { StatusConfigService } from '../../../settings/status-config';
+import { StatusConfigService } from '../../../settings/StatusConfig';
 import { SettingsService } from '../../../settings';
 import { ContextMenuService } from '../ContextMenuService';
 

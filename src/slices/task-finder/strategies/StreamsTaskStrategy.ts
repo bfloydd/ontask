@@ -2,8 +2,8 @@ import { App, TFile } from 'obsidian';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
-import { CheckboxParsingUtils } from '../../../shared/checkbox-parsing-utils';
-import { DateFileUtils } from '../../../shared/date-file-utils';
+import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
+import { DateFileUtils } from '../../../shared/DateFileUtils';
 
 export class StreamsTaskStrategy implements TaskFinderStrategy {
 	private app: App;

@@ -1,4 +1,4 @@
-import { StatusConfigService } from '../../settings/status-config';
+import { StatusConfigService } from '../../settings/StatusConfig';
 import { TopTaskProcessingService } from './TopTaskProcessingService';
 import { DOMRenderingService } from './DOMRenderingService';
 import { CheckboxContentTrackingService } from './CheckboxContentTrackingService';

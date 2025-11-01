@@ -1,5 +1,5 @@
 import { App } from 'obsidian';
-import { StatusConfigService } from '../../settings/status-config';
+import { StatusConfigService } from '../../settings/StatusConfig';
 import { ContextMenuService } from './ContextMenuService';
 import { SettingsService } from '../../settings';
 import { CheckboxRenderer } from '../renderers/CheckboxRenderer';

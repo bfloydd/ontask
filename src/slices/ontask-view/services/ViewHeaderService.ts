@@ -1,6 +1,6 @@
 import { ContextMenuService } from './ContextMenuService';
 import { OnTaskViewDateControls } from '../OnTaskViewDateControls';
-import { IconService } from '../../../shared/icon-service';
+import { IconService } from '../../../shared/IconService';
 
 export interface ViewHeaderCallbacks {
 	onRefresh: () => Promise<void>;

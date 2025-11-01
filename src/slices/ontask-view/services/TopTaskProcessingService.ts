@@ -1,6 +1,6 @@
 import { EventSystem } from '../../events';
 import { Logger } from '../../logging/Logger';
-import { StatusConfigService } from '../../settings/status-config';
+import { StatusConfigService } from '../../settings/StatusConfig';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface TopTaskProcessingServiceInterface {

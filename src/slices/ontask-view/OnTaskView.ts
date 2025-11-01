@@ -2,7 +2,7 @@ import { ItemView, WorkspaceLeaf, TFile, Plugin } from 'obsidian';
 import { Logger } from '../logging/Logger';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
-import { StatusConfigService } from '../settings/status-config';
+import { StatusConfigService } from '../settings/StatusConfig';
 import { DataService } from '../data/DataServiceInterface';
 import { TaskLoadingService } from './services/TaskLoadingService';
 import { OnTaskViewServiceFactory, OnTaskViewDependencies, OnTaskViewCallbacks } from './services/OnTaskViewServiceFactory';

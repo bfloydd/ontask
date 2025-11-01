@@ -2,10 +2,10 @@ import { TFile, App } from 'obsidian';
 import { AppWithPlugins } from '../../../types';
 import { TaskFinderFactoryImpl } from '../../task-finder/TaskFinderFactoryImpl';
 import { SettingsService } from '../../settings';
-import { StatusConfigService } from '../../settings/status-config';
+import { StatusConfigService } from '../../settings/StatusConfig';
 import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
-import { DateFileUtils } from '../../../shared/date-file-utils';
+import { DateFileUtils } from '../../../shared/DateFileUtils';
 
 export interface TaskLoadingResult {
 	tasks: any[];

@@ -1,7 +1,7 @@
 import { App, Plugin } from 'obsidian';
 import { DataService, StatusConfig, QuickFilter, DataServiceData } from './DataServiceInterface';
 import { DEFAULT_STATUS_CONFIGS } from '../settings/SettingsServiceInterface';
-import { PluginAwareSliceService } from '../../shared/base-slice';
+import { PluginAwareSliceService } from '../../shared/BaseSlice';
 import { Logger } from '../logging/Logger';
 
 interface OnTaskPluginWithLogger extends Plugin {

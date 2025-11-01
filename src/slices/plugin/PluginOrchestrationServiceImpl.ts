@@ -5,7 +5,7 @@ import { StreamsService } from '../streams';
 import { OnTaskViewImpl, ONTASK_VIEW_TYPE } from '../ontask-view';
 import { EventSystem } from '../events';
 import { Logger } from '../logging/Logger';
-import { SettingsAwareSliceService } from '../../shared/base-slice';
+import { SettingsAwareSliceService } from '../../shared/BaseSlice';
 
 export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService implements PluginOrchestrator {
 	private dependencies: PluginDependencies;

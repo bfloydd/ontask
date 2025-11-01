@@ -6,7 +6,7 @@ import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
 import { PluginOrchestrationServiceImpl, PluginDependencies } from '../plugin';
 import { EditorIntegrationServiceImpl } from '../editor';
 import { DataService, DataServiceImpl } from '../data';
-import { StatusConfigService } from '../settings/status-config';
+import { StatusConfigService } from '../settings/StatusConfig';
 import { LoggingService, LoggingServiceImpl } from '../logging';
 import { App, Plugin } from 'obsidian';
 

@@ -1,10 +1,10 @@
 import { App, Plugin, PluginSettingTab } from 'obsidian';
 import { SettingsService } from '../SettingsServiceInterface';
-import { StatusConfigService } from '../status-config';
+import { StatusConfigService } from '../StatusConfig';
 import { DataService } from '../../data/DataServiceInterface';
-import { GeneralSettingsView } from './general-settings-view';
-import { StatusConfigSettingsView } from './status-config-settings-view';
-import { QuickFiltersView } from './quick-filters-view';
+import { GeneralSettingsView } from './GeneralSettingsView';
+import { StatusConfigSettingsView } from './StatusConfigSettingsView';
+import { QuickFiltersView } from './QuickFiltersView';
 
 export class OnTaskSettingsTab extends PluginSettingTab {
 	private settingsService: SettingsService;
@@ -95,3 +95,5 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	}
 
 }
+
+

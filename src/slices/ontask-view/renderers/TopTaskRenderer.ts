@@ -1,4 +1,4 @@
-import { StatusConfigService } from '../../settings/status-config';
+import { StatusConfigService } from '../../settings/StatusConfig';
 import { ContextMenuService } from '../services/ContextMenuService';
 import { SettingsService } from '../../settings';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';

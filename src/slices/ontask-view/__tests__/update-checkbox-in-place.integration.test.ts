@@ -20,9 +20,9 @@ jest.mock('../../logging/Logger', () => ({
 import { OnTaskViewImpl } from '../OnTaskView';
 import { TFile, WorkspaceLeaf } from 'obsidian';
 import { SettingsService } from '../../settings';
-import { StatusConfigService } from '../../settings/status-config';
+import { StatusConfigService } from '../../settings/StatusConfig';
 import { DataService } from '../../data/DataServiceInterface';
-import * as StatusConfigModule from '../../settings/status-config';
+import * as StatusConfigModule from '../../settings/StatusConfig';
 import { EventSystem } from '../../events';
 import { Logger } from '../../logging/Logger';
 import { TaskLoadingService } from '../services/TaskLoadingService';

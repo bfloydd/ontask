@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
 import { StatusConfig, DEFAULT_STATUS_CONFIGS } from './SettingsServiceInterface';
 import { DataService } from '../data/DataServiceInterface';
-import { PluginAwareSliceService } from '../../shared/base-slice';
+import { PluginAwareSliceService } from '../../shared/BaseSlice';
 
 // Re-export the interface for backward compatibility
 export type { StatusConfig };
@@ -85,3 +85,5 @@ export class StatusConfigService extends PluginAwareSliceService {
 		return this.dataService.reorderStatusConfigs(configs);
 	}
 }
+
+

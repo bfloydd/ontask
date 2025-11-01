@@ -1,9 +1,9 @@
 // Quick Filters view component for settings
 import { App, Setting, Modal } from 'obsidian';
 import { DataService, QuickFilter } from '../../data/DataServiceInterface';
-import { StatusConfigService } from '../status-config';
-import { setupDragAndDrop } from '../../../shared/drag-and-drop-utils';
-import { IconService } from '../../../shared/icon-service';
+import { StatusConfigService } from '../StatusConfig';
+import { setupDragAndDrop } from '../../../shared/DragAndDropUtils';
+import { IconService } from '../../../shared/IconService';
 
 export class QuickFiltersView {
 	private app: App;
@@ -305,3 +305,5 @@ export class QuickFiltersView {
 		return 'quick-filter-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 	}
 }
+
+

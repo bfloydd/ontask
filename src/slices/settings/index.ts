@@ -1,3 +1,3 @@
 export * from './SettingsServiceInterface';
 export * from './SettingsServiceImpl';
-export * from './views/settings-view';
+export * from './views/SettingsView';

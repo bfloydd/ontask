@@ -1,6 +1,6 @@
 import { App } from 'obsidian';
-import { StatusConfigView } from './status-config-view';
-import { StatusConfigService } from '../status-config';
+import { StatusConfigView } from './StatusConfigView';
+import { StatusConfigService } from '../StatusConfig';
 
 export class StatusConfigSettingsView {
 	private app: App;
@@ -24,4 +24,5 @@ export class StatusConfigSettingsView {
 		statusConfigView.render();
 	}
 }
+
 
