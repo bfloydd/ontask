@@ -8,6 +8,7 @@ import { StreamsService } from './src/slices/streams';
 import { DataService } from './src/slices/data';
 import { StatusConfigService } from './src/slices/settings/StatusConfig';
 import { LoggingService } from './src/slices/logging';
+import { IconService } from './src/shared/IconService';
 
 export default class OnTask extends Plugin {
 	settings: OnTaskSettings;
@@ -41,6 +42,10 @@ export default class OnTask extends Plugin {
 		await this.settingsService.initialize();
 		this.settings = this.settingsService.getSettings();
 		await this.loggingService.initialize();
+		
+		// Initialize IconService with logger
+		IconService.setLogger(this.loggingService.getLogger());
+		
 		await this.orchestrator.initialize();
 		await this.editorIntegrationService.initialize();
 		

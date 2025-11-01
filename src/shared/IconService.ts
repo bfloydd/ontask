@@ -1,3 +1,5 @@
+import { Logger } from '../slices/logging/Logger';
+
 /**
  * Icon Service - Centralized SVG icon management
  * Provides reusable SVG icon definitions for consistent iconography across the plugin
@@ -10,6 +12,14 @@ export interface IconOptions {
 }
 
 export class IconService {
+	private static logger: Logger | null = null;
+
+	/**
+	 * Set logger instance for icon service warnings
+	 */
+	static setLogger(logger: Logger | null): void {
+		IconService.logger = logger;
+	}
 	/**
 	 * Get SVG HTML string for an icon
 	 */
@@ -18,7 +28,11 @@ export class IconService {
 		const icon = ICONS[iconName];
 		
 		if (!icon) {
-			console.warn(`Icon "${iconName}" not found`);
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Icon "${iconName}" not found`);
+			} else {
+				console.warn(`[OnTask IconService] Icon "${iconName}" not found`);
+			}
 			return '';
 		}
 
@@ -54,7 +68,11 @@ export class IconService {
 		const icon = CONFIG_ICONS[iconName];
 		
 		if (!icon) {
-			console.warn(`Config icon "${iconName}" not found`);
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Config icon "${iconName}" not found`);
+			} else {
+				console.warn(`[OnTask IconService] Config icon "${iconName}" not found`);
+			}
 			return '';
 		}
 

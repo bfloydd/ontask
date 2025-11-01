@@ -4,18 +4,21 @@ import { DataService, QuickFilter } from '../../data/DataServiceInterface';
 import { StatusConfigService } from '../StatusConfig';
 import { setupDragAndDrop } from '../../../shared/DragAndDropUtils';
 import { IconService } from '../../../shared/IconService';
+import { Logger } from '../../logging/Logger';
 
 export class QuickFiltersView {
 	private app: App;
 	private dataService: DataService;
 	private statusConfigService: StatusConfigService;
 	private containerEl: HTMLElement;
+	private logger: Logger | null;
 
-	constructor(app: App, dataService: DataService, statusConfigService: StatusConfigService, containerEl: HTMLElement) {
+	constructor(app: App, dataService: DataService, statusConfigService: StatusConfigService, containerEl: HTMLElement, logger?: Logger | null) {
 		this.app = app;
 		this.dataService = dataService;
 		this.statusConfigService = statusConfigService;
 		this.containerEl = containerEl;
+		this.logger = logger || null;
 	}
 
 	render(): void {
@@ -257,8 +260,12 @@ export class QuickFiltersView {
 				modal.close();
 				this.render(); // Re-render the view
 			} catch (error) {
-				// Log error - this is a UI component, so console fallback is acceptable
-				console.error('OnTask: Error saving quick filter:', error);
+				// Log error using logger with console fallback
+				if (this.logger) {
+					this.logger.error('[OnTask QuickFiltersView] Error saving quick filter:', error);
+				} else {
+					console.error('[OnTask QuickFiltersView] Error saving quick filter:', error);
+				}
 				// Show error message
 				const errorEl = content.querySelector('.ontask-error-message');
 				if (errorEl) errorEl.remove();

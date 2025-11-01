@@ -5,11 +5,17 @@ import { DataService } from '../../data/DataServiceInterface';
 import { GeneralSettingsView } from './GeneralSettingsView';
 import { StatusConfigSettingsView } from './StatusConfigSettingsView';
 import { QuickFiltersView } from './QuickFiltersView';
+import { Logger } from '../../logging/Logger';
+
+interface PluginWithLogger extends Plugin {
+	getLogger(): Logger;
+}
 
 export class OnTaskSettingsTab extends PluginSettingTab {
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
 	private dataService: DataService;
+	private plugin: PluginWithLogger;
 	private currentTab: 'general' | 'status' | 'quick-filters' = 'general';
 
 	constructor(app: App, plugin: Plugin, settingsService: SettingsService, statusConfigService: StatusConfigService, dataService: DataService) {
@@ -17,6 +23,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 		this.settingsService = settingsService;
 		this.statusConfigService = statusConfigService;
 		this.dataService = dataService;
+		this.plugin = plugin as PluginWithLogger;
 	}
 
 	display(): void {
@@ -90,7 +97,8 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	}
 
 	private renderQuickFiltersSettings(containerEl: HTMLElement): void {
-		const quickFiltersView = new QuickFiltersView(this.app, this.dataService, this.statusConfigService, containerEl);
+		const logger = this.plugin.getLogger ? this.plugin.getLogger() : null;
+		const quickFiltersView = new QuickFiltersView(this.app, this.dataService, this.statusConfigService, containerEl, logger);
 		quickFiltersView.render();
 	}
 
