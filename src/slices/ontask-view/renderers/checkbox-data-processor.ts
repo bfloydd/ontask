@@ -1,0 +1,75 @@
+import { TFile } from 'obsidian';
+
+/**
+ * Processes checkbox data by grouping and sorting operations.
+ */
+export class CheckboxDataProcessor {
+	constructor(
+		private app: any,
+		private getFileName: (filePath: string) => string
+	) {}
+
+	/**
+	 * Groups checkboxes by their file path.
+	 */
+	groupCheckboxesByFile(checkboxes: any[]): Map<string, any[]> {
+		const grouped = new Map<string, any[]>();
+		
+		for (const checkbox of checkboxes) {
+			const filePath = checkbox.file?.path || 'Unknown';
+			if (!grouped.has(filePath)) {
+				grouped.set(filePath, []);
+			}
+			grouped.get(filePath)!.push(checkbox);
+		}
+		
+		return grouped;
+	}
+
+	/**
+	 * Sorts files by date, either from filename date pattern or file modification time.
+	 */
+	sortFilesByDate(checkboxesByFile: Map<string, any[]>): Map<string, any[]> {
+		const fileEntries = Array.from(checkboxesByFile.entries());
+		
+		fileEntries.sort((a, b) => {
+			try {
+				const fileNameA = this.getFileName(a[0]);
+				const fileNameB = this.getFileName(b[0]);
+				
+				const dateMatchA = fileNameA.match(/(\d{4}-\d{2}-\d{2})/);
+				const dateMatchB = fileNameB.match(/(\d{4}-\d{2}-\d{2})/);
+				
+				if (!dateMatchA || !dateMatchB) {
+					const fileA = this.app.vault.getAbstractFileByPath(a[0]) as TFile;
+					const fileB = this.app.vault.getAbstractFileByPath(b[0]) as TFile;
+					
+					if (!fileA || !fileB) {
+						return 0;
+					}
+					
+					const dateA = fileA.stat?.mtime || fileA.stat?.ctime || 0;
+					const dateB = fileB.stat?.mtime || fileB.stat?.ctime || 0;
+					
+					return dateB - dateA;
+				}
+				
+				const dateA = new Date(dateMatchA[1]);
+				const dateB = new Date(dateMatchB[1]);
+				
+				return dateB.getTime() - dateA.getTime();
+			} catch (error) {
+				console.error('CheckboxDataProcessor: Error sorting files by date:', error);
+				return 0;
+			}
+		});
+		
+		const sortedMap = new Map<string, any[]>();
+		for (const [filePath, checkboxes] of fileEntries) {
+			sortedMap.set(filePath, checkboxes);
+		}
+		
+		return sortedMap;
+	}
+}
+

@@ -1,6 +1,5 @@
-import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf } from 'obsidian';
 import { Logger } from '../logging/Logger';
-import { MarkdownView } from 'obsidian';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
 import { StatusConfigService } from '../settings/status-config';
@@ -14,6 +13,9 @@ import { FileOperationsService } from './services/file-operations-service';
 import { MobileTouchService } from './services/mobile-touch-service';
 import { ScrollToTopService } from './services/scroll-to-top-service';
 import { IconService } from '../../shared/icon-service';
+import { OnTaskViewHelpers } from './OnTaskViewHelpers';
+import { OnTaskViewFiltering } from './OnTaskViewFiltering';
+import { OnTaskViewDateControls } from './OnTaskViewDateControls';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -32,10 +34,11 @@ export class OnTaskViewImpl extends ItemView {
 	private fileOperationsService: FileOperationsService;
 	private mobileTouchService: MobileTouchService;
 	private scrollToTopService: ScrollToTopService;
+	private helpers: OnTaskViewHelpers;
+	private filtering: OnTaskViewFiltering;
+	private dateControls: OnTaskViewDateControls;
 	private checkboxes: any[] = [];
 	private refreshTimeout: number | null = null;
-	private dateFilterControl: HTMLElement | null = null;
-	private dateFilterButtons: Map<string, HTMLButtonElement> = new Map();
 	private isRefreshing: boolean = false;
 	private isUpdatingStatus: boolean = false;
 	private displayedTasksCount: number = 10;
@@ -87,10 +90,10 @@ export class OnTaskViewImpl extends ItemView {
 			this.contextMenuService,
 			this.settingsService,
 			this.app,
-			(filePath: string, lineNumber: number) => this.openFile(filePath, lineNumber),
-			(filePath: string) => this.getFileName(filePath),
-			(line: string) => this.parseCheckboxLine(line),
-			(statusSymbol: string) => this.getStatusDisplayText(statusSymbol),
+			(filePath: string, lineNumber: number) => this.helpers.openFile(filePath, lineNumber),
+			(filePath: string) => this.helpers.getFileName(filePath),
+			(line: string) => this.helpers.parseCheckboxLine(line),
+			(statusSymbol: string) => this.helpers.getStatusDisplayText(statusSymbol),
 			(element: HTMLElement, task: any) => this.mobileTouchService.addMobileTouchHandlers(element, task)
 		);
 		
@@ -108,6 +111,25 @@ export class OnTaskViewImpl extends ItemView {
 		this.mobileTouchService = new MobileTouchService(this.contextMenuService);
 		
 		this.scrollToTopService = new ScrollToTopService(this.eventSystem, this.app);
+		
+		this.helpers = new OnTaskViewHelpers(
+			this.app,
+			this.statusConfigService,
+			this.settingsService,
+			this.taskLoadingService,
+			this.logger
+		);
+		
+		this.filtering = new OnTaskViewFiltering(
+			this.contentEl,
+			(line: string) => this.helpers.parseCheckboxLine(line)
+		);
+		
+		this.dateControls = new OnTaskViewDateControls(
+			this.settingsService,
+			this.eventSystem,
+			this.logger
+		);
 		
 		this.eventHandlingService = new EventHandlingService(
 			this.eventSystem,
@@ -141,7 +163,7 @@ export class OnTaskViewImpl extends ItemView {
 		
 		// Left button group
 		const leftButtonsContainer = header.createDiv('ontask-buttons-left');
-		this.createDateFilterControl(leftButtonsContainer);
+		this.dateControls.createDateFilterControl(leftButtonsContainer, () => this.refreshCheckboxes());
 		
 		// Right button group
 		const rightButtonsContainer = header.createDiv('ontask-buttons-right');
@@ -169,7 +191,7 @@ export class OnTaskViewImpl extends ItemView {
 		configureButton.title = 'Settings';
 		configureButton.addEventListener('click', () => this.openSettings(), { passive: true });
 		
-		this.updateDateFilterState();
+		this.dateControls.updateDateFilterState();
 		
 		const contentArea = this.contentEl.createDiv('ontask-content');
 		
@@ -191,92 +213,22 @@ export class OnTaskViewImpl extends ItemView {
 	}
 
 	private onFilterChange(filter: string): void {
-		this.currentFilter = filter;
-		this.applyFilter();
+		this.filtering.onFilterChange(filter, (newFilter: string) => {
+			this.currentFilter = newFilter;
+		});
 	}
 
 	private clearFilter(): void {
-		this.currentFilter = '';
-		
-		// Clear the input field
-		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
-		if (contentArea) {
-			const filterInput = contentArea.querySelector('.ontask-filter-input') as HTMLInputElement;
-			if (filterInput) {
-				filterInput.value = '';
-			}
-		}
-		
-		this.applyFilter();
+		this.filtering.clearFilter((newFilter: string) => {
+			this.currentFilter = newFilter;
+		});
 	}
 
 	private toggleSearchFilter(): void {
-		this.isSearchFilterVisible = !this.isSearchFilterVisible;
-		
-		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
-		if (contentArea) {
-			const filterSection = contentArea.querySelector('.ontask-filter-section') as HTMLElement;
-			if (filterSection) {
-				if (this.isSearchFilterVisible) {
-					filterSection.classList.add('ontask-filter-expanded');
-					filterSection.classList.remove('ontask-filter-collapsed');
-					// Focus the input field
-					const filterInput = filterSection.querySelector('.ontask-filter-input') as HTMLInputElement;
-					if (filterInput) {
-						setTimeout(() => filterInput.focus(), 100);
-					}
-				} else {
-					filterSection.classList.add('ontask-filter-collapsed');
-					filterSection.classList.remove('ontask-filter-expanded');
-					// Clear filter when hiding
-					this.clearFilter();
-				}
-			}
-		}
-	}
-
-	private applyFilter(): void {
-		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
-		if (!contentArea) return;
-
-		// Get all file sections (excluding top task and filter sections)
-		const fileSections = contentArea.querySelectorAll('.ontask-file-section:not(.ontask-toptask-hero-section):not(.ontask-filter-section)');
-		
-		if (this.currentFilter.trim() === '') {
-			// Show all tasks and file sections
-			fileSections.forEach(section => {
-				(section as HTMLElement).style.display = '';
-				const taskElements = section.querySelectorAll('.ontask-checkbox-item');
-				taskElements.forEach(task => {
-					(task as HTMLElement).style.display = '';
-				});
-			});
-		} else {
-			// Filter tasks and hide empty file sections
-			const filterText = this.currentFilter.toLowerCase();
-			
-			fileSections.forEach(section => {
-				const sectionElement = section as HTMLElement;
-				const taskElements = sectionElement.querySelectorAll('.ontask-checkbox-item');
-				let hasVisibleTasks = false;
-				
-				// Check each task in this section
-				taskElements.forEach(task => {
-					const taskElement = task as HTMLElement;
-					const taskText = taskElement.textContent?.toLowerCase() || '';
-					const shouldShow = taskText.includes(filterText);
-					
-					if (shouldShow) {
-						hasVisibleTasks = true;
-					}
-					
-					taskElement.style.display = shouldShow ? '' : 'none';
-				});
-				
-				// Hide the entire file section if it has no visible tasks
-				sectionElement.style.display = hasVisibleTasks ? '' : 'none';
-			});
-		}
+		this.isSearchFilterVisible = this.filtering.toggleSearchFilter(
+			this.isSearchFilterVisible,
+			() => this.clearFilter()
+		);
 	}
 
 	async refreshCheckboxes(): Promise<void> {
@@ -314,7 +266,7 @@ export class OnTaskViewImpl extends ItemView {
 			
 			this.domRenderingService.renderCheckboxes(contentArea, this.checkboxes, this.displayedTasksCount, this.currentFilter, (filter: string) => this.onFilterChange(filter), () => this.clearFilter(), () => this.loadMoreTasks(), onlyShowToday);
 			
-			this.updateDateFilterState();
+			this.dateControls.updateDateFilterState();
 			this.initializeCheckboxContentTracking();
 			
 			this.logger.debug('[OnTask View] Emitting view:refreshed event with', this.checkboxes.length, 'checkboxes');
@@ -378,7 +330,7 @@ export class OnTaskViewImpl extends ItemView {
 			const topTaskChanged = previousTopTask !== newTopTask;
 
 			// Parse the new line content
-			const { statusSymbol, remainingText } = this.parseCheckboxLine(newLineContent);
+			const { statusSymbol, remainingText } = this.helpers.parseCheckboxLine(newLineContent);
 			
 			// Ensure topTaskRanking is cleared if the checkbox no longer matches any ranked status
 			// (processTopTasksFromDisplayedTasks only sets it on matching tasks, but doesn't clear it from non-matching ones)
@@ -394,7 +346,7 @@ export class OnTaskViewImpl extends ItemView {
 			const statusDisplay = checkboxElement.querySelector('.ontask-checkbox-display') as HTMLElement;
 			if (statusDisplay) {
 				statusDisplay.setAttribute('data-status', statusSymbol);
-				statusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
+				statusDisplay.textContent = this.helpers.getStatusDisplayText(statusSymbol);
 
 				// Update colors from status config
 				const statusColor = this.statusConfigService.getStatusColor(statusSymbol);
@@ -531,14 +483,14 @@ export class OnTaskViewImpl extends ItemView {
 			if (existingTopTaskSection) {
 				const topTaskStatusDisplay = existingTopTaskSection.querySelector('.ontask-checkbox-display');
 				if (topTaskStatusDisplay) {
-					const { statusSymbol } = this.parseCheckboxLine(topTask.lineContent);
+					const { statusSymbol } = this.helpers.parseCheckboxLine(topTask.lineContent);
 					topTaskStatusDisplay.setAttribute('data-status', statusSymbol);
-					topTaskStatusDisplay.textContent = this.getStatusDisplayText(statusSymbol);
+					topTaskStatusDisplay.textContent = this.helpers.getStatusDisplayText(statusSymbol);
 				}
 				
 				const topTaskText = existingTopTaskSection.querySelector('.ontask-toptask-hero-text');
 				if (topTaskText) {
-					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
+					const { remainingText } = this.helpers.parseCheckboxLine(topTask.lineContent);
 					topTaskText.textContent = remainingText || 'Top Task';
 				}
 				
@@ -586,7 +538,7 @@ export class OnTaskViewImpl extends ItemView {
 		
 		// Apply current filter to newly loaded tasks
 		if (this.currentFilter.trim() !== '') {
-			this.applyFilter();
+			this.filtering.applyFilter(this.currentFilter);
 		}
 		
 		// Remove loading indicator
@@ -607,71 +559,6 @@ export class OnTaskViewImpl extends ItemView {
 		}
 	}
 
-	/**
-	 * Centralized method for displaying status symbols consistently across the plugin
-	 * @param statusSymbol The raw status symbol from the checkbox
-	 * @returns The display text for the status symbol
-	 */
-	private getStatusDisplayText(statusSymbol: string): string {
-		return statusSymbol;
-	}
-
-	private async openFile(filePath: string, lineNumber: number): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
-		if (file) {
-			await this.handleStreamUpdate(filePath);
-			
-			this.app.workspace.openLinkText(filePath, '');
-			
-			setTimeout(() => {
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView && markdownView.editor) {
-					try {
-						const line = lineNumber - 1;
-						markdownView.editor.setCursor({ line, ch: 0 });
-						markdownView.editor.scrollIntoView({ from: { line, ch: 0 }, to: { line, ch: 0 } });
-					} catch (error) {
-						console.error('OnTask: Error scrolling to line:', error);
-					}
-				}
-			}, 100);
-		}
-	}
-
-	private getFileName(filePath: string): string {
-		const parts = filePath.split('/');
-		const fileName = parts[parts.length - 1] || filePath;
-		return fileName.replace(/\.md$/i, '');
-	}
-
-	private async handleStreamUpdate(filePath: string): Promise<void> {
-		try {
-			const settings = this.settingsService.getSettings();
-			if (settings.checkboxSource !== 'streams') {
-				return;
-			}
-
-			const streamsService = this.taskLoadingService.getStreamsService();
-			
-			if (!streamsService || !streamsService.isStreamsPluginAvailable()) {
-				return;
-			}
-
-			const stream = streamsService.isFileInStream(filePath);
-			if (stream) {
-				
-				const success = await streamsService.updateStreamBarFromFile(filePath);
-				
-				if (success) {
-				} else {
-					this.logger.warn(`OnTask: Failed to update stream bar from file ${filePath}`);
-				}
-			} else {
-			}
-		} catch (error) {
-			console.error('OnTask: Error handling stream detection:', error);
-		}
-	}
 
 	private scheduleRefresh(): void {
 		if (this.refreshTimeout) {
@@ -770,78 +657,6 @@ export class OnTaskViewImpl extends ItemView {
 
 
 	private applyStatusFilters(checkboxes: any[], statusFilters: Record<string, boolean>): any[] {
-		if (!statusFilters) {
-			return checkboxes;
-		}
-
-		return checkboxes.filter(checkbox => {
-			const { statusSymbol } = this.parseCheckboxLine(checkbox.lineContent);
-			return statusFilters[statusSymbol] !== false;
-		});
-	}
-
-	private createDateFilterControl(container: HTMLElement): void {
-		this.dateFilterControl = container.createDiv('ontask-segmented-control');
-		
-		const options: Array<{ value: 'all' | 'today'; label: string; icon: 'calendar' }> = [
-			{ value: 'today', label: 'Today', icon: 'calendar' },
-			{ value: 'all', label: 'Show All', icon: 'calendar' }
-		];
-		
-		options.forEach((option) => {
-			const button = this.dateFilterControl!.createEl('button', {
-				cls: 'ontask-segmented-button',
-				attr: { 'data-value': option.value }
-			});
-			button.innerHTML = IconService.getIcon(option.icon) + ' ' + option.label;
-			
-			button.addEventListener('click', () => this.setDateFilter(option.value), { passive: true });
-			
-			this.dateFilterButtons.set(option.value, button);
-		});
-		
-		this.updateDateFilterState();
-	}
-
-	private async setDateFilter(value: 'all' | 'today'): Promise<void> {
-		await this.settingsService.updateSetting('dateFilter', value);
-		this.updateDateFilterState();
-		this.refreshCheckboxes();
-	}
-
-	private toggleTopTaskVisibility(): void {
-		this.logger.debug('[OnTask View] Emitting ui:toggle-top-task-visibility event');
-		this.eventSystem.emit('ui:toggle-top-task-visibility', {});
-	}
-
-	private updateDateFilterState(): void {
-		const settings = this.settingsService.getSettings();
-		
-		this.dateFilterButtons.forEach((button, value) => {
-			if (settings.dateFilter === value) {
-				button.classList.add('is-active');
-			} else {
-				button.classList.remove('is-active');
-			}
-		});
-	}
-
-	private parseCheckboxLine(line: string): { statusSymbol: string; remainingText: string } {
-		const trimmedLine = line.trim();
-		
-		const bracketIndex = trimmedLine.indexOf(']');
-		if (bracketIndex !== -1) {
-			const statusSymbol = trimmedLine.substring(0, bracketIndex).replace(/^-\s*\[/, '').trim() || this.getToDoSymbol();
-			const remainingText = trimmedLine.substring(bracketIndex + 1).trim();
-			return { statusSymbol, remainingText };
-		}
-		
-		return { statusSymbol: this.getToDoSymbol(), remainingText: trimmedLine };
-	}
-
-	private getToDoSymbol(): string {
-		const statusConfigs = this.statusConfigService.getStatusConfigs();
-		const toDoConfig = statusConfigs.find(config => config.name === 'To-do');
-		return toDoConfig?.symbol || ' ';
+		return this.filtering.applyStatusFilters(checkboxes, statusFilters);
 	}
 }
