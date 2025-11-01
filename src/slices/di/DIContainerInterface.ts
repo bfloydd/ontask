@@ -1,8 +1,8 @@
-export type ServiceIdentifier<T = any> = string | symbol | (new (...args: any[]) => T);
-export type ServiceFactory<T = any> = (container: DIContainer) => T;
-export type ServiceInstance<T = any> = T;
+export type ServiceIdentifier<T = unknown> = string | symbol | (new (...args: unknown[]) => T);
+export type ServiceFactory<T = unknown> = (container: DIContainer) => T;
+export type ServiceInstance<T = unknown> = T;
 
-export interface ServiceRegistration<T = any> {
+export interface ServiceRegistration<T = unknown> {
 	identifier: ServiceIdentifier<T>;
 	factory: ServiceFactory<T>;
 	singleton: boolean;

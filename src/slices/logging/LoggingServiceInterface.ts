@@ -2,11 +2,12 @@ import { App, Plugin } from 'obsidian';
 import { Logger } from './Logger';
 import { Command } from '../commands';
 import { EventSystem } from '../events';
+import { OnTaskSettings } from '../settings/SettingsServiceInterface';
 
 export interface LoggingService {
     initialize(): Promise<void>;
     cleanup(): void;
-    onSettingsChanged(settings: any): void;
+    onSettingsChanged(settings: OnTaskSettings): void;
     getLogger(): Logger;
     createToggleCommand(): Command;
     enableDebug(): void;

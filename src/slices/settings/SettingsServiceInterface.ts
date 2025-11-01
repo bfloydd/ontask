@@ -50,10 +50,10 @@ export const DEFAULT_STATUS_CONFIGS: StatusConfig[] = [
 	{ symbol: '-', name: 'Cancelled', description: 'Not doing', color: '#ffffff', backgroundColor: '#9ca3af', filtered: false }
 ];
 
-export interface SettingsChangeEvent {
-	key: keyof OnTaskSettings;
-	value: any;
-	oldValue: any;
+export interface SettingsChangeEvent<K extends keyof OnTaskSettings = keyof OnTaskSettings> {
+	key: K;
+	value: OnTaskSettings[K];
+	oldValue: OnTaskSettings[K];
 }
 
 export interface SettingsService {

@@ -30,19 +30,22 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 		this.initialized = true;
 	}
 
-	private async migrateFromOldStructure(loadedSettings: any): Promise<void> {
+	private async migrateFromOldStructure(loadedSettings: Partial<OnTaskSettings> | Record<string, unknown>): Promise<void> {
 		// Migrate from onlyShowToday boolean to dateFilter string
 		if (loadedSettings && 'onlyShowToday' in loadedSettings && !('dateFilter' in loadedSettings)) {
-			this.settings.dateFilter = loadedSettings.onlyShowToday ? 'today' : 'all';
-			// Remove old property
-			delete (this.settings as any).onlyShowToday;
+			this.settings.dateFilter = (loadedSettings as { onlyShowToday?: boolean }).onlyShowToday ? 'today' : 'all';
+			// Remove old property by creating a new object without it
+			const { onlyShowToday, ...restSettings } = this.settings as OnTaskSettings & { onlyShowToday?: boolean };
+			this.settings = restSettings as OnTaskSettings;
 			await this.getPlugin()!.saveData(this.settings);
 			this.logger.debug('[OnTask Settings] Migrated onlyShowToday to dateFilter');
 		}
 	}
 
-	getSettings(): OnTaskSettings {
-		return { ...this.settings };
+	// Public method required by SettingsService interface
+	// Also overrides protected method from base class (with broader access)
+	getSettings<T extends OnTaskSettings = OnTaskSettings>(): T {
+		return { ...this.settings } as T;
 	}
 
 	async updateSetting<K extends keyof OnTaskSettings>(key: K, value: OnTaskSettings[K]): Promise<void> {
@@ -56,12 +59,16 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 	async updateSettings(updates: Partial<OnTaskSettings>): Promise<void> {
 		const changes: SettingsChangeEvent[] = [];
 		
-		for (const [key, value] of Object.entries(updates)) {
-			const typedKey = key as keyof OnTaskSettings;
-			const oldValue = this.settings[typedKey];
-			(this.settings as any)[typedKey] = value;
-			changes.push({ key: typedKey, value, oldValue });
-		}
+		// Use type-safe iteration over keys to maintain type relationships
+		(Object.keys(updates) as Array<keyof OnTaskSettings>).forEach((key) => {
+			const value = updates[key];
+			if (value !== undefined) {
+				const oldValue = this.settings[key];
+				// TypeScript needs assertion here because Partial<> loses the key-value relationship
+				(this.settings as any)[key] = value;
+				changes.push({ key, value, oldValue });
+			}
+		});
 		
 		await this.getPlugin()!.saveData(this.settings);
 		changes.forEach(change => this.notifyChange(change));
@@ -106,7 +113,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 		this.initialized = false;
 	}
 
-	onSettingsChanged(settings: any): void {
+	onSettingsChanged(settings: OnTaskSettings): void {
 		// Hook for custom settings change handling
 	}
 

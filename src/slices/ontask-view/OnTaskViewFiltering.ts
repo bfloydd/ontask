@@ -1,3 +1,5 @@
+import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
+
 /**
  * Filtering utility class for OnTaskView that handles search filtering
  * and status filtering of checkboxes.
@@ -114,8 +116,7 @@ export class OnTaskViewFiltering {
 	/**
 	 * Filters checkboxes based on status filters
 	 */
-	applyStatusFilters(checkboxes: any[], statusFilters: Record<string, boolean>): any[] {
-		// Note: Keeping any[] here as this is used with TaskLoadingResult which may have different structure
+	applyStatusFilters(checkboxes: CheckboxItem[], statusFilters: Record<string, boolean>): CheckboxItem[] {
 		if (!statusFilters) {
 			return checkboxes;
 		}

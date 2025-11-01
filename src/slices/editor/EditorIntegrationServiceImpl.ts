@@ -6,6 +6,7 @@ import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
 import { EventSystem } from '../events/EventSystemInterface';
 import { PluginAwareSliceService } from '../../shared/BaseSlice';
 import { Logger } from '../logging/Logger';
+import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
 
 export class EditorIntegrationServiceImpl extends PluginAwareSliceService implements EditorIntegrationService {
 	private app: App;
@@ -15,10 +16,10 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	private eventSystem: EventSystem;
 	private logger: Logger;
 	private topTaskOverlays: Map<string, HTMLElement> = new Map();
-	private currentTopTask: any = null;
+	private currentTopTask: CheckboxItem | null = null;
 	private pendingDecorationUpdate: boolean = false;
 	private updateRequestId: number | null = null;
-	private topTaskMemory: any = null; // In-memory storage for current top task
+	private topTaskMemory: CheckboxItem | null = null; // In-memory storage for current top task
 
 	constructor(
 		app: App,
@@ -161,7 +162,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 	}
 
-	private async addTopTaskOverlay(view: MarkdownView, topTask: any): Promise<void> {
+	private async addTopTaskOverlay(view: MarkdownView, topTask: CheckboxItem): Promise<void> {
 		const editor = view.editor;
 		if (!editor) {
 			return;
@@ -299,7 +300,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 	}
 
-	private processTopTasks(checkboxes: any[]): void {
+	private processTopTasks(checkboxes: CheckboxItem[]): void {
 		checkboxes.forEach(checkbox => {
 			checkbox.isTopTask = false;
 			checkbox.isTopTaskContender = false;
@@ -323,7 +324,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			ranking: config.topTaskRanking
 		}));
 		
-		const tasksByType: Record<string, any[]> = {};
+		const tasksByType: Record<string, CheckboxItem[]> = {};
 		
 		dynamicConfigs.forEach(config => {
 			const matchingTasks = checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
@@ -335,7 +336,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			});
 		});
 		
-		let finalTopTask: any = null;
+		let finalTopTask: CheckboxItem | null = null;
 		for (const config of dynamicConfigs) {
 			const tasks = tasksByType[config.name];
 			if (tasks.length > 0) {
@@ -350,7 +351,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	/**
 	 * Check if a checkbox matches the top task configuration
 	 */
-	private isTopTaskByConfig(checkbox: any, config: { symbol: string; name: string; pattern: RegExp }): boolean {
+	private isTopTaskByConfig(checkbox: CheckboxItem, config: { symbol: string; name: string; pattern: RegExp }): boolean {
 		return config.pattern.test(checkbox.lineContent);
 	}
 

@@ -93,7 +93,7 @@ export class OnTaskViewServiceFactory {
 		const fileOperationsService = new FileOperationsService(
 			app,
 			eventSystem,
-			[] as any[], // Will be set by view
+			[] as CheckboxItem[], // Will be set by view
 			false, // isUpdatingStatus - will be set by view
 			callbacks.scheduleRefresh,
 			logger

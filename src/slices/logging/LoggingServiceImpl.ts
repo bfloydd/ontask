@@ -4,6 +4,7 @@ import { Logger, LogLevel } from './Logger';
 import { ToggleLoggingCommandImpl } from './ToggleLoggingCommandImpl';
 import { SettingsAwareSliceService } from '../../shared/BaseSlice';
 import { EventSystem } from '../events';
+import { OnTaskSettings } from '../settings/SettingsServiceInterface';
 
 export class LoggingServiceImpl extends SettingsAwareSliceService implements ILoggingService {
     private dependencies: LoggingDependencies;
@@ -41,7 +42,7 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
         this.initialized = false;
     }
 
-    onSettingsChanged(settings: any): void {
+    onSettingsChanged(settings: OnTaskSettings): void {
         if (settings.debugLoggingEnabled) {
             this.logger.on(LogLevel.DEBUG);
         } else {

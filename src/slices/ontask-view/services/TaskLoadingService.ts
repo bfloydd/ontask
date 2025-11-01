@@ -6,14 +6,16 @@ import { StatusConfigService } from '../../settings/StatusConfig';
 import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
 import { DateFileUtils } from '../../../shared/DateFileUtils';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
+import { OnTaskSettings } from '../../settings/SettingsServiceInterface';
 
 export interface TaskLoadingResult {
-	tasks: any[];
+	tasks: CheckboxItem[];
 	hasMoreTasks: boolean;
 }
 
 export interface TaskLoadingServiceInterface {
-	loadTasksWithFiltering(settings: any): Promise<TaskLoadingResult>;
+	loadTasksWithFiltering(settings: OnTaskSettings): Promise<TaskLoadingResult>;
 	getFilesFromStrategies(onlyShowToday: boolean): Promise<string[]>;
 	initializeFileTracking(onlyShowToday: boolean): Promise<void>;
 	resetTracking(): void;
@@ -55,9 +57,9 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		return this.streamsService;
 	}
 
-	async loadTasksWithFiltering(settings: any): Promise<TaskLoadingResult> {
+	async loadTasksWithFiltering(settings: OnTaskSettings): Promise<TaskLoadingResult> {
 		const targetTasks = settings.loadMoreLimit;
-		const loadedTasks: any[] = [];
+		const loadedTasks: CheckboxItem[] = [];
 		const statusFilters = this.statusConfigService.getStatusFilters();
 		
 		const allowedStatuses = this.getAllowedStatuses(statusFilters);
@@ -78,17 +80,20 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 				const content = await this.app.vault.read(file);
 				const lines = content.split('\n');
 				
-				const fileTasks: any[] = [];
+				const fileTasks: CheckboxItem[] = [];
 				for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
 					const line = lines[lineIndex];
 					
 					if (line.match(checkboxRegex)) {
-						fileTasks.push({
+						const checkboxItem: CheckboxItem = {
 							file: file,
 							lineNumber: lineIndex + 1,
 							lineContent: line.trim(),
-							sourceName: 'file'
-						});
+							checkboxText: line.trim(),
+							sourceName: 'file',
+							sourcePath: file.path
+						};
+						fileTasks.push(checkboxItem);
 					}
 				}
 				

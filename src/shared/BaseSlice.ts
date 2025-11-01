@@ -1,4 +1,5 @@
 import { Plugin } from 'obsidian';
+import { OnTaskSettings } from '../slices/settings/SettingsServiceInterface';
 
 export abstract class PluginAwareSliceService {
     protected plugin: Plugin | null = null;
@@ -17,14 +18,14 @@ export abstract class PluginAwareSliceService {
 }
 
 export abstract class SettingsAwareSliceService extends PluginAwareSliceService {
-    protected getSettings(): any {
+    protected getSettings<T extends OnTaskSettings = OnTaskSettings>(): T {
         if (!this.plugin) {
             throw new Error('Plugin not set');
         }
-        return (this.plugin as any).settings || {};
+        return ((this.plugin as Plugin & { settings?: T }).settings || {}) as T;
     }
 
-    onSettingsChanged(settings: any): void {
+    onSettingsChanged(settings: OnTaskSettings): void {
     }
 }
 
