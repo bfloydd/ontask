@@ -36,7 +36,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 		try {
 			const file = checkbox.file;
 			if (!file) {
-				console.error('File not found in checkbox:', checkbox);
+				this.logger.error('[OnTask FileOps] File not found in checkbox:', checkbox);
 				return;
 			}
 			
@@ -71,7 +71,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 				this.scheduleRefreshCallback();
 			}
 		} catch (error) {
-			console.error('Error toggling checkbox:', error);
+			this.logger.error('[OnTask FileOps] Error toggling checkbox:', error);
 		}
 	}
 
@@ -81,7 +81,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 		try {
 			const file = checkbox.file;
 			if (!file) {
-				console.error('File Operations Service: No file found for checkbox');
+				this.logger.error('[OnTask FileOps] No file found for checkbox');
 				return;
 			}
 
@@ -114,7 +114,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 				}
 			}
 		} catch (error) {
-			console.error('File Operations Service: Error updating checkbox status:', error);
+			this.logger.error('[OnTask FileOps] Error updating checkbox status:', error);
 			// Fallback to refresh on error
 			if (!onInPlaceUpdate) {
 				this.scheduleRefreshCallback();

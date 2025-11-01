@@ -1,5 +1,6 @@
 import { App, Plugin } from 'obsidian';
 import { StreamsService, Stream } from './StreamsServiceInterface';
+import { Logger } from '../logging/Logger';
 
 interface StreamsPlugin extends Plugin {
 	getStreams(): Stream[];
@@ -10,9 +11,11 @@ interface StreamsPlugin extends Plugin {
 export class StreamsServiceImpl implements StreamsService {
 	private app: App;
 	private streamsPlugin: StreamsPlugin | null = null;
+	private logger?: Logger;
 
-	constructor(app: App) {
+	constructor(app: App, logger?: Logger) {
 		this.app = app;
+		this.logger = logger;
 		this.initializeStreamsPlugin();
 	}
 
@@ -32,7 +35,11 @@ export class StreamsServiceImpl implements StreamsService {
 			const streams = this.streamsPlugin.getStreams();
 			return streams;
 		} catch (error) {
-			console.error('StreamsService: Error getting streams from plugin:', error);
+			if (this.logger) {
+				this.logger.error('[OnTask StreamsService] Error getting streams from plugin:', error);
+			} else {
+				console.error('StreamsService: Error getting streams from plugin:', error);
+			}
 			return [];
 		}
 	}
@@ -97,7 +104,11 @@ export class StreamsServiceImpl implements StreamsService {
 			try {
 				return this.streamsPlugin.isFileInStream(filePath);
 			} catch (error) {
-				console.error('StreamsService: Error using plugin isFileInStream method:', error);
+				if (this.logger) {
+					this.logger.error('[OnTask StreamsService] Error using plugin isFileInStream method:', error);
+				} else {
+					console.error('StreamsService: Error using plugin isFileInStream method:', error);
+				}
 			}
 		}
 
@@ -121,7 +132,11 @@ export class StreamsServiceImpl implements StreamsService {
 				const result = await this.streamsPlugin.updateStreamBarFromFile(filePath);
 				return result;
 			} catch (error) {
-				console.error('StreamsService: Error updating stream bar from file:', error);
+				if (this.logger) {
+					this.logger.error('[OnTask StreamsService] Error updating stream bar from file:', error);
+				} else {
+					console.error('StreamsService: Error updating stream bar from file:', error);
+				}
 				return false;
 			}
 		}

@@ -4,23 +4,26 @@ import { StreamsTaskStrategy } from './strategies/StreamsTaskStrategy';
 import { DailyNotesTaskStrategy } from './strategies/DailyNotesTaskStrategy';
 import { FolderTaskStrategy, FolderStrategyConfig } from './strategies/FolderTaskStrategy';
 import { StreamsService } from '../streams';
+import { Logger } from '../logging/Logger';
 
 export class TaskFinderFactoryImpl implements TaskFinderFactory {
 	private app: App;
 	private strategies: Map<string, TaskFinderStrategy> = new Map();
 	private streamsService: StreamsService;
+	private logger?: Logger;
 
-	constructor(app: App, streamsService: StreamsService) {
+	constructor(app: App, streamsService: StreamsService, logger?: Logger) {
 		this.app = app;
 		this.streamsService = streamsService;
+		this.logger = logger;
 		this.initializeDefaultStrategies();
 	}
 
 	private initializeDefaultStrategies(): void {
-		const streamsStrategy = new StreamsTaskStrategy(this.app, this.streamsService);
+		const streamsStrategy = new StreamsTaskStrategy(this.app, this.streamsService, this.logger);
 		this.registerStrategy('streams', streamsStrategy);
 
-		const dailyNotesStrategy = new DailyNotesTaskStrategy(this.app);
+		const dailyNotesStrategy = new DailyNotesTaskStrategy(this.app, this.logger);
 		this.registerStrategy('daily-notes', dailyNotesStrategy);
 	}
 
@@ -37,7 +40,7 @@ export class TaskFinderFactoryImpl implements TaskFinderFactory {
 	}
 
 	createFolderStrategy(config: FolderStrategyConfig): TaskFinderStrategy {
-		return new FolderTaskStrategy(this.app, config);
+		return new FolderTaskStrategy(this.app, config, this.logger);
 	}
 
 	getReadyStrategies(): TaskFinderStrategy[] {

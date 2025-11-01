@@ -1,5 +1,6 @@
 import { CheckboxRenderer } from './CheckboxRenderer';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
+import { Logger } from '../../logging/Logger';
 
 /**
  * Renders file sections that group checkboxes by their source file.
@@ -7,7 +8,8 @@ import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 export class FileSectionRenderer {
 	constructor(
 		private checkboxRenderer: CheckboxRenderer,
-		private getFileName: (filePath: string) => string
+		private getFileName: (filePath: string) => string,
+		private logger?: Logger
 	) {}
 
 	/**
@@ -59,7 +61,11 @@ export class FileSectionRenderer {
 	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void {
 		const checkboxesList = fileSection.querySelector('.ontask-checkboxes-list') as HTMLElement;
 		if (!checkboxesList) {
-			console.error('Checkboxes list not found in existing file section');
+			if (this.logger) {
+				this.logger.error('[OnTask FileSectionRenderer] Checkboxes list not found in existing file section');
+			} else {
+				console.error('Checkboxes list not found in existing file section');
+			}
 			return;
 		}
 		for (const checkbox of fileTasks) {

@@ -1,14 +1,17 @@
 import { App, TFile } from 'obsidian';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 import { StreamsService } from '../../streams';
+import { Logger } from '../../logging/Logger';
 
 export class StreamsTaskStrategy implements TaskFinderStrategy {
 	private app: App;
 	private streamsService: StreamsService;
+	private logger?: Logger;
 
-	constructor(app: App, streamsService: StreamsService) {
+	constructor(app: App, streamsService: StreamsService, logger?: Logger) {
 		this.app = app;
 		this.streamsService = streamsService;
+		this.logger = logger;
 	}
 
 	getName(): string {
@@ -80,7 +83,11 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 				checkboxes.push(...fileCheckboxes);
 			}
 		} catch (error) {
-			console.error(`Error searching stream ${stream.name}:`, error);
+			if (this.logger) {
+				this.logger.error(`[OnTask StreamsStrategy] Error searching stream ${stream.name}:`, error);
+			} else {
+				console.error(`Error searching stream ${stream.name}:`, error);
+			}
 		}
 
 		return checkboxes;
@@ -113,7 +120,11 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 				}
 			}
 		} catch (error) {
-			console.error(`Error reading file ${file.path}:`, error);
+			if (this.logger) {
+				this.logger.error(`[OnTask StreamsStrategy] Error reading file ${file.path}:`, error);
+			} else {
+				console.error(`Error reading file ${file.path}:`, error);
+			}
 		}
 
 		return checkboxes;

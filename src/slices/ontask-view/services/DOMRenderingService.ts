@@ -9,6 +9,7 @@ import { FilterSectionRenderer } from '../renderers/FilterSectionRenderer';
 import { LoadingIndicatorRenderer } from '../renderers/LoadingIndicatorRenderer';
 import { CheckboxDataProcessor } from '../renderers/CheckboxDataProcessor';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
+import { Logger } from '../../logging/Logger';
 
 export interface DOMRenderingServiceInterface {
 	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void;
@@ -49,7 +50,8 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		getFileName: (filePath: string) => string,
 		parseCheckboxLine: (line: string) => { statusSymbol: string; remainingText: string },
 		getStatusDisplayText: (statusSymbol: string) => string,
-		addMobileTouchHandlers: (element: HTMLElement, task: CheckboxItem) => void
+		addMobileTouchHandlers: (element: HTMLElement, task: CheckboxItem) => void,
+		logger?: Logger
 	) {
 		// Initialize all renderers
 		this.checkboxRenderer = new CheckboxRenderer(
@@ -74,12 +76,13 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 
 		this.fileSectionRenderer = new FileSectionRenderer(
 			this.checkboxRenderer,
-			getFileName
+			getFileName,
+			logger
 		);
 
 		this.filterSectionRenderer = new FilterSectionRenderer();
 		this.loadingIndicatorRenderer = new LoadingIndicatorRenderer();
-		this.dataProcessor = new CheckboxDataProcessor(app, getFileName);
+		this.dataProcessor = new CheckboxDataProcessor(app, getFileName, logger);
 	}
 
 	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void {

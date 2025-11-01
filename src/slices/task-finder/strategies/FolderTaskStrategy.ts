@@ -1,5 +1,6 @@
 import { App, TFile } from 'obsidian';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
+import { Logger } from '../../logging/Logger';
 
 export interface FolderStrategyConfig {
 	folderPath: string;
@@ -10,10 +11,12 @@ export interface FolderStrategyConfig {
 export class FolderTaskStrategy implements TaskFinderStrategy {
 	private app: App;
 	private config: FolderStrategyConfig;
+	private logger?: Logger;
 
-	constructor(app: App, config: FolderStrategyConfig) {
+	constructor(app: App, config: FolderStrategyConfig, logger?: Logger) {
 		this.app = app;
 		this.config = config;
+		this.logger = logger;
 	}
 
 	getName(): string {
@@ -68,7 +71,11 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 			}
 
 		} catch (error) {
-			console.error(`Error finding checkboxes in folder ${this.config.folderPath}:`, error);
+			if (this.logger) {
+				this.logger.error(`[OnTask FolderStrategy] Error finding checkboxes in folder ${this.config.folderPath}:`, error);
+			} else {
+				console.error(`Error finding checkboxes in folder ${this.config.folderPath}:`, error);
+			}
 		}
 
 		return checkboxes;
@@ -126,7 +133,11 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 				}
 			}
 		} catch (error) {
-			console.error(`Error reading file ${file.path}:`, error);
+			if (this.logger) {
+				this.logger.error(`[OnTask FolderStrategy] Error reading file ${file.path}:`, error);
+			} else {
+				console.error(`Error reading file ${file.path}:`, error);
+			}
 		}
 
 		return checkboxes;

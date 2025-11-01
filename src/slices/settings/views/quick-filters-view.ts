@@ -257,6 +257,7 @@ export class QuickFiltersView {
 				modal.close();
 				this.render(); // Re-render the view
 			} catch (error) {
+				// Log error - this is a UI component, so console fallback is acceptable
 				console.error('OnTask: Error saving quick filter:', error);
 				// Show error message
 				const errorEl = content.querySelector('.ontask-error-message');

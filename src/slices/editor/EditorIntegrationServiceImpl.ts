@@ -157,7 +157,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 				}
 			}
 		} catch (error) {
-			console.error('Error updating editor decorations:', error);
+			this.logger.error('[OnTask Editor] Error updating editor decorations:', error);
 		}
 	}
 
@@ -295,7 +295,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 				this.scheduleDecorationUpdate();
 			}
 		} catch (error) {
-			console.error('OnTask Editor: Error finding top task independently:', error);
+			this.logger.error('[OnTask Editor] Error finding top task independently:', error);
 		}
 	}
 

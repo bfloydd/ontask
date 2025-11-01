@@ -126,7 +126,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 				}
 				
 			} catch (error) {
-				console.error(`TaskLoadingService: Error reading file ${filePath}:`, error);
+				this.logger.error(`[OnTask TaskLoading] Error reading file ${filePath}:`, error);
 				continue;
 			}
 		}

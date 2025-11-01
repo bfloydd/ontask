@@ -1,5 +1,6 @@
 import { App, TFile } from 'obsidian';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
+import { Logger } from '../../logging/Logger';
 
 /**
  * Processes checkbox data by grouping and sorting operations.
@@ -7,7 +8,8 @@ import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 export class CheckboxDataProcessor {
 	constructor(
 		private app: App,
-		private getFileName: (filePath: string) => string
+		private getFileName: (filePath: string) => string,
+		private logger?: Logger
 	) {}
 
 	/**
@@ -60,7 +62,11 @@ export class CheckboxDataProcessor {
 				
 				return dateB.getTime() - dateA.getTime();
 			} catch (error) {
-				console.error('CheckboxDataProcessor: Error sorting files by date:', error);
+				if (this.logger) {
+					this.logger.error('[OnTask CheckboxDataProcessor] Error sorting files by date:', error);
+				} else {
+					console.error('CheckboxDataProcessor: Error sorting files by date:', error);
+				}
 				return 0;
 			}
 		});

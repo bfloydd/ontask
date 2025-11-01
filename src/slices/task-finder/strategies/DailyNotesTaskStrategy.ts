@@ -1,11 +1,14 @@
 import { App, TFile } from 'obsidian';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
+import { Logger } from '../../logging/Logger';
 
 export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 	private app: App;
+	private logger?: Logger;
 
-	constructor(app: App) {
+	constructor(app: App, logger?: Logger) {
 		this.app = app;
+		this.logger = logger;
 	}
 
 	getName(): string {
@@ -66,7 +69,11 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 			}
 
 		} catch (error) {
-			console.error('Error finding checkboxes in daily notes:', error);
+			if (this.logger) {
+				this.logger.error('[OnTask DailyNotesStrategy] Error finding checkboxes in daily notes:', error);
+			} else {
+				console.error('Error finding checkboxes in daily notes:', error);
+			}
 		}
 
 		return checkboxes;
@@ -89,7 +96,11 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 			
 			return null;
 		} catch (error) {
-			console.error('Error getting today\'s daily note:', error);
+			if (this.logger) {
+				this.logger.error('[OnTask DailyNotesStrategy] Error getting today\'s daily note:', error);
+			} else {
+				console.error('Error getting today\'s daily note:', error);
+			}
 			return null;
 		}
 	}
@@ -108,7 +119,11 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 				}
 			}
 		} catch (error) {
-			console.error('Error getting recent daily notes:', error);
+			if (this.logger) {
+				this.logger.error('[OnTask DailyNotesStrategy] Error getting recent daily notes:', error);
+			} else {
+				console.error('Error getting recent daily notes:', error);
+			}
 		}
 		
 		return notes;
@@ -141,7 +156,11 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 				}
 			}
 		} catch (error) {
-			console.error(`Error reading file ${file.path}:`, error);
+			if (this.logger) {
+				this.logger.error(`[OnTask DailyNotesStrategy] Error reading file ${file.path}:`, error);
+			} else {
+				console.error(`Error reading file ${file.path}:`, error);
+			}
 		}
 
 		return checkboxes;

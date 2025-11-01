@@ -142,7 +142,8 @@ export class OnTaskViewServiceFactory {
 			(filePath: string) => helpers.getFileName(filePath),
 			(line: string) => helpers.parseCheckboxLine(line),
 			(statusSymbol: string) => helpers.getStatusDisplayText(statusSymbol),
-			(element: HTMLElement, task: CheckboxItem) => mobileTouchService.addMobileTouchHandlers(element, task)
+			(element: HTMLElement, task: CheckboxItem) => mobileTouchService.addMobileTouchHandlers(element, task),
+			logger
 		);
 
 		// Create view refresh service

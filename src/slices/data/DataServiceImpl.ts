@@ -2,6 +2,11 @@ import { App, Plugin } from 'obsidian';
 import { DataService, StatusConfig, QuickFilter, DataServiceData } from './DataServiceInterface';
 import { DEFAULT_STATUS_CONFIGS } from '../settings/SettingsServiceInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
+import { Logger } from '../logging/Logger';
+
+interface OnTaskPluginWithLogger extends Plugin {
+	getLogger(): Logger;
+}
 
 export class DataServiceImpl extends PluginAwareSliceService implements DataService {
 	private app: App;
@@ -49,11 +54,21 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 		this.initialized = false;
 	}
 
+	private getLogger(): Logger | null {
+		const plugin = this.getPlugin() as OnTaskPluginWithLogger;
+		return plugin?.getLogger() || null;
+	}
+
 	async loadData(): Promise<DataServiceData> {
 		try {
 			return await this.getPlugin()!.loadData() || {};
 		} catch (error) {
-			console.error('OnTask: Error loading data:', error);
+			const logger = this.getLogger();
+			if (logger) {
+				logger.error('[OnTask DataService] Error loading data:', error);
+			} else {
+				console.error('OnTask: Error loading data:', error);
+			}
 			return {};
 		}
 	}
@@ -62,7 +77,12 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 		try {
 			await this.getPlugin()!.saveData(this.data);
 		} catch (error) {
-			console.error('OnTask: Error saving data:', error);
+			const logger = this.getLogger();
+			if (logger) {
+				logger.error('[OnTask DataService] Error saving data:', error);
+			} else {
+				console.error('OnTask: Error saving data:', error);
+			}
 		}
 	}
 

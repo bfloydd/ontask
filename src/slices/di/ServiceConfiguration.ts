@@ -42,7 +42,8 @@ export class ServiceConfiguration {
 
 		container.registerSingleton(SERVICE_IDS.STREAMS_SERVICE, (container) => {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
-			return new StreamsServiceImpl(app);
+			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
+			return new StreamsServiceImpl(app, loggingService.getLogger());
 		});
 
 		container.registerSingleton(SERVICE_IDS.TASK_LOADING_SERVICE, (container) => {

@@ -115,7 +115,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 			try {
 				callback(event);
 			} catch (error) {
-				console.error('Error in settings change listener:', error);
+				this.logger.error('[OnTask Settings] Error in settings change listener:', error);
 			}
 		});
 
