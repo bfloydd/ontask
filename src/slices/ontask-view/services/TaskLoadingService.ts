@@ -5,6 +5,7 @@ import { SettingsService } from '../../settings';
 import { StatusConfigService } from '../../settings/status-config';
 import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
+import { DateFileUtils } from '../../../shared/date-file-utils';
 
 export interface TaskLoadingResult {
 	tasks: any[];
@@ -275,26 +276,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 	}
 
 	private isTodayFile(file: TFile): boolean {
-		const today = new Date();
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, '0');
-		const day = String(today.getDate()).padStart(2, '0');
-		
-		const todayFormats = [
-			`${year}-${month}-${day}`,
-			`${month}-${day}-${year}`,
-			`${day}-${month}-${year}`,
-			`${year}${month}${day}`,
-			`${month}${day}${year}`,
-			`${day}${month}${year}`
-		];
-		
-		const fileName = file.name.toLowerCase();
-		const filePath = file.path.toLowerCase();
-		
-		return todayFormats.some(format => 
-			fileName.includes(format) || filePath.includes(format)
-		);
+		return DateFileUtils.isTodayFile(file);
 	}
 }
 

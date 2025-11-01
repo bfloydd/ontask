@@ -2,6 +2,8 @@ import { App, TFile } from 'obsidian';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
+import { CheckboxParsingUtils } from '../../../shared/checkbox-parsing-utils';
+import { DateFileUtils } from '../../../shared/date-file-utils';
 
 export class StreamsTaskStrategy implements TaskFinderStrategy {
 	private app: App;
@@ -67,7 +69,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 				);
 				
 				if (context.onlyShowToday) {
-					files = files.filter(file => this.isTodayFile(file));
+					files = files.filter(file => DateFileUtils.isTodayFile(file));
 				}
 				
 				for (const file of files) {
@@ -75,7 +77,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 					checkboxes.push(...fileCheckboxes);
 				}
 			} else {
-				if (context.onlyShowToday && !this.isTodayFile(streamFolder)) {
+				if (context.onlyShowToday && !DateFileUtils.isTodayFile(streamFolder)) {
 					return checkboxes;
 				}
 				
@@ -100,7 +102,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i];
-				const checkboxMatch = this.findCheckboxInLine(line);
+				const checkboxMatch = CheckboxParsingUtils.findCheckboxInLine(line);
 				
 				if (checkboxMatch) {
 					checkboxes.push({
@@ -126,79 +128,8 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		return checkboxes;
 	}
 
-	private findCheckboxInLine(line: string): string | null {
-		const trimmedLine = line.trim();
-		
-		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]])\]\s*(.*)$/);
-		if (!checkboxMatch) return null;
-		
-		const checkboxContent = checkboxMatch[1];
-		
-		return `- [${checkboxContent}]`;
-	}
-
-	private isCheckboxCompleted(line: string): boolean {
-		const trimmedLine = line.trim();
-		
-		const checkboxMatch = trimmedLine.match(/^-\s*\[([^\]])\]\s*(.*)$/);
-		if (!checkboxMatch) return false;
-		
-		const checkboxContent = checkboxMatch[1].trim().toLowerCase();
-		
-		return checkboxContent === 'x' || checkboxContent === 'checked';
-	}
-
 	public isTodayFile(file: TFile): boolean {
-		const today = new Date();
-		
-		const todayFormats = this.getTodayDateFormats(today);
-		const fileName = file.name.toLowerCase();
-		const filePath = file.path.toLowerCase();
-		
-		for (const dateFormat of todayFormats) {
-			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
-				return true;
-			}
-		}
-		
-		const datePatterns = this.getDatePatterns(today);
-		for (const pattern of datePatterns) {
-			if (pattern.test(fileName) || pattern.test(filePath)) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-
-	private getTodayDateFormats(today: Date): string[] {
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, '0');
-		const day = String(today.getDate()).padStart(2, '0');
-		
-		return [
-			`${year}-${month}-${day}`,           // 2024-01-15
-			`${year}${month}${day}`,             // 20240115
-			`${month}-${day}-${year}`,           // 01-15-2024
-			`${month}/${day}/${year}`,           // 01/15/2024
-			`${day}-${month}-${year}`,           // 15-01-2024
-			`${day}/${month}/${year}`,           // 15/01/2024
-		];
-	}
-
-	private getDatePatterns(today: Date): RegExp[] {
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, '0');
-		const day = String(today.getDate()).padStart(2, '0');
-		
-		return [
-			new RegExp(`${year}-${month}-${day}`),
-			new RegExp(`${year}${month}${day}`),
-			new RegExp(`${month}-${day}-${year}`),
-			new RegExp(`${month}/${day}/${year}`),
-			new RegExp(`${day}-${month}-${year}`),
-			new RegExp(`${day}/${month}/${year}`),
-		];
+		return DateFileUtils.isTodayFile(file);
 	}
 
 }
