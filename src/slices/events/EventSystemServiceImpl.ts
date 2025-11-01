@@ -16,7 +16,7 @@ export class EventSystemServiceImpl implements EventSystem {
 		this.logger = logger;
 	}
 
-	on<T = any>(eventName: string, callback: EventCallback<T>): EventSubscription {
+	on<T = unknown>(eventName: string, callback: EventCallback<T>): EventSubscription {
 		const id = this.generateListenerId();
 		const listener: EventListener = {
 			id,
@@ -37,7 +37,7 @@ export class EventSystemServiceImpl implements EventSystem {
 		};
 	}
 
-	once<T = any>(eventName: string, callback: EventCallback<T>): EventSubscription {
+	once<T = unknown>(eventName: string, callback: EventCallback<T>): EventSubscription {
 		const id = this.generateListenerId();
 		const listener: EventListener = {
 			id,
@@ -58,7 +58,7 @@ export class EventSystemServiceImpl implements EventSystem {
 		};
 	}
 
-	emit<T = any>(eventName: string, data?: T): void {
+	emit<T = unknown>(eventName: string, data?: T): void {
 		const eventListeners = this.listeners.get(eventName);
 		if (!eventListeners || eventListeners.length === 0) {
 			this.logger.debug(`Event emitted but no listeners: ${eventName}`);
@@ -67,7 +67,7 @@ export class EventSystemServiceImpl implements EventSystem {
 
 		this.logger.debug(`Event emitted: ${eventName} to ${eventListeners.length} listeners`, data);
 
-		const eventData: EventData = {
+		const eventData: EventData<T> = {
 			timestamp: Date.now(),
 			source: 'event-system',
 			data
@@ -96,7 +96,7 @@ export class EventSystemServiceImpl implements EventSystem {
 		}
 	}
 
-	async emitAsync<T = any>(eventName: string, data?: T): Promise<void> {
+	async emitAsync<T = unknown>(eventName: string, data?: T): Promise<void> {
 		const eventListeners = this.listeners.get(eventName);
 		if (!eventListeners || eventListeners.length === 0) {
 			this.logger.debug(`Async event emitted but no listeners: ${eventName}`);
@@ -105,7 +105,7 @@ export class EventSystemServiceImpl implements EventSystem {
 
 		this.logger.debug(`Async event emitted: ${eventName} to ${eventListeners.length} listeners`, data);
 
-		const eventData: EventData = {
+		const eventData: EventData<T> = {
 			timestamp: Date.now(),
 			source: 'event-system',
 			data

@@ -1,4 +1,24 @@
 // Shared drag-and-drop utility for reorderable lists
+
+/**
+ * Obsidian extends HTMLElement with addClass and removeClass methods.
+ * This type represents elements that may have these Obsidian-specific methods.
+ */
+type ObsidianHTMLElement = HTMLElement & {
+	addClass?(className: string): void;
+	removeClass?(className: string): void;
+};
+
+/**
+ * Container element that can store drag-and-drop state as dynamic properties.
+ * Uses index signature to allow storing arbitrary keys for drag state.
+ * The index signature uses 'unknown' to allow any value type while preserving
+ * HTMLElement's existing properties.
+ */
+interface DragDropContainer extends HTMLElement {
+	[key: string]: unknown;
+}
+
 export interface DragAndDropConfig<T> {
 	// The item element that will be draggable
 	itemElement: HTMLElement;
@@ -55,24 +75,24 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 	// Get shared dragged element from container
 	const getSharedDraggedElement = (): HTMLElement | null => {
 		const container = containerSelector 
-			? itemElement.closest(containerSelector) as HTMLElement | null
-			: itemElement.parentElement;
+			? itemElement.closest(containerSelector) as DragDropContainer | null
+			: itemElement.parentElement as DragDropContainer | null;
 		
 		if (!container) return null;
 		
 		const draggedKey = '__draggedElement';
-		return (container as any)[draggedKey] as HTMLElement | null;
+		return container[draggedKey] as HTMLElement | null;
 	};
 
 	const setSharedDraggedElement = (element: HTMLElement | null): void => {
 		const container = containerSelector 
-			? itemElement.closest(containerSelector) as HTMLElement | null
-			: itemElement.parentElement;
+			? itemElement.closest(containerSelector) as DragDropContainer | null
+			: itemElement.parentElement as DragDropContainer | null;
 		
 		if (!container) return;
 		
 		const draggedKey = '__draggedElement';
-		(container as any)[draggedKey] = element;
+		container[draggedKey] = element;
 	};
 
 	// Get or create shared drop indicator storage
@@ -81,23 +101,24 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		
 		// Find the container (use containerSelector if provided, otherwise parent)
 		const container = containerSelector 
-			? itemElement.closest(containerSelector) as HTMLElement | null
-			: itemElement.parentElement;
+			? itemElement.closest(containerSelector) as DragDropContainer | null
+			: itemElement.parentElement as DragDropContainer | null;
 		
 		if (!container) return null;
 		
 		// Use a data attribute to store reference to shared drop indicator
 		const indicatorKey = `__dropIndicator_${dropIndicatorClass}`;
-		let dropIndicator = (container as any)[indicatorKey] as HTMLElement | null;
+		let dropIndicator = container[indicatorKey] as HTMLElement | null;
 		
 		if (!dropIndicator) {
 			dropIndicator = document.createElement('div');
-			if (typeof (dropIndicator as any).addClass === 'function') {
-				(dropIndicator as any).addClass(dropIndicatorClass);
+			const obsidianElement = dropIndicator as ObsidianHTMLElement;
+			if (typeof obsidianElement.addClass === 'function') {
+				obsidianElement.addClass(dropIndicatorClass);
 			} else {
 				dropIndicator.classList.add(dropIndicatorClass);
 			}
-			(container as any)[indicatorKey] = dropIndicator;
+			container[indicatorKey] = dropIndicator;
 		}
 		
 		return dropIndicator;
@@ -107,17 +128,17 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		if (!dropIndicatorClass) return;
 		
 		const container = containerSelector 
-			? itemElement.closest(containerSelector) as HTMLElement | null
-			: itemElement.parentElement;
+			? itemElement.closest(containerSelector) as DragDropContainer | null
+			: itemElement.parentElement as DragDropContainer | null;
 		
 		if (!container) return;
 		
 		const indicatorKey = `__dropIndicator_${dropIndicatorClass}`;
-		const dropIndicator = (container as any)[indicatorKey] as HTMLElement | null;
+		const dropIndicator = container[indicatorKey] as HTMLElement | null;
 		
 		if (dropIndicator && dropIndicator.parentNode) {
 			dropIndicator.remove();
-			(container as any)[indicatorKey] = null;
+			container[indicatorKey] = null;
 		}
 	};
 
@@ -132,8 +153,9 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		}
 		
 		// Add dragging class - use addClass if available (Obsidian), otherwise classList
-		if (typeof (itemElement as any).addClass === 'function') {
-			(itemElement as any).addClass(draggingClass);
+		const obsidianItem = itemElement as ObsidianHTMLElement;
+		if (typeof obsidianItem.addClass === 'function') {
+			obsidianItem.addClass(draggingClass);
 		} else {
 			itemElement.classList.add(draggingClass);
 		}
@@ -141,16 +163,18 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 
 	itemElement.addEventListener('dragend', () => {
 		// Remove dragging class
-		if (typeof (itemElement as any).removeClass === 'function') {
-			(itemElement as any).removeClass(draggingClass);
+		const obsidianItem = itemElement as ObsidianHTMLElement;
+		if (typeof obsidianItem.removeClass === 'function') {
+			obsidianItem.removeClass(draggingClass);
 		} else {
 			itemElement.classList.remove(draggingClass);
 		}
 		
 		// Clean up drag-over state
 		if (dragOverElement && dragOverClass) {
-			if (typeof (dragOverElement as any).removeClass === 'function') {
-				(dragOverElement as any).removeClass(dragOverClass);
+			const obsidianDragOver = dragOverElement as ObsidianHTMLElement;
+			if (typeof obsidianDragOver.removeClass === 'function') {
+				obsidianDragOver.removeClass(dragOverClass);
 			} else {
 				dragOverElement.classList.remove(dragOverClass);
 			}
@@ -178,15 +202,17 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		// Handle drag-over visual feedback
 		if (dragOverClass) {
 			if (dragOverElement && dragOverElement !== itemElement) {
-				if (typeof (dragOverElement as any).removeClass === 'function') {
-					(dragOverElement as any).removeClass(dragOverClass);
+				const obsidianDragOver = dragOverElement as ObsidianHTMLElement;
+				if (typeof obsidianDragOver.removeClass === 'function') {
+					obsidianDragOver.removeClass(dragOverClass);
 				} else {
 					dragOverElement.classList.remove(dragOverClass);
 				}
 			}
 			
-			if (typeof (itemElement as any).addClass === 'function') {
-				(itemElement as any).addClass(dragOverClass);
+			const obsidianItem = itemElement as ObsidianHTMLElement;
+			if (typeof obsidianItem.addClass === 'function') {
+				obsidianItem.addClass(dragOverClass);
 			} else {
 				itemElement.classList.add(dragOverClass);
 			}
@@ -217,8 +243,9 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		
 		const draggedElement = getSharedDraggedElement();
 		if (dragOverClass && itemElement !== draggedElement) {
-			if (typeof (itemElement as any).removeClass === 'function') {
-				(itemElement as any).removeClass(dragOverClass);
+			const obsidianItem = itemElement as ObsidianHTMLElement;
+			if (typeof obsidianItem.removeClass === 'function') {
+				obsidianItem.removeClass(dragOverClass);
 			} else {
 				itemElement.classList.remove(dragOverClass);
 			}

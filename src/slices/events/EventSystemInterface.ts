@@ -1,36 +1,35 @@
-export type EventCallback<T = any> = (data: T) => void | Promise<void>;
+import { SettingsChangeEvent } from '../settings/SettingsServiceInterface';
+import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
+
+export type EventCallback<T = unknown> = (data: T) => void | Promise<void>;
 
 export interface EventSubscription {
 	unsubscribe(): void;
 }
 
 export interface EventSystem {
-	on<T = any>(eventName: string, callback: EventCallback<T>): EventSubscription;
-	once<T = any>(eventName: string, callback: EventCallback<T>): EventSubscription;
-	emit<T = any>(eventName: string, data?: T): void;
-	emitAsync<T = any>(eventName: string, data?: T): Promise<void>;
+	on<T = unknown>(eventName: string, callback: EventCallback<T>): EventSubscription;
+	once<T = unknown>(eventName: string, callback: EventCallback<T>): EventSubscription;
+	emit<T = unknown>(eventName: string, data?: T): void;
+	emitAsync<T = unknown>(eventName: string, data?: T): Promise<void>;
 	clear(): void;
 }
 
-export interface EventData {
+export interface EventData<T = unknown> {
 	timestamp: number;
 	source: string;
-	data: any;
+	data: T | undefined;
 }
 
 export interface OnTaskEvents {
-	'settings:changed': {
-		key: string;
-		value: any;
-		oldValue: any;
-	};
+	'settings:changed': SettingsChangeEvent;
 	'checkboxes:found': {
 		count: number;
 		source: string;
 	};
 	'checkboxes:updated': {
 		count: number;
-		topTask?: any;
+		topTask?: CheckboxItem;
 	};
 	'ui:view-opened': {
 		viewType: string;
