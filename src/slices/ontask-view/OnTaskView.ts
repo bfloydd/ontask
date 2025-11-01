@@ -4,8 +4,9 @@ import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
 import { StatusConfigService } from '../settings/status-config';
 import { DataService } from '../data/DataServiceInterface';
-import { ContextMenuService } from './services/ContextMenuService';
 import { TaskLoadingService } from './services/TaskLoadingService';
+import { OnTaskViewServiceFactory, OnTaskViewDependencies, OnTaskViewCallbacks } from './services/OnTaskViewServiceFactory';
+import { ContextMenuService } from './services/ContextMenuService';
 import { DOMRenderingService } from './services/DOMRenderingService';
 import { TopTaskProcessingService } from './services/TopTaskProcessingService';
 import { EventHandlingService } from './services/EventHandlingService';
@@ -53,12 +54,12 @@ export class OnTaskViewImpl extends ItemView {
 
 
 	constructor(
-		leaf: WorkspaceLeaf, 
-		taskLoadingService: TaskLoadingService, 
-		settingsService: SettingsService, 
+		leaf: WorkspaceLeaf,
+		taskLoadingService: TaskLoadingService,
+		settingsService: SettingsService,
 		statusConfigService: StatusConfigService,
 		dataService: DataService,
-		plugin: any, 
+		plugin: any,
 		eventSystem: EventSystem,
 		logger: Logger
 	) {
@@ -70,121 +71,70 @@ export class OnTaskViewImpl extends ItemView {
 		this.plugin = plugin;
 		this.eventSystem = eventSystem;
 		this.logger = logger;
-		
-		this.helpers = new OnTaskViewHelpers(
-			this.app,
-			this.statusConfigService,
-			this.settingsService,
-			this.taskLoadingService,
-			this.logger
-		);
-		
-		this.topTaskProcessingService = new TopTaskProcessingService(this.eventSystem, this.logger, this.statusConfigService);
-		
-		this.scrollToTopService = new ScrollToTopService(this.eventSystem, this.app);
-		
-		this.contextMenuService = new ContextMenuService(
-			this.app,
-			this.eventSystem,
-			this.statusConfigService,
-			this.settingsService,
-			this.dataService,
-			this.contentEl,
-			(checkbox: any, newStatus: string) => this.fileOperationsService.updateCheckboxStatus(
-				checkbox, 
-				newStatus, 
-				(newLineContent: string) => this.updateCheckboxRowInPlace(checkbox, newLineContent)
-			),
-			() => this.refreshCheckboxes(),
-			() => this.taskLoadingService.resetTracking(),
-			this.plugin
-		);
-		
-		this.mobileTouchService = new MobileTouchService(this.contextMenuService);
-		
-		this.domRenderingService = new DOMRenderingService(
-			this.statusConfigService,
-			this.contextMenuService,
-			this.settingsService,
-			this.app,
-			(filePath: string, lineNumber: number) => this.helpers.openFile(filePath, lineNumber),
-			(filePath: string) => this.helpers.getFileName(filePath),
-			(line: string) => this.helpers.parseCheckboxLine(line),
-			(statusSymbol: string) => this.helpers.getStatusDisplayText(statusSymbol),
-			(element: HTMLElement, task: any) => this.mobileTouchService.addMobileTouchHandlers(element, task)
-		);
-		
-		this.fileOperationsService = new FileOperationsService(
-			this.app,
-			this.eventSystem,
-			this.checkboxes,
-			this.isUpdatingStatus,
-			() => this.scheduleRefresh(),
-			this.logger
-		);
-		
-		this.filtering = new OnTaskViewFiltering(
-			this.contentEl,
-			(line: string) => this.helpers.parseCheckboxLine(line)
-		);
-		
-		this.dateControls = new OnTaskViewDateControls(
-			this.settingsService,
-			this.eventSystem,
-			this.logger
-		);
 
-		this.contentTrackingService = new CheckboxContentTrackingService(this.app, this.logger);
+		// Create callbacks for service initialization
+		const callbacks: OnTaskViewCallbacks = {
+			onFilterChange: (filter: string) => this.onFilterChange(filter),
+			onClearFilter: () => this.clearFilter(),
+			onLoadMore: () => this.loadMoreTasks(),
+			onRefreshComplete: (checkboxCount: number) => {
+				this.logger.debug('[OnTask View] Emitting view:refreshed event with', checkboxCount, 'checkboxes');
+				this.eventSystem.emit('view:refreshed', {
+					viewType: ONTASK_VIEW_TYPE,
+					checkboxCount: checkboxCount
+				});
+			},
+			onRefreshNeeded: () => this.scheduleRefresh(),
+			updateCheckboxRowInPlace: (checkbox: any, newLineContent: string) => this.updateCheckboxRowInPlace(checkbox, newLineContent),
+			refreshCheckboxes: () => this.refreshCheckboxes(),
+			scheduleRefresh: () => this.scheduleRefresh(),
+			scheduleDebouncedRefresh: (file: TFile) => this.scheduleDebouncedRefresh(file)
+		};
 
-		this.viewRefreshService = new ViewRefreshService(
-			this.taskLoadingService,
-			this.domRenderingService,
-			this.topTaskProcessingService,
-			this.filtering,
-			this.settingsService,
-			this.eventSystem,
-			this.logger,
-			{
-				onFilterChange: (filter: string) => this.onFilterChange(filter),
-				onClearFilter: () => this.clearFilter(),
-				onLoadMore: () => this.loadMoreTasks(),
-				onRefreshComplete: (checkboxCount: number) => {
-					this.logger.debug('[OnTask View] Emitting view:refreshed event with', checkboxCount, 'checkboxes');
-					this.eventSystem.emit('view:refreshed', {
-						viewType: ONTASK_VIEW_TYPE,
-						checkboxCount: checkboxCount
-					});
-				}
-			}
-		);
+		// Initialize services using factory
+		const dependencies: OnTaskViewDependencies = {
+			app: this.app,
+			leaf,
+			taskLoadingService,
+			settingsService,
+			statusConfigService,
+			dataService,
+			plugin,
+			eventSystem,
+			logger,
+			contentEl: this.contentEl
+		};
 
-		this.checkboxUpdateService = new CheckboxUpdateService(
-			this.statusConfigService,
-			this.topTaskProcessingService,
-			this.domRenderingService,
-			this.contentTrackingService,
-			this.helpers,
-			this.logger,
-			{
-				onRefreshNeeded: () => this.scheduleRefresh()
-			}
-		);
+		const services = OnTaskViewServiceFactory.createServices(dependencies, callbacks);
 
-		this.viewHeaderService = new ViewHeaderService(
-			this.dateControls,
-			this.contextMenuService
-		);
-		
-		this.eventHandlingService = new EventHandlingService(
-			this.eventSystem,
-			this.app,
-			this.checkboxes,
-			this.isUpdatingStatus,
-			() => this.refreshCheckboxes(),
-			(contentArea: HTMLElement, checkboxes: any[]) => this.domRenderingService.updateTopTaskSection(contentArea, checkboxes),
-			(file: TFile) => this.scheduleDebouncedRefresh(file),
-			this.logger
-		);
+		// Assign services to instance properties
+		this.helpers = services.helpers;
+		this.topTaskProcessingService = services.topTaskProcessingService;
+		this.scrollToTopService = services.scrollToTopService;
+		this.contextMenuService = services.contextMenuService;
+		this.mobileTouchService = services.mobileTouchService;
+		this.domRenderingService = services.domRenderingService;
+		this.fileOperationsService = services.fileOperationsService;
+		this.filtering = services.filtering;
+		this.dateControls = services.dateControls;
+		this.contentTrackingService = services.contentTrackingService;
+		this.viewRefreshService = services.viewRefreshService;
+		this.checkboxUpdateService = services.checkboxUpdateService;
+		this.viewHeaderService = services.viewHeaderService;
+		this.eventHandlingService = services.eventHandlingService;
+
+		// Update services that need checkboxes reference (circular dependency workaround)
+		this.updateServiceReferences();
+	}
+
+	private updateServiceReferences(): void {
+		// Update file operations service with checkboxes reference
+		(this.fileOperationsService as any).checkboxes = this.checkboxes;
+		(this.fileOperationsService as any).isUpdatingStatus = this.isUpdatingStatus;
+
+		// Update event handling service with checkboxes reference
+		(this.eventHandlingService as any).checkboxes = this.checkboxes;
+		(this.eventHandlingService as any).isUpdatingStatus = this.isUpdatingStatus;
 	}
 
 	getViewType(): string {
@@ -248,19 +198,20 @@ export class OnTaskViewImpl extends ItemView {
 			this.logger.error('[OnTask View] Content area not found');
 			return;
 		}
-		
+
 		const result = await this.viewRefreshService.refreshCheckboxes(
 			contentArea,
 			this.checkboxes,
 			this.displayedTasksCount,
 			this.currentFilter
 		);
-		
+
 		this.checkboxes = result.checkboxes;
 		this.displayedTasksCount = result.displayedTasksCount;
-		
+
 		this.dateControls.updateDateFilterState();
 		this.contentTrackingService.initializeTracking(this.checkboxes);
+		this.updateServiceReferences();
 	}
 
 	private updateCheckboxRowInPlace(checkbox: any, newLineContent: string): void {
@@ -285,16 +236,17 @@ export class OnTaskViewImpl extends ItemView {
 			this.logger.error('[OnTask View] Content area not found');
 			return;
 		}
-		
+
 		const result = await this.viewRefreshService.loadMoreTasks(
 			contentArea,
 			this.checkboxes,
 			this.displayedTasksCount,
 			this.currentFilter
 		);
-		
+
 		this.checkboxes = result.checkboxes;
 		this.displayedTasksCount = result.displayedTasksCount;
+		this.updateServiceReferences();
 	}
 
 
@@ -312,38 +264,8 @@ export class OnTaskViewImpl extends ItemView {
 		}
 	}
 
-	private showStatusSelectionForCheckboxes(selectedStatus: string): void {
-		
-		const checkboxElements = this.contentEl.querySelectorAll('.ontask-checkbox-item');
-		const promises: Promise<void>[] = [];
-		
-		for (const checkboxEl of Array.from(checkboxElements)) {
-			const checkboxData = this.checkboxes.find(cb => {
-				const textEl = checkboxEl.querySelector('.ontask-checkbox-text');
-				return textEl && textEl.textContent === cb.lineContent;
-			});
-			
-			if (checkboxData) {
-				promises.push(this.fileOperationsService.updateCheckboxStatus(
-					checkboxData, 
-					selectedStatus,
-					(newLineContent: string) => this.updateCheckboxRowInPlace(checkboxData, newLineContent)
-				));
-			}
-		}
-		
-		Promise.all(promises).then(() => {
-			this.refreshCheckboxes();
-		});
-	}
-
 	private openSettings(): void {
 		(this.app as any).setting.open();
 		(this.app as any).setting.openTabById(this.plugin.manifest.id);
-	}
-
-
-	private applyStatusFilters(checkboxes: any[], statusFilters: Record<string, boolean>): any[] {
-		return this.filtering.applyStatusFilters(checkboxes, statusFilters);
 	}
 }
