@@ -1,4 +1,4 @@
-import { ContextMenuService } from './context-menu-service';
+import { ContextMenuService } from './ContextMenuService';
 
 export interface MobileTouchServiceInterface {
 	addMobileTouchHandlers(element: HTMLElement, task: any): void;
@@ -72,3 +72,4 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 		}, { passive: true });
 	}
 }
+

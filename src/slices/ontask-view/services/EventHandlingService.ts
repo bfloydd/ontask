@@ -78,3 +78,4 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 		this.isUpdatingStatus = isUpdatingStatus;
 	}
 }
+

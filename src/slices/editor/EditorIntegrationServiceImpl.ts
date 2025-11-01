@@ -2,7 +2,7 @@ import { App, MarkdownView, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
 import { SettingsService } from '../settings/SettingsServiceInterface';
 import { StatusConfigService } from '../settings/status-config';
-import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
+import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
 import { EventSystem } from '../events/EventSystemInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
 import { Logger } from '../logging/Logger';

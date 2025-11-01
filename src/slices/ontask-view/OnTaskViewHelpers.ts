@@ -1,7 +1,7 @@
 import { App, TFile, MarkdownView } from 'obsidian';
 import { StatusConfigService } from '../settings/status-config';
 import { SettingsService } from '../settings';
-import { TaskLoadingService } from './services/task-loading-service';
+import { TaskLoadingService } from './services/TaskLoadingService';
 import { Logger } from '../logging/Logger';
 
 /**

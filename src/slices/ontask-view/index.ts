@@ -1,9 +1,9 @@
 export { OnTaskViewImpl, ONTASK_VIEW_TYPE } from './OnTaskView';
 export type { OnTaskViewInterface } from './OnTaskViewInterface';
-export { ContextMenuService } from './services/context-menu-service';
-export { TaskLoadingService } from './services/task-loading-service';
-export { DOMRenderingService } from './services/dom-rendering-service';
-export { TopTaskProcessingService } from './services/top-task-processing-service';
-export { EventHandlingService } from './services/event-handling-service';
-export { FileOperationsService } from './services/file-operations-service';
-export { MobileTouchService } from './services/mobile-touch-service';
+export { ContextMenuService } from './services/ContextMenuService';
+export { TaskLoadingService } from './services/TaskLoadingService';
+export { DOMRenderingService } from './services/DOMRenderingService';
+export { TopTaskProcessingService } from './services/TopTaskProcessingService';
+export { EventHandlingService } from './services/EventHandlingService';
+export { FileOperationsService } from './services/FileOperationsService';
+export { MobileTouchService } from './services/MobileTouchService';

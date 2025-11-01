@@ -1,5 +1,5 @@
 import { StatusConfigService } from '../../settings/status-config';
-import { ContextMenuService } from '../services/context-menu-service';
+import { ContextMenuService } from '../services/ContextMenuService';
 import { SettingsService } from '../../settings';
 
 /**

@@ -17,7 +17,7 @@ jest.mock('../../../logging/Logger', () => ({
 	}
 }));
 
-import { FileOperationsService } from '../file-operations-service';
+import { FileOperationsService } from '../FileOperationsService';
 import { EventSystem } from '../../../events';
 import { Logger } from '../../../logging/Logger';
 import { TFile } from 'obsidian';

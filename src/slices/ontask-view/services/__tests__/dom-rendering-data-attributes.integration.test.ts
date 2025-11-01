@@ -5,11 +5,11 @@
 // Integration tests for DOM rendering service data attributes
 // Verifies that checkbox elements have proper data attributes for in-place updates
 
-import { DOMRenderingService } from '../dom-rendering-service';
+import { DOMRenderingService } from '../DOMRenderingService';
 import { TFile } from 'obsidian';
 import { StatusConfigService } from '../../../settings/status-config';
 import { SettingsService } from '../../../settings';
-import { ContextMenuService } from '../context-menu-service';
+import { ContextMenuService } from '../ContextMenuService';
 
 describe('DOMRenderingService - Data Attributes Integration', () => {
 	let domRenderingService: DOMRenderingService;

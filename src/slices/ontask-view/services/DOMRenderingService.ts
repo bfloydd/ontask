@@ -1,12 +1,12 @@
 import { StatusConfigService } from '../../settings/status-config';
-import { ContextMenuService } from './context-menu-service';
+import { ContextMenuService } from './ContextMenuService';
 import { SettingsService } from '../../settings';
-import { CheckboxRenderer } from '../renderers/checkbox-renderer';
-import { TopTaskRenderer } from '../renderers/top-task-renderer';
-import { FileSectionRenderer } from '../renderers/file-section-renderer';
-import { FilterSectionRenderer } from '../renderers/filter-section-renderer';
-import { LoadingIndicatorRenderer } from '../renderers/loading-indicator-renderer';
-import { CheckboxDataProcessor } from '../renderers/checkbox-data-processor';
+import { CheckboxRenderer } from '../renderers/CheckboxRenderer';
+import { TopTaskRenderer } from '../renderers/TopTaskRenderer';
+import { FileSectionRenderer } from '../renderers/FileSectionRenderer';
+import { FilterSectionRenderer } from '../renderers/FilterSectionRenderer';
+import { LoadingIndicatorRenderer } from '../renderers/LoadingIndicatorRenderer';
+import { CheckboxDataProcessor } from '../renderers/CheckboxDataProcessor';
 
 export interface DOMRenderingServiceInterface {
 	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void;
@@ -206,3 +206,4 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		return this.dataProcessor.sortFilesByDate(checkboxesByFile);
 	}
 }
+

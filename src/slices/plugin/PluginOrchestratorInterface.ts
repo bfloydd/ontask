@@ -1,6 +1,6 @@
 import { App, Plugin } from 'obsidian';
 import { SettingsService } from '../settings';
-import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
+import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
 import { StreamsService } from '../streams';
 import { EventSystem } from '../events';
 import { DataService } from '../data';

@@ -107,3 +107,4 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 		return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	}
 }
+

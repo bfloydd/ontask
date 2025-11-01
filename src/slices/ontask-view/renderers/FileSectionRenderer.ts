@@ -1,4 +1,4 @@
-import { CheckboxRenderer } from './checkbox-renderer';
+import { CheckboxRenderer } from './CheckboxRenderer';
 
 /**
  * Renders file sections that group checkboxes by their source file.

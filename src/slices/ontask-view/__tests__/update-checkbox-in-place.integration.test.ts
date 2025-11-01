@@ -25,8 +25,8 @@ import { DataService } from '../../data/DataServiceInterface';
 import * as StatusConfigModule from '../../settings/status-config';
 import { EventSystem } from '../../events';
 import { Logger } from '../../logging/Logger';
-import { TaskLoadingService } from '../services/task-loading-service';
-import { TopTaskProcessingService } from '../services/top-task-processing-service';
+import { TaskLoadingService } from '../services/TaskLoadingService';
+import { TopTaskProcessingService } from '../services/TopTaskProcessingService';
 
 describe('updateCheckboxRowInPlace - Integration Tests', () => {
 	let view: OnTaskViewImpl;

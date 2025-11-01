@@ -184,3 +184,4 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		this.isVisible = false;
 	}
 }
+

@@ -2,7 +2,7 @@ import { DIContainer, SERVICE_IDS } from './DIContainerInterface';
 import { EventSystem, EventSystemServiceImpl } from '../events';
 import { SettingsService, SettingsServiceImpl } from '../settings';
 import { StreamsService, StreamsServiceImpl } from '../streams';
-import { TaskLoadingService } from '../ontask-view/services/task-loading-service';
+import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
 import { PluginOrchestrationServiceImpl, PluginDependencies } from '../plugin';
 import { EditorIntegrationServiceImpl } from '../editor';
 import { DataService, DataServiceImpl } from '../data';
