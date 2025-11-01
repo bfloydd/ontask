@@ -1,4 +1,4 @@
-import { App, PluginSettingTab } from 'obsidian';
+import { App, Plugin, PluginSettingTab } from 'obsidian';
 import { SettingsService } from '../SettingsServiceInterface';
 import { StatusConfigService } from '../status-config';
 import { DataService } from '../../data/DataServiceInterface';
@@ -12,7 +12,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	private dataService: DataService;
 	private currentTab: 'general' | 'status' | 'quick-filters' = 'general';
 
-	constructor(app: App, plugin: any, settingsService: SettingsService, statusConfigService: StatusConfigService, dataService: DataService) {
+	constructor(app: App, plugin: Plugin, settingsService: SettingsService, statusConfigService: StatusConfigService, dataService: DataService) {
 		super(app, plugin);
 		this.settingsService = settingsService;
 		this.statusConfigService = statusConfigService;

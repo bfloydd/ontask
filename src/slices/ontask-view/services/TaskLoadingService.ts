@@ -1,4 +1,5 @@
-import { TFile } from 'obsidian';
+import { TFile, App } from 'obsidian';
+import { AppWithPlugins } from '../../../types';
 import { TaskFinderFactoryImpl } from '../../task-finder/TaskFinderFactoryImpl';
 import { SettingsService } from '../../settings';
 import { StatusConfigService } from '../../settings/status-config';
@@ -27,7 +28,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
 	private streamsService: StreamsService;
-	private app: any;
+	private app: App;
 	private logger: Logger;
 	
 	private currentFileIndex: number = 0;
@@ -38,7 +39,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		streamsService: StreamsService,
 		settingsService: SettingsService,
 		statusConfigService: StatusConfigService,
-		app: any,
+		app: App,
 		logger: Logger
 	) {
 		this.streamsService = streamsService;
@@ -161,7 +162,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			}
 		}
 		
-		const dailyNotesPlugin = this.app.plugins?.getPlugin('daily-notes');
+		const dailyNotesPlugin = (this.app as AppWithPlugins).plugins?.getPlugin('daily-notes');
 		if (dailyNotesPlugin) {
 			const dailyNotes = this.app.vault.getMarkdownFiles().filter((file: TFile) => {
 				const fileName = file.name.toLowerCase();
@@ -183,7 +184,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		if (onlyShowToday) {
 			return allFiles.filter(filePath => {
 				const file = this.app.vault.getAbstractFileByPath(filePath);
-				return file && this.isTodayFile(file);
+				return file instanceof TFile && this.isTodayFile(file);
 			});
 		}
 		
@@ -273,7 +274,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		return new RegExp(regexPattern);
 	}
 
-	private isTodayFile(file: any): boolean {
+	private isTodayFile(file: TFile): boolean {
 		const today = new Date();
 		const year = today.getFullYear();
 		const month = String(today.getMonth() + 1).padStart(2, '0');
