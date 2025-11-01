@@ -73,8 +73,6 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error(`[OnTask FolderStrategy] Error finding checkboxes in folder ${this.config.folderPath}:`, error);
-			} else {
-				console.error(`Error finding checkboxes in folder ${this.config.folderPath}:`, error);
 			}
 		}
 
@@ -135,8 +133,6 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error(`[OnTask FolderStrategy] Error reading file ${file.path}:`, error);
-			} else {
-				console.error(`Error reading file ${file.path}:`, error);
 			}
 		}
 

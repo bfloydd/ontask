@@ -8,11 +8,16 @@ export interface EventHandlingServiceInterface {
 	cleanupEventListeners(): void;
 }
 
-export class EventHandlingService implements EventHandlingServiceInterface {
+export interface CheckboxContainer {
+	checkboxes: CheckboxItem[];
+	isUpdatingStatus: boolean;
+}
+
+export class EventHandlingService implements EventHandlingServiceInterface, CheckboxContainer {
 	private eventSystem: EventSystem;
 	private app: App;
-	private checkboxes: CheckboxItem[];
-	private isUpdatingStatus: boolean;
+	public checkboxes: CheckboxItem[];
+	public isUpdatingStatus: boolean;
 	private onRefreshCheckboxes: () => Promise<void>;
 	private onUpdateTopTaskSection: (contentArea: HTMLElement, checkboxes: CheckboxItem[]) => void;
 	private onScheduleDebouncedRefresh: (file: TFile) => void;

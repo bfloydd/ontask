@@ -64,14 +64,12 @@ export class CheckboxDataProcessor {
 			} catch (error) {
 				if (this.logger) {
 					this.logger.error('[OnTask CheckboxDataProcessor] Error sorting files by date:', error);
-				} else {
-					console.error('CheckboxDataProcessor: Error sorting files by date:', error);
 				}
 				return 0;
 			}
 		});
 		
-		const sortedMap = new Map<string, any[]>();
+		const sortedMap = new Map<string, CheckboxItem[]>();
 		for (const [filePath, checkboxes] of fileEntries) {
 			sortedMap.set(filePath, checkboxes);
 		}

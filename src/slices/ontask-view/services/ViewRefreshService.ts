@@ -117,10 +117,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 		
 		this.domRenderingService.renderAdditionalTasks(
 			contentArea,
-			result.tasks.map(task => ({
-				checkbox: task,
-				filePath: task.file?.path || ''
-			}))
+			result.tasks
 		);
 		
 		// Apply current filter to newly loaded tasks

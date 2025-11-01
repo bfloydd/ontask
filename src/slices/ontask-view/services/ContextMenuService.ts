@@ -5,6 +5,7 @@ import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 import { SettingsService } from '../../settings';
 import { DataService } from '../../data/DataServiceInterface';
 import { OnTaskSettingsTab } from '../../settings/views/settings-view';
+import { AppWithSettings } from '../../types';
 
 interface OnTaskPlugin extends Plugin {
 	settingsTab?: OnTaskSettingsTab;
@@ -136,8 +137,11 @@ class FilterModal extends Modal {
 						.onClick(() => {
 							this.close();
 							// Open settings and navigate to Quick Filters tab
-							(this.app as any).setting.open();
-							(this.app as any).setting.openTabById(this.plugin.manifest.id);
+							const appWithSettings = this.app as AppWithSettings;
+							if (appWithSettings.setting) {
+								appWithSettings.setting.open();
+								appWithSettings.setting.openTabById(this.plugin.manifest.id);
+							}
 							
 							// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
 							setTimeout(() => {

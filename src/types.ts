@@ -19,3 +19,15 @@ export interface AppWithPlugins extends App {
 		};
 	};
 }
+
+/**
+ * Extended App interface for accessing Obsidian's settings API.
+ * Note: This accesses Obsidian's private/internal API which may change in future versions.
+ * Used for opening settings modal and navigating to specific plugin tabs.
+ */
+export interface AppWithSettings extends App {
+	setting?: {
+		open(): void;
+		openTabById(id: string): void;
+	};
+}

@@ -63,8 +63,6 @@ export class FileSectionRenderer {
 		if (!checkboxesList) {
 			if (this.logger) {
 				this.logger.error('[OnTask FileSectionRenderer] Checkboxes list not found in existing file section');
-			} else {
-				console.error('Checkboxes list not found in existing file section');
 			}
 			return;
 		}

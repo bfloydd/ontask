@@ -8,11 +8,16 @@ export interface FileOperationsServiceInterface {
 	updateCheckboxStatus(checkbox: CheckboxItem, newStatus: string, onInPlaceUpdate?: (newLineContent: string) => void): Promise<void>;
 }
 
-export class FileOperationsService implements FileOperationsServiceInterface {
+export interface CheckboxContainer {
+	checkboxes: CheckboxItem[];
+	isUpdatingStatus: boolean;
+}
+
+export class FileOperationsService implements FileOperationsServiceInterface, CheckboxContainer {
 	private app: App;
 	private eventSystem: EventSystem;
-	private checkboxes: CheckboxItem[];
-	private isUpdatingStatus: boolean;
+	public checkboxes: CheckboxItem[];
+	public isUpdatingStatus: boolean;
 	private scheduleRefreshCallback: () => void;
 	private logger: Logger;
 

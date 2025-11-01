@@ -21,7 +21,7 @@ export interface DOMRenderingServiceInterface {
 	createLoadMoreButtonElement(onLoadMore: () => Promise<void>): HTMLElement;
 	createLoadingIndicatorElement(): HTMLElement;
 	createNoMoreTasksIndicatorElement(): HTMLElement;
-	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void;
+	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: CheckboxItem[]): void;
 	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void;
 	createNewFileSection(contentArea: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void;
 	updateTopTaskSection(contentArea: HTMLElement, checkboxes: CheckboxItem[]): void;
@@ -171,13 +171,14 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		return this.loadingIndicatorRenderer.createNoMoreTasksIndicatorElement();
 	}
 
-	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
+	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: CheckboxItem[]): void {
 		const tasksByFile = new Map<string, CheckboxItem[]>();
 		for (const task of additionalTasks) {
-			if (!tasksByFile.has(task.filePath)) {
-				tasksByFile.set(task.filePath, []);
+			const filePath = task.file?.path || '';
+			if (!tasksByFile.has(filePath)) {
+				tasksByFile.set(filePath, []);
 			}
-			tasksByFile.get(task.filePath)!.push(task.checkbox);
+			tasksByFile.get(filePath)!.push(task);
 		}
 		
 		for (const [filePath, fileTasks] of tasksByFile) {

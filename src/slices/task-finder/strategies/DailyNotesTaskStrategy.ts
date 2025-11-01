@@ -71,8 +71,6 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error('[OnTask DailyNotesStrategy] Error finding checkboxes in daily notes:', error);
-			} else {
-				console.error('Error finding checkboxes in daily notes:', error);
 			}
 		}
 
@@ -98,8 +96,6 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error('[OnTask DailyNotesStrategy] Error getting today\'s daily note:', error);
-			} else {
-				console.error('Error getting today\'s daily note:', error);
 			}
 			return null;
 		}
@@ -121,8 +117,6 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error('[OnTask DailyNotesStrategy] Error getting recent daily notes:', error);
-			} else {
-				console.error('Error getting recent daily notes:', error);
 			}
 		}
 		
@@ -158,8 +152,6 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error(`[OnTask DailyNotesStrategy] Error reading file ${file.path}:`, error);
-			} else {
-				console.error(`Error reading file ${file.path}:`, error);
 			}
 		}
 

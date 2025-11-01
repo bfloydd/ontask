@@ -85,8 +85,6 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error(`[OnTask StreamsStrategy] Error searching stream ${stream.name}:`, error);
-			} else {
-				console.error(`Error searching stream ${stream.name}:`, error);
 			}
 		}
 
@@ -122,8 +120,6 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error(`[OnTask StreamsStrategy] Error reading file ${file.path}:`, error);
-			} else {
-				console.error(`Error reading file ${file.path}:`, error);
 			}
 		}
 

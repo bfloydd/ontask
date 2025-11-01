@@ -21,6 +21,7 @@ import { OnTaskViewHelpers } from './OnTaskViewHelpers';
 import { OnTaskViewFiltering } from './OnTaskViewFiltering';
 import { OnTaskViewDateControls } from './OnTaskViewDateControls';
 import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
+import { AppWithSettings } from '../../types';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -130,12 +131,12 @@ export class OnTaskViewImpl extends ItemView {
 
 	private updateServiceReferences(): void {
 		// Update file operations service with checkboxes reference
-		(this.fileOperationsService as any).checkboxes = this.checkboxes;
-		(this.fileOperationsService as any).isUpdatingStatus = this.isUpdatingStatus;
+		this.fileOperationsService.checkboxes = this.checkboxes;
+		this.fileOperationsService.isUpdatingStatus = this.isUpdatingStatus;
 
 		// Update event handling service with checkboxes reference
-		(this.eventHandlingService as any).checkboxes = this.checkboxes;
-		(this.eventHandlingService as any).isUpdatingStatus = this.isUpdatingStatus;
+		this.eventHandlingService.checkboxes = this.checkboxes;
+		this.eventHandlingService.isUpdatingStatus = this.isUpdatingStatus;
 	}
 
 	getViewType(): string {
@@ -266,7 +267,10 @@ export class OnTaskViewImpl extends ItemView {
 	}
 
 	private openSettings(): void {
-		(this.app as any).setting.open();
-		(this.app as any).setting.openTabById(this.plugin.manifest.id);
+		const appWithSettings = this.app as AppWithSettings;
+		if (appWithSettings.setting) {
+			appWithSettings.setting.open();
+			appWithSettings.setting.openTabById(this.plugin.manifest.id);
+		}
 	}
 }

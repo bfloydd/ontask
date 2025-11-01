@@ -37,8 +37,6 @@ export class StreamsServiceImpl implements StreamsService {
 		} catch (error) {
 			if (this.logger) {
 				this.logger.error('[OnTask StreamsService] Error getting streams from plugin:', error);
-			} else {
-				console.error('StreamsService: Error getting streams from plugin:', error);
 			}
 			return [];
 		}
@@ -106,8 +104,6 @@ export class StreamsServiceImpl implements StreamsService {
 			} catch (error) {
 				if (this.logger) {
 					this.logger.error('[OnTask StreamsService] Error using plugin isFileInStream method:', error);
-				} else {
-					console.error('StreamsService: Error using plugin isFileInStream method:', error);
 				}
 			}
 		}
@@ -134,8 +130,6 @@ export class StreamsServiceImpl implements StreamsService {
 			} catch (error) {
 				if (this.logger) {
 					this.logger.error('[OnTask StreamsService] Error updating stream bar from file:', error);
-				} else {
-					console.error('StreamsService: Error updating stream bar from file:', error);
 				}
 				return false;
 			}
