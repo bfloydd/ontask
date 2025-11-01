@@ -1,6 +1,7 @@
 import { EventSystem } from '../../events';
-import { ItemView } from 'obsidian';
+import { ItemView, App, TFile } from 'obsidian';
 import { Logger } from '../../logging/Logger';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface EventHandlingServiceInterface {
 	setupEventListeners(): void;
@@ -9,23 +10,23 @@ export interface EventHandlingServiceInterface {
 
 export class EventHandlingService implements EventHandlingServiceInterface {
 	private eventSystem: EventSystem;
-	private app: any;
-	private checkboxes: any[];
+	private app: App;
+	private checkboxes: CheckboxItem[];
 	private isUpdatingStatus: boolean;
 	private onRefreshCheckboxes: () => Promise<void>;
-	private onUpdateTopTaskSection: (contentArea: HTMLElement, checkboxes: any[]) => void;
-	private onScheduleDebouncedRefresh: (file: any) => void;
+	private onUpdateTopTaskSection: (contentArea: HTMLElement, checkboxes: CheckboxItem[]) => void;
+	private onScheduleDebouncedRefresh: (file: TFile) => void;
 	private eventListeners: (() => void)[] = [];
 	private logger: Logger;
 
 	constructor(
 		eventSystem: EventSystem,
-		app: any,
-		checkboxes: any[],
+		app: App,
+		checkboxes: CheckboxItem[],
 		isUpdatingStatus: boolean,
 		onRefreshCheckboxes: () => Promise<void>,
-		onUpdateTopTaskSection: (contentArea: HTMLElement, checkboxes: any[]) => void,
-		onScheduleDebouncedRefresh: (file: any) => void,
+		onUpdateTopTaskSection: (contentArea: HTMLElement, checkboxes: CheckboxItem[]) => void,
+		onScheduleDebouncedRefresh: (file: TFile) => void,
 		logger: Logger
 	) {
 		this.eventSystem = eventSystem;
@@ -73,7 +74,7 @@ export class EventHandlingService implements EventHandlingServiceInterface {
 		}
 	}
 
-	updateReferences(checkboxes: any[], isUpdatingStatus: boolean): void {
+	updateReferences(checkboxes: CheckboxItem[], isUpdatingStatus: boolean): void {
 		this.checkboxes = checkboxes;
 		this.isUpdatingStatus = isUpdatingStatus;
 	}

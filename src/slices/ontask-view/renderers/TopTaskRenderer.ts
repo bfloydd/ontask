@@ -1,6 +1,7 @@
 import { StatusConfigService } from '../../settings/status-config';
 import { ContextMenuService } from '../services/ContextMenuService';
 import { SettingsService } from '../../settings';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 /**
  * Renders the top task section that displays the highest priority task prominently.
@@ -14,13 +15,13 @@ export class TopTaskRenderer {
 		private getFileName: (filePath: string) => string,
 		private parseCheckboxLine: (line: string) => { statusSymbol: string; remainingText: string },
 		private getStatusDisplayText: (statusSymbol: string) => string,
-		private addMobileTouchHandlers: (element: HTMLElement, task: any) => void
+		private addMobileTouchHandlers: (element: HTMLElement, task: CheckboxItem) => void
 	) {}
 
 	/**
 	 * Creates a top task section element (for fragment usage).
 	 */
-	createTopTaskSectionElement(topTask: any): HTMLElement {
+	createTopTaskSectionElement(topTask: CheckboxItem): HTMLElement {
 		const topTaskSection = document.createElement('div');
 		topTaskSection.className = 'ontask-toptask-hero-section ontask-file-section';
 		
@@ -48,7 +49,7 @@ export class TopTaskRenderer {
 	/**
 	 * Creates a top task section directly in the content area.
 	 */
-	createTopTaskSection(contentArea: HTMLElement, topTask: any): void {
+	createTopTaskSection(contentArea: HTMLElement, topTask: CheckboxItem): void {
 		const topTaskSection = contentArea.createDiv('ontask-toptask-hero-section');
 		topTaskSection.addClass('ontask-file-section');
 		
@@ -74,7 +75,7 @@ export class TopTaskRenderer {
 	/**
 	 * Updates an existing top task section with new task data.
 	 */
-	updateTopTaskSection(contentArea: HTMLElement, checkboxes: any[]): void {
+	updateTopTaskSection(contentArea: HTMLElement, checkboxes: CheckboxItem[]): void {
 		const existingTopTaskSection = contentArea.querySelector('.ontask-toptask-hero-section');
 		
 		const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
@@ -129,7 +130,7 @@ export class TopTaskRenderer {
 	/**
 	 * Builds the content structure for a top task section.
 	 */
-	private buildTopTaskContent(topTaskSection: HTMLElement, topTask: any, statusSymbol: string): void {
+	private buildTopTaskContent(topTaskSection: HTMLElement, topTask: CheckboxItem, statusSymbol: string): void {
 		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
 		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
 		

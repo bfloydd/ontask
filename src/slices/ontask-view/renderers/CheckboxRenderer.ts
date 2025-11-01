@@ -1,5 +1,6 @@
 import { StatusConfigService } from '../../settings/status-config';
 import { ContextMenuService } from '../services/ContextMenuService';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 /**
  * Renders individual checkbox elements for the task list.
@@ -11,13 +12,13 @@ export class CheckboxRenderer {
 		private onOpenFile: (filePath: string, lineNumber: number) => Promise<void>,
 		private parseCheckboxLine: (line: string) => { statusSymbol: string; remainingText: string },
 		private getStatusDisplayText: (statusSymbol: string) => string,
-		private addMobileTouchHandlers: (element: HTMLElement, task: any) => void
+		private addMobileTouchHandlers: (element: HTMLElement, task: CheckboxItem) => void
 	) {}
 
 	/**
 	 * Creates a checkbox DOM element with all styling, event handlers, and data attributes.
 	 */
-	createCheckboxElement(checkbox: any): HTMLElement {
+	createCheckboxElement(checkbox: CheckboxItem): HTMLElement {
 		const checkboxEl = document.createElement('div');
 		checkboxEl.addClass('ontask-checkbox-item');
 		

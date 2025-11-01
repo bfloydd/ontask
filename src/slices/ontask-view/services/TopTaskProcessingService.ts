@@ -1,10 +1,11 @@
 import { EventSystem } from '../../events';
 import { Logger } from '../../logging/Logger';
 import { StatusConfigService } from '../../settings/status-config';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface TopTaskProcessingServiceInterface {
-	processTopTasksFromDisplayedTasks(checkboxes: any[]): void;
-	isTopTaskByConfig(checkbox: any, config: { symbol: string; name: string; pattern: RegExp }): boolean;
+	processTopTasksFromDisplayedTasks(checkboxes: CheckboxItem[]): void;
+	isTopTaskByConfig(checkbox: CheckboxItem, config: { symbol: string; name: string; pattern: RegExp }): boolean;
 	getTopTaskConfig(): readonly { symbol: string; name: string; pattern: RegExp }[];
 }
 
@@ -19,7 +20,7 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 		this.statusConfigService = statusConfigService;
 	}
 
-	processTopTasksFromDisplayedTasks(checkboxes: any[]): void {
+	processTopTasksFromDisplayedTasks(checkboxes: CheckboxItem[]): void {
 		checkboxes.forEach(checkbox => {
 			checkbox.isTopTask = false;
 			checkbox.isTopTaskContender = false;
@@ -46,7 +47,7 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 		}));
 		
 		const taskCounts: Record<string, number> = {};
-		const tasksByType: Record<string, any[]> = {};
+		const tasksByType: Record<string, CheckboxItem[]> = {};
 		
 		dynamicConfigs.forEach(config => {
 			const matchingTasks = checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
@@ -59,7 +60,7 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 			});
 		});
 		
-		let finalTopTask: any = null;
+		let finalTopTask: CheckboxItem | null = null;
 		for (const config of dynamicConfigs) {
 			const tasks = tasksByType[config.name];
 			if (tasks.length > 0) {
@@ -81,7 +82,7 @@ export class TopTaskProcessingService implements TopTaskProcessingServiceInterfa
 		}
 	}
 
-	isTopTaskByConfig(checkbox: any, config: { symbol: string; name: string; pattern: RegExp }): boolean {
+	isTopTaskByConfig(checkbox: CheckboxItem, config: { symbol: string; name: string; pattern: RegExp }): boolean {
 		const line = checkbox.lineContent;
 		return config.pattern.test(line);
 	}

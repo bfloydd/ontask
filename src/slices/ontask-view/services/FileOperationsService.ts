@@ -1,16 +1,17 @@
 import { EventSystem } from '../../events';
 import { App } from 'obsidian';
 import { Logger } from '../../logging/Logger';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface FileOperationsServiceInterface {
-	toggleCheckbox(checkbox: any, isCompleted: boolean): Promise<void>;
-	updateCheckboxStatus(checkbox: any, newStatus: string, onInPlaceUpdate?: (newLineContent: string) => void): Promise<void>;
+	toggleCheckbox(checkbox: CheckboxItem, isCompleted: boolean): Promise<void>;
+	updateCheckboxStatus(checkbox: CheckboxItem, newStatus: string, onInPlaceUpdate?: (newLineContent: string) => void): Promise<void>;
 }
 
 export class FileOperationsService implements FileOperationsServiceInterface {
 	private app: App;
 	private eventSystem: EventSystem;
-	private checkboxes: any[];
+	private checkboxes: CheckboxItem[];
 	private isUpdatingStatus: boolean;
 	private scheduleRefreshCallback: () => void;
 	private logger: Logger;
@@ -18,7 +19,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 	constructor(
 		app: App,
 		eventSystem: EventSystem,
-		checkboxes: any[],
+		checkboxes: CheckboxItem[],
 		isUpdatingStatus: boolean,
 		scheduleRefreshCallback: () => void,
 		logger: Logger
@@ -31,7 +32,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 		this.logger = logger;
 	}
 
-	async toggleCheckbox(checkbox: any, isCompleted: boolean): Promise<void> {
+	async toggleCheckbox(checkbox: CheckboxItem, isCompleted: boolean): Promise<void> {
 		try {
 			const file = checkbox.file;
 			if (!file) {
@@ -74,7 +75,7 @@ export class FileOperationsService implements FileOperationsServiceInterface {
 		}
 	}
 
-	async updateCheckboxStatus(checkbox: any, newStatus: string, onInPlaceUpdate?: (newLineContent: string) => void): Promise<void> {
+	async updateCheckboxStatus(checkbox: CheckboxItem, newStatus: string, onInPlaceUpdate?: (newLineContent: string) => void): Promise<void> {
 		this.isUpdatingStatus = true;
 		
 		try {

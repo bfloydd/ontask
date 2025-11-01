@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, Plugin } from 'obsidian';
 import { Logger } from '../logging/Logger';
 import { EventSystem } from '../events';
 import { SettingsService } from '../settings';
@@ -20,6 +20,7 @@ import { CheckboxUpdateService } from './services/CheckboxUpdateService';
 import { OnTaskViewHelpers } from './OnTaskViewHelpers';
 import { OnTaskViewFiltering } from './OnTaskViewFiltering';
 import { OnTaskViewDateControls } from './OnTaskViewDateControls';
+import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -27,7 +28,7 @@ export class OnTaskViewImpl extends ItemView {
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
 	private dataService: DataService;
-	private plugin: any;
+	private plugin: Plugin;
 	private eventSystem: EventSystem;
 	private logger: Logger;
 	private contextMenuService: ContextMenuService;
@@ -45,7 +46,7 @@ export class OnTaskViewImpl extends ItemView {
 	private viewHeaderService: ViewHeaderService;
 	private viewRefreshService: ViewRefreshService;
 	private checkboxUpdateService: CheckboxUpdateService;
-	private checkboxes: any[] = [];
+	private checkboxes: CheckboxItem[] = [];
 	private isUpdatingStatus: boolean = false;
 	private displayedTasksCount: number = 10;
 	private currentFilter: string = '';
@@ -59,7 +60,7 @@ export class OnTaskViewImpl extends ItemView {
 		settingsService: SettingsService,
 		statusConfigService: StatusConfigService,
 		dataService: DataService,
-		plugin: any,
+		plugin: Plugin,
 		eventSystem: EventSystem,
 		logger: Logger
 	) {
@@ -85,7 +86,7 @@ export class OnTaskViewImpl extends ItemView {
 				});
 			},
 			onRefreshNeeded: () => this.scheduleRefresh(),
-			updateCheckboxRowInPlace: (checkbox: any, newLineContent: string) => this.updateCheckboxRowInPlace(checkbox, newLineContent),
+			updateCheckboxRowInPlace: (checkbox: CheckboxItem, newLineContent: string) => this.updateCheckboxRowInPlace(checkbox, newLineContent),
 			refreshCheckboxes: () => this.refreshCheckboxes(),
 			scheduleRefresh: () => this.scheduleRefresh(),
 			scheduleDebouncedRefresh: (file: TFile) => this.scheduleDebouncedRefresh(file)
@@ -214,7 +215,7 @@ export class OnTaskViewImpl extends ItemView {
 		this.updateServiceReferences();
 	}
 
-	private updateCheckboxRowInPlace(checkbox: any, newLineContent: string): void {
+	private updateCheckboxRowInPlace(checkbox: CheckboxItem, newLineContent: string): void {
 		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
 		if (!contentArea) {
 			this.logger.debug('[OnTask View] Content area not found for in-place update, falling back to refresh');

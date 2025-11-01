@@ -16,6 +16,11 @@ export interface QuickFilter {
 	enabled: boolean; // Whether this quick filter is enabled (shows in popup)
 }
 
+export interface DataServiceData {
+	statusConfigs?: StatusConfig[];
+	quickFilters?: QuickFilter[];
+}
+
 export interface DataService {
 	// Initialize data service
 	initialize(): Promise<void>;
@@ -41,5 +46,5 @@ export interface DataService {
 	
 	// Data persistence
 	saveData(): Promise<void>;
-	loadData(): Promise<any>;
+	loadData(): Promise<DataServiceData>;
 }

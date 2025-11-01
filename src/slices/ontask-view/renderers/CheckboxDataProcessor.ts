@@ -1,19 +1,20 @@
-import { TFile } from 'obsidian';
+import { App, TFile } from 'obsidian';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 /**
  * Processes checkbox data by grouping and sorting operations.
  */
 export class CheckboxDataProcessor {
 	constructor(
-		private app: any,
+		private app: App,
 		private getFileName: (filePath: string) => string
 	) {}
 
 	/**
 	 * Groups checkboxes by their file path.
 	 */
-	groupCheckboxesByFile(checkboxes: any[]): Map<string, any[]> {
-		const grouped = new Map<string, any[]>();
+	groupCheckboxesByFile(checkboxes: CheckboxItem[]): Map<string, CheckboxItem[]> {
+		const grouped = new Map<string, CheckboxItem[]>();
 		
 		for (const checkbox of checkboxes) {
 			const filePath = checkbox.file?.path || 'Unknown';
@@ -29,7 +30,7 @@ export class CheckboxDataProcessor {
 	/**
 	 * Sorts files by date, either from filename date pattern or file modification time.
 	 */
-	sortFilesByDate(checkboxesByFile: Map<string, any[]>): Map<string, any[]> {
+	sortFilesByDate(checkboxesByFile: Map<string, CheckboxItem[]>): Map<string, CheckboxItem[]> {
 		const fileEntries = Array.from(checkboxesByFile.entries());
 		
 		fileEntries.sort((a, b) => {

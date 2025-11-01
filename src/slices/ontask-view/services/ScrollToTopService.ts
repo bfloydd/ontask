@@ -1,3 +1,4 @@
+import { App } from 'obsidian';
 import { EventSystem } from '../../events';
 
 export interface ScrollToTopServiceInterface {
@@ -7,7 +8,7 @@ export interface ScrollToTopServiceInterface {
 
 export class ScrollToTopService implements ScrollToTopServiceInterface {
 	private eventSystem: EventSystem;
-	private app: any;
+	private app: App;
 	private contentEl: HTMLElement | null = null;
 	private scrollToTopButton: HTMLButtonElement | null = null;
 	private scrollThreshold: number = 100; // Show button after scrolling 100px down
@@ -16,7 +17,7 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 	private scrollContainer: HTMLElement | null = null;
 	private usingWindowScroll = false;
 
-	constructor(eventSystem: EventSystem, app: any) {
+	constructor(eventSystem: EventSystem, app: App) {
 		this.eventSystem = eventSystem;
 		this.app = app;
 	}

@@ -1,29 +1,37 @@
 import { EventSystem } from '../../events';
 import { StatusConfigService } from '../../settings/status-config';
-import { Menu, Modal, App, Setting } from 'obsidian';
+import { Menu, Modal, App, Setting, Plugin } from 'obsidian';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
+import { SettingsService } from '../../settings';
+import { DataService } from '../../data/DataServiceInterface';
+import { OnTaskSettingsTab } from '../../settings/views/settings-view';
+
+interface OnTaskPlugin extends Plugin {
+	settingsTab?: OnTaskSettingsTab;
+}
 
 export interface ContextMenuServiceInterface {
-	showContextMenu(event: MouseEvent, checkbox: any): void;
+	showContextMenu(event: MouseEvent, checkbox: CheckboxItem): void;
 	showFiltersMenu(): void;
 }
 
 class FilterModal extends Modal {
 	private statusConfigService: StatusConfigService;
-	private settingsService: any;
-	private dataService: any;
+	private settingsService: SettingsService;
+	private dataService: DataService;
 	private refreshCheckboxesCallback: () => Promise<void>;
 	private resetTrackingCallback: () => void;
 	private statusConfigs: any[];
-	private plugin: any;
+	private plugin: Plugin;
 
 	constructor(
 		app: App,
 		statusConfigService: StatusConfigService,
-		settingsService: any,
-		dataService: any,
+		settingsService: SettingsService,
+		dataService: DataService,
 		refreshCheckboxesCallback: () => Promise<void>,
 		resetTrackingCallback: () => void,
-		plugin: any
+		plugin: Plugin
 	) {
 		super(app);
 		this.statusConfigService = statusConfigService;
@@ -133,7 +141,7 @@ class FilterModal extends Modal {
 							
 							// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
 							setTimeout(() => {
-								const settingsTab = this.plugin.settingsTab;
+								const settingsTab = (this.plugin as OnTaskPlugin).settingsTab;
 								if (settingsTab && settingsTab.navigateToTab) {
 									settingsTab.navigateToTab('quick-filters');
 								}
@@ -217,27 +225,27 @@ class FilterModal extends Modal {
 export class ContextMenuService implements ContextMenuServiceInterface {
 	private eventSystem: EventSystem;
 	private statusConfigService: StatusConfigService;
-	private settingsService: any;
-	private dataService: any;
+	private settingsService: SettingsService;
+	private dataService: DataService;
 	private contentEl: HTMLElement;
-	private updateCheckboxStatusCallback: (checkbox: any, newStatus: string) => Promise<void>;
+	private updateCheckboxStatusCallback: (checkbox: CheckboxItem, newStatus: string) => Promise<void>;
 	private refreshCheckboxesCallback: () => Promise<void>;
 	private resetTrackingCallback: () => void;
 	private filterModal: FilterModal | null = null;
 	private app: App;
-	private plugin: any;
+	private plugin: Plugin;
 
 	constructor(
 		app: App,
 		eventSystem: EventSystem,
 		statusConfigService: StatusConfigService,
-		settingsService: any,
-		dataService: any,
+		settingsService: SettingsService,
+		dataService: DataService,
 		contentEl: HTMLElement,
-		updateCheckboxStatusCallback: (checkbox: any, newStatus: string) => Promise<void>,
+		updateCheckboxStatusCallback: (checkbox: CheckboxItem, newStatus: string) => Promise<void>,
 		refreshCheckboxesCallback: () => Promise<void>,
 		resetTrackingCallback: () => void,
-		plugin: any
+		plugin: Plugin
 	) {
 		this.app = app;
 		this.eventSystem = eventSystem;
@@ -251,7 +259,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 		this.plugin = plugin;
 	}
 
-	showContextMenu(event: MouseEvent, checkbox: any): void {
+	showContextMenu(event: MouseEvent, checkbox: CheckboxItem): void {
 		const menu = new Menu();
 		const statuses = this.statusConfigService.getStatusConfigs();
 

@@ -1,4 +1,4 @@
-import { App, WorkspaceLeaf, TFile } from 'obsidian';
+import { App, WorkspaceLeaf, TFile, Plugin } from 'obsidian';
 import { Logger } from '../../logging/Logger';
 import { EventSystem } from '../../events';
 import { SettingsService } from '../../settings';
@@ -19,6 +19,7 @@ import { CheckboxUpdateService, CheckboxUpdateServiceCallbacks } from './Checkbo
 import { OnTaskViewHelpers } from '../OnTaskViewHelpers';
 import { OnTaskViewFiltering } from '../OnTaskViewFiltering';
 import { OnTaskViewDateControls } from '../OnTaskViewDateControls';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface OnTaskViewDependencies {
 	app: App;
@@ -27,7 +28,7 @@ export interface OnTaskViewDependencies {
 	settingsService: SettingsService;
 	statusConfigService: StatusConfigService;
 	dataService: DataService;
-	plugin: any;
+	plugin: Plugin;
 	eventSystem: EventSystem;
 	logger: Logger;
 	contentEl: HTMLElement;
@@ -39,7 +40,7 @@ export interface OnTaskViewCallbacks {
 	onLoadMore: () => Promise<void>;
 	onRefreshComplete: (checkboxCount: number) => void;
 	onRefreshNeeded: () => void;
-	updateCheckboxRowInPlace: (checkbox: any, newLineContent: string) => void;
+	updateCheckboxRowInPlace: (checkbox: CheckboxItem, newLineContent: string) => void;
 	refreshCheckboxes: () => Promise<void>;
 	scheduleRefresh: () => void;
 	scheduleDebouncedRefresh: (file: TFile) => Promise<void>;
@@ -118,7 +119,7 @@ export class OnTaskViewServiceFactory {
 			settingsService,
 			dataService,
 			contentEl,
-			(checkbox: any, newStatus: string) => fileOperationsService.updateCheckboxStatus(
+			(checkbox: CheckboxItem, newStatus: string) => fileOperationsService.updateCheckboxStatus(
 				checkbox,
 				newStatus,
 				(newLineContent: string) => callbacks.updateCheckboxRowInPlace(checkbox, newLineContent)
@@ -141,7 +142,7 @@ export class OnTaskViewServiceFactory {
 			(filePath: string) => helpers.getFileName(filePath),
 			(line: string) => helpers.parseCheckboxLine(line),
 			(statusSymbol: string) => helpers.getStatusDisplayText(statusSymbol),
-			(element: HTMLElement, task: any) => mobileTouchService.addMobileTouchHandlers(element, task)
+			(element: HTMLElement, task: CheckboxItem) => mobileTouchService.addMobileTouchHandlers(element, task)
 		);
 
 		// Create view refresh service
@@ -188,10 +189,10 @@ export class OnTaskViewServiceFactory {
 		const eventHandlingService = new EventHandlingService(
 			eventSystem,
 			app,
-			[] as any[], // Will be set by view
+			[] as CheckboxItem[], // Will be set by view
 			false, // isUpdatingStatus - will be set by view
 			callbacks.refreshCheckboxes,
-			(contentArea: HTMLElement, checkboxes: any[]) => domRenderingService.updateTopTaskSection(contentArea, checkboxes),
+			(contentArea: HTMLElement, checkboxes: CheckboxItem[]) => domRenderingService.updateTopTaskSection(contentArea, checkboxes),
 			callbacks.scheduleDebouncedRefresh,
 			logger
 		);

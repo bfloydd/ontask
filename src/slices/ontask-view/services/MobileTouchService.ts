@@ -1,7 +1,8 @@
 import { ContextMenuService } from './ContextMenuService';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface MobileTouchServiceInterface {
-	addMobileTouchHandlers(element: HTMLElement, task: any): void;
+	addMobileTouchHandlers(element: HTMLElement, task: CheckboxItem): void;
 }
 
 export class MobileTouchService implements MobileTouchServiceInterface {
@@ -11,7 +12,7 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 		this.contextMenuService = contextMenuService;
 	}
 
-	addMobileTouchHandlers(element: HTMLElement, task: any): void {
+	addMobileTouchHandlers(element: HTMLElement, task: CheckboxItem): void {
 		let touchStartTime: number = 0;
 		let touchStartX: number = 0;
 		let touchStartY: number = 0;

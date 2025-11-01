@@ -1,3 +1,4 @@
+import { App } from 'obsidian';
 import { StatusConfigService } from '../../settings/status-config';
 import { ContextMenuService } from './ContextMenuService';
 import { SettingsService } from '../../settings';
@@ -7,23 +8,24 @@ import { FileSectionRenderer } from '../renderers/FileSectionRenderer';
 import { FilterSectionRenderer } from '../renderers/FilterSectionRenderer';
 import { LoadingIndicatorRenderer } from '../renderers/LoadingIndicatorRenderer';
 import { CheckboxDataProcessor } from '../renderers/CheckboxDataProcessor';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface DOMRenderingServiceInterface {
-	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void;
-	createCheckboxElement(checkbox: any): HTMLElement;
-	createTopTaskSectionElement(topTask: any): HTMLElement;
-	createTopTaskSection(contentArea: HTMLElement, topTask: any): void;
+	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void;
+	createCheckboxElement(checkbox: CheckboxItem): HTMLElement;
+	createTopTaskSectionElement(topTask: CheckboxItem): HTMLElement;
+	createTopTaskSection(contentArea: HTMLElement, topTask: CheckboxItem): void;
 	createFilterSectionElement(currentFilter: string, onFilterChange: (filter: string) => void, onClearFilter: () => void): HTMLElement;
-	createFileSectionElement(filePath: string, fileCheckboxes: any[], maxTasksToShow: number, tasksShown: number): HTMLElement;
+	createFileSectionElement(filePath: string, fileCheckboxes: CheckboxItem[], maxTasksToShow: number, tasksShown: number): HTMLElement;
 	createLoadMoreButtonElement(onLoadMore: () => Promise<void>): HTMLElement;
 	createLoadingIndicatorElement(): HTMLElement;
 	createNoMoreTasksIndicatorElement(): HTMLElement;
 	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void;
-	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: any[], filePath: string): void;
-	createNewFileSection(contentArea: HTMLElement, fileTasks: any[], filePath: string): void;
-	updateTopTaskSection(contentArea: HTMLElement, checkboxes: any[]): void;
-	groupCheckboxesByFile(checkboxes: any[]): Map<string, any[]>;
-	sortFilesByDate(checkboxesByFile: Map<string, any[]>): Map<string, any[]>;
+	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void;
+	createNewFileSection(contentArea: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void;
+	updateTopTaskSection(contentArea: HTMLElement, checkboxes: CheckboxItem[]): void;
+	groupCheckboxesByFile(checkboxes: CheckboxItem[]): Map<string, CheckboxItem[]>;
+	sortFilesByDate(checkboxesByFile: Map<string, CheckboxItem[]>): Map<string, CheckboxItem[]>;
 }
 
 /**
@@ -42,12 +44,12 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		statusConfigService: StatusConfigService,
 		contextMenuService: ContextMenuService,
 		settingsService: SettingsService,
-		app: any,
+		app: App,
 		onOpenFile: (filePath: string, lineNumber: number) => Promise<void>,
 		getFileName: (filePath: string) => string,
 		parseCheckboxLine: (line: string) => { statusSymbol: string; remainingText: string },
 		getStatusDisplayText: (statusSymbol: string) => string,
-		addMobileTouchHandlers: (element: HTMLElement, task: any) => void
+		addMobileTouchHandlers: (element: HTMLElement, task: CheckboxItem) => void
 	) {
 		// Initialize all renderers
 		this.checkboxRenderer = new CheckboxRenderer(
@@ -80,7 +82,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		this.dataProcessor = new CheckboxDataProcessor(app, getFileName);
 	}
 
-	renderCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void {
+	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void {
 		if (checkboxes.length === 0) {
 			const emptyEl = contentArea.createDiv('ontask-empty');
 			emptyEl.textContent = 'No tasks found.';
@@ -134,15 +136,15 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		contentArea.appendChild(fragment);
 	}
 
-	createCheckboxElement(checkbox: any): HTMLElement {
+	createCheckboxElement(checkbox: CheckboxItem): HTMLElement {
 		return this.checkboxRenderer.createCheckboxElement(checkbox);
 	}
 
-	createTopTaskSectionElement(topTask: any): HTMLElement {
+	createTopTaskSectionElement(topTask: CheckboxItem): HTMLElement {
 		return this.topTaskRenderer.createTopTaskSectionElement(topTask);
 	}
 
-	createTopTaskSection(contentArea: HTMLElement, topTask: any): void {
+	createTopTaskSection(contentArea: HTMLElement, topTask: CheckboxItem): void {
 		this.topTaskRenderer.createTopTaskSection(contentArea, topTask);
 	}
 
@@ -150,7 +152,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		return this.filterSectionRenderer.createFilterSectionElement(currentFilter, onFilterChange, onClearFilter);
 	}
 
-	createFileSectionElement(filePath: string, fileCheckboxes: any[], maxTasksToShow: number, tasksShown: number): HTMLElement {
+	createFileSectionElement(filePath: string, fileCheckboxes: CheckboxItem[], maxTasksToShow: number, tasksShown: number): HTMLElement {
 		return this.fileSectionRenderer.createFileSectionElement(filePath, fileCheckboxes, maxTasksToShow, tasksShown);
 	}
 
@@ -167,7 +169,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	}
 
 	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: any[]): void {
-		const tasksByFile = new Map<string, any[]>();
+		const tasksByFile = new Map<string, CheckboxItem[]>();
 		for (const task of additionalTasks) {
 			if (!tasksByFile.has(task.filePath)) {
 				tasksByFile.set(task.filePath, []);
@@ -186,23 +188,23 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		}
 	}
 
-	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: any[], filePath: string): void {
+	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void {
 		this.fileSectionRenderer.appendTasksToExistingFile(fileSection, fileTasks, filePath);
 	}
 
-	createNewFileSection(contentArea: HTMLElement, fileTasks: any[], filePath: string): void {
+	createNewFileSection(contentArea: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void {
 		this.fileSectionRenderer.createNewFileSection(contentArea, fileTasks, filePath);
 	}
 
-	updateTopTaskSection(contentArea: HTMLElement, checkboxes: any[]): void {
+	updateTopTaskSection(contentArea: HTMLElement, checkboxes: CheckboxItem[]): void {
 		this.topTaskRenderer.updateTopTaskSection(contentArea, checkboxes);
 	}
 
-	groupCheckboxesByFile(checkboxes: any[]): Map<string, any[]> {
+	groupCheckboxesByFile(checkboxes: CheckboxItem[]): Map<string, CheckboxItem[]> {
 		return this.dataProcessor.groupCheckboxesByFile(checkboxes);
 	}
 
-	sortFilesByDate(checkboxesByFile: Map<string, any[]>): Map<string, any[]> {
+	sortFilesByDate(checkboxesByFile: Map<string, CheckboxItem[]>): Map<string, CheckboxItem[]> {
 		return this.dataProcessor.sortFilesByDate(checkboxesByFile);
 	}
 }

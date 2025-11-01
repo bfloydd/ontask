@@ -3,6 +3,8 @@ import { TopTaskProcessingService } from './TopTaskProcessingService';
 import { DOMRenderingService } from './DOMRenderingService';
 import { CheckboxContentTrackingService } from './CheckboxContentTrackingService';
 import { OnTaskViewHelpers } from '../OnTaskViewHelpers';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
+import { Logger } from '../../logging/Logger';
 
 export interface CheckboxUpdateServiceCallbacks {
 	onRefreshNeeded: () => void;
@@ -11,9 +13,9 @@ export interface CheckboxUpdateServiceCallbacks {
 export interface CheckboxUpdateServiceInterface {
 	updateCheckboxRowInPlace(
 		contentArea: HTMLElement,
-		checkbox: any,
+		checkbox: CheckboxItem,
 		newLineContent: string,
-		checkboxes: any[]
+		checkboxes: CheckboxItem[]
 	): void;
 	findCheckboxElement(contentArea: HTMLElement, filePath: string, lineNumber: number): HTMLElement | null;
 }
@@ -29,17 +31,17 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 		private domRenderingService: DOMRenderingService,
 		private contentTrackingService: CheckboxContentTrackingService,
 		private helpers: OnTaskViewHelpers,
-		private logger: any,
+		private logger: Logger,
 		private callbacks: CheckboxUpdateServiceCallbacks
 	) {}
 
 	/**
 	 * Updates a checkbox row in-place in the DOM without full refresh
 	 */
-	updateCheckboxRowInPlace(contentArea: HTMLElement, checkbox: any, newLineContent: string, checkboxes: any[]): void {
+	updateCheckboxRowInPlace(contentArea: HTMLElement, checkbox: CheckboxItem, newLineContent: string, checkboxes: CheckboxItem[]): void {
 		try {
 			// Store the previous top task to detect changes
-			const previousTopTask = checkboxes.find((cb: any) => cb.isTopTask);
+			const previousTopTask = checkboxes.find((cb) => cb.isTopTask);
 
 			// Update the checkbox object's lineContent
 			checkbox.lineContent = newLineContent;
@@ -62,7 +64,7 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 
 			// Re-process top tasks to determine if top task has changed
 			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(checkboxes);
-			const newTopTask = checkboxes.find((cb: any) => cb.isTopTask);
+			const newTopTask = checkboxes.find((cb) => cb.isTopTask);
 			const topTaskChanged = previousTopTask !== newTopTask;
 
 			// Parse the new line content
@@ -81,7 +83,7 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 			this.updateStatusDisplay(checkboxElement, statusSymbol);
 
 			// Update top task styling
-			this.updateTopTaskStyling(checkboxElement, checkbox.isTopTask);
+			this.updateTopTaskStyling(checkboxElement, checkbox.isTopTask ?? false);
 
 			// Update task text and ranking badge
 			this.updateTaskText(checkboxElement, remainingText, checkbox);
@@ -166,7 +168,7 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 	/**
 	 * Updates the task text element and ranking badge
 	 */
-	private updateTaskText(checkboxElement: HTMLElement, remainingText: string, checkbox: any): void {
+	private updateTaskText(checkboxElement: HTMLElement, remainingText: string, checkbox: CheckboxItem): void {
 		const textEl = checkboxElement.querySelector('.ontask-checkbox-text') as HTMLElement;
 		if (!textEl) return;
 
@@ -191,7 +193,7 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 	/**
 	 * Updates the previous top task element when top task changes
 	 */
-	private updatePreviousTopTask(contentArea: HTMLElement, previousTopTask: any, currentCheckbox: any): void {
+	private updatePreviousTopTask(contentArea: HTMLElement, previousTopTask: CheckboxItem | undefined, currentCheckbox: CheckboxItem): void {
 		if (!previousTopTask || previousTopTask === currentCheckbox) return;
 
 		const previousTopTaskFilePath = previousTopTask.file?.path || '';
@@ -214,7 +216,7 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 	/**
 	 * Updates the new top task element when top task changes
 	 */
-	private updateNewTopTask(contentArea: HTMLElement, newTopTask: any, currentCheckbox: any): void {
+	private updateNewTopTask(contentArea: HTMLElement, newTopTask: CheckboxItem | undefined, currentCheckbox: CheckboxItem): void {
 		if (!newTopTask || newTopTask === currentCheckbox) return;
 
 		const newTopTaskFilePath = newTopTask.file?.path || '';

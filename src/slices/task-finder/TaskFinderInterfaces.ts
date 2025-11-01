@@ -9,6 +9,8 @@ export interface TaskItem {
 	sourcePath: string;
 	isTopTask?: boolean;
 	isTopTaskContender?: boolean;
+	topTaskRanking?: number;
+	isCompleted?: boolean;
 }
 
 // Backward compatibility

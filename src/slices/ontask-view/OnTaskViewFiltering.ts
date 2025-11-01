@@ -115,6 +115,7 @@ export class OnTaskViewFiltering {
 	 * Filters checkboxes based on status filters
 	 */
 	applyStatusFilters(checkboxes: any[], statusFilters: Record<string, boolean>): any[] {
+		// Note: Keeping any[] here as this is used with TaskLoadingResult which may have different structure
 		if (!statusFilters) {
 			return checkboxes;
 		}

@@ -1,3 +1,4 @@
+import { Plugin } from 'obsidian';
 import { StatusConfig, DEFAULT_STATUS_CONFIGS } from './SettingsServiceInterface';
 import { DataService } from '../data/DataServiceInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
@@ -23,7 +24,7 @@ export class StatusConfigService extends PluginAwareSliceService {
 	}
 	private dataService: DataService;
 
-	constructor(dataService: DataService, plugin: any) {
+	constructor(dataService: DataService, plugin: Plugin) {
 		super();
 		this.dataService = dataService;
 		this.setPlugin(plugin);

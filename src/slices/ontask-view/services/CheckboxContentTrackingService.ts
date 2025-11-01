@@ -1,10 +1,11 @@
 import { App, TFile } from 'obsidian';
 import { Logger } from '../../logging/Logger';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface CheckboxContentTrackingServiceInterface {
-	initializeTracking(checkboxes: any[]): void;
-	checkForChanges(file: TFile, checkboxes: any[]): Promise<boolean>;
-	updateContent(checkbox: any, content: string): void;
+	initializeTracking(checkboxes: CheckboxItem[]): void;
+	checkForChanges(file: TFile, checkboxes: CheckboxItem[]): Promise<boolean>;
+	updateContent(checkbox: CheckboxItem, content: string): void;
 }
 
 /**
@@ -22,7 +23,7 @@ export class CheckboxContentTrackingService implements CheckboxContentTrackingSe
 	/**
 	 * Initializes content tracking for all checkboxes
 	 */
-	initializeTracking(checkboxes: any[]): void {
+	initializeTracking(checkboxes: CheckboxItem[]): void {
 		this.lastCheckboxContent.clear();
 		
 		for (const checkbox of checkboxes) {
@@ -35,7 +36,7 @@ export class CheckboxContentTrackingService implements CheckboxContentTrackingSe
 	 * Checks if any checkboxes in a file have changed by comparing current content with tracked content
 	 * @returns true if changes were detected, false otherwise
 	 */
-	async checkForChanges(file: TFile, checkboxes: any[]): Promise<boolean> {
+	async checkForChanges(file: TFile, checkboxes: CheckboxItem[]): Promise<boolean> {
 		try {
 			const fileCheckboxes = checkboxes.filter(checkbox => checkbox.file?.path === file.path);
 			if (fileCheckboxes.length === 0) {
@@ -73,7 +74,7 @@ export class CheckboxContentTrackingService implements CheckboxContentTrackingSe
 	/**
 	 * Updates the tracked content for a specific checkbox
 	 */
-	updateContent(checkbox: any, content: string): void {
+	updateContent(checkbox: CheckboxItem, content: string): void {
 		const filePath = checkbox.file?.path || '';
 		const lineNumber = checkbox.lineNumber?.toString() || '';
 		const checkboxKey = `${filePath}:${lineNumber}`;

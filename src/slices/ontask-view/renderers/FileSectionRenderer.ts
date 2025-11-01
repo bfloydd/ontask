@@ -1,4 +1,5 @@
 import { CheckboxRenderer } from './CheckboxRenderer';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 /**
  * Renders file sections that group checkboxes by their source file.
@@ -12,7 +13,7 @@ export class FileSectionRenderer {
 	/**
 	 * Creates a file section element with header and checkboxes.
 	 */
-	createFileSectionElement(filePath: string, fileCheckboxes: any[], maxTasksToShow: number, tasksShown: number): HTMLElement {
+	createFileSectionElement(filePath: string, fileCheckboxes: CheckboxItem[], maxTasksToShow: number, tasksShown: number): HTMLElement {
 		const fileSection = document.createElement('div');
 		fileSection.className = 'ontask-file-section';
 		fileSection.setAttribute('data-file-path', filePath);
@@ -37,7 +38,7 @@ export class FileSectionRenderer {
 	/**
 	 * Creates a new file section in the content area.
 	 */
-	createNewFileSection(contentArea: HTMLElement, fileTasks: any[], filePath: string): void {
+	createNewFileSection(contentArea: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void {
 		const fileSection = contentArea.createDiv('ontask-file-section');
 		fileSection.setAttribute('data-file-path', filePath);
 		
@@ -55,7 +56,7 @@ export class FileSectionRenderer {
 	/**
 	 * Appends tasks to an existing file section.
 	 */
-	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: any[], filePath: string): void {
+	appendTasksToExistingFile(fileSection: HTMLElement, fileTasks: CheckboxItem[], filePath: string): void {
 		const checkboxesList = fileSection.querySelector('.ontask-checkboxes-list') as HTMLElement;
 		if (!checkboxesList) {
 			console.error('Checkboxes list not found in existing file section');

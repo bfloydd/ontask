@@ -5,6 +5,7 @@ import { OnTaskViewFiltering } from '../OnTaskViewFiltering';
 import { SettingsService } from '../../settings';
 import { EventSystem } from '../../events';
 import { Logger } from '../../logging/Logger';
+import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface ViewRefreshCallbacks {
 	onFilterChange: (filter: string) => void;
@@ -14,8 +15,8 @@ export interface ViewRefreshCallbacks {
 }
 
 export interface ViewRefreshServiceInterface {
-	refreshCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter: string): Promise<{ checkboxes: any[]; displayedTasksCount: number }>;
-	loadMoreTasks(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter: string): Promise<{ checkboxes: any[]; displayedTasksCount: number; hasMoreTasks: boolean }>;
+	refreshCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter: string): Promise<{ checkboxes: CheckboxItem[]; displayedTasksCount: number }>;
+	loadMoreTasks(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter: string): Promise<{ checkboxes: CheckboxItem[]; displayedTasksCount: number; hasMoreTasks: boolean }>;
 	scheduleRefresh(callback: () => void): void;
 	cleanup(): void;
 }
@@ -42,7 +43,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 	/**
 	 * Refreshes the checkboxes by loading tasks and rendering them
 	 */
-	async refreshCheckboxes(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter: string): Promise<{ checkboxes: any[]; displayedTasksCount: number }> {
+	async refreshCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter: string): Promise<{ checkboxes: CheckboxItem[]; displayedTasksCount: number }> {
 		if (this.isRefreshing) {
 			return { checkboxes, displayedTasksCount };
 		}
@@ -97,7 +98,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 	/**
 	 * Loads more tasks and appends them to the view
 	 */
-	async loadMoreTasks(contentArea: HTMLElement, checkboxes: any[], displayedTasksCount: number, currentFilter: string): Promise<{ checkboxes: any[]; displayedTasksCount: number; hasMoreTasks: boolean }> {
+	async loadMoreTasks(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter: string): Promise<{ checkboxes: CheckboxItem[]; displayedTasksCount: number; hasMoreTasks: boolean }> {
 		// Remove existing load more button immediately
 		const existingLoadMoreSection = contentArea.querySelector('.ontask-load-more-section');
 		if (existingLoadMoreSection) {

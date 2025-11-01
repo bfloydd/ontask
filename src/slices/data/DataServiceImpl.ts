@@ -1,11 +1,11 @@
 import { App, Plugin } from 'obsidian';
-import { DataService, StatusConfig, QuickFilter } from './DataServiceInterface';
+import { DataService, StatusConfig, QuickFilter, DataServiceData } from './DataServiceInterface';
 import { DEFAULT_STATUS_CONFIGS } from '../settings/SettingsServiceInterface';
 import { PluginAwareSliceService } from '../../shared/base-slice';
 
 export class DataServiceImpl extends PluginAwareSliceService implements DataService {
 	private app: App;
-	private data: any = {};
+	private data: DataServiceData = {};
 
 	constructor(app: App, plugin: Plugin) {
 		super();
@@ -49,7 +49,7 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 		this.initialized = false;
 	}
 
-	async loadData(): Promise<any> {
+	async loadData(): Promise<DataServiceData> {
 		try {
 			return await this.getPlugin()!.loadData() || {};
 		} catch (error) {
@@ -94,6 +94,9 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 	}
 
 	async updateStatusConfig(symbol: string, config: StatusConfig): Promise<void> {
+		if (!this.data.statusConfigs) {
+			return;
+		}
 		const index = this.data.statusConfigs.findIndex((c: StatusConfig) => c.symbol === symbol);
 		if (index !== -1) {
 			this.data.statusConfigs[index] = { ...config };
@@ -102,11 +105,17 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 	}
 
 	async addStatusConfig(config: StatusConfig): Promise<void> {
+		if (!this.data.statusConfigs) {
+			this.data.statusConfigs = [];
+		}
 		this.data.statusConfigs.push({ ...config });
 		await this.saveData();
 	}
 
 	async removeStatusConfig(symbol: string): Promise<void> {
+		if (!this.data.statusConfigs) {
+			return;
+		}
 		this.data.statusConfigs = this.data.statusConfigs.filter((c: StatusConfig) => c.symbol !== symbol);
 		await this.saveData();
 	}
@@ -133,6 +142,9 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 	}
 
 	async updateQuickFilter(id: string, filter: QuickFilter): Promise<void> {
+		if (!this.data.quickFilters) {
+			return;
+		}
 		const index = this.data.quickFilters.findIndex((f: QuickFilter) => f.id === id);
 		if (index !== -1) {
 			this.data.quickFilters[index] = { ...filter };
@@ -141,6 +153,9 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 	}
 
 	async removeQuickFilter(id: string): Promise<void> {
+		if (!this.data.quickFilters) {
+			return;
+		}
 		this.data.quickFilters = this.data.quickFilters.filter((f: QuickFilter) => f.id !== id);
 		await this.saveData();
 	}
