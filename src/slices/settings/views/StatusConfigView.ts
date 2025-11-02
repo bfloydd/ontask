@@ -100,8 +100,8 @@ export class StatusConfigView {
 		if (config.topTaskRanking !== undefined) {
 			const indicatorEl = infoEl.createEl('span', {
 				cls: 'status-config-ranking-indicator',
-				text: ` - Top task rank #${config.topTaskRanking}`,
-				attr: { title: 'This status participates in top task selection with this priority ranking' }
+				text: ` - Rank #${config.topTaskRanking}`,
+				attr: { title: `Top Task Rank #${config.topTaskRanking}` }
 			});
 			indicatorEl.addClass('status-config-indicator');
 		}
