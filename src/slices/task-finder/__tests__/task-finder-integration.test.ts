@@ -3,6 +3,7 @@ import { DailyNotesTaskStrategy } from '../strategies/DailyNotesTaskStrategy';
 import { FolderTaskStrategy } from '../strategies/FolderTaskStrategy';
 import { StreamsTaskStrategy } from '../strategies/StreamsTaskStrategy';
 import { StreamsService } from '../../streams';
+import { TFolder } from '../../../__mocks__/obsidian';
 
 // Mock dependencies
 const mockStreamsService = {
@@ -169,7 +170,7 @@ describe('TaskFinder Integration Tests', () => {
 
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => {
-				if (path === '/Projects') return { name: 'Projects', path: '/Projects' };
+				if (path === '/Projects') return new TFolder('/Projects', 'Projects');
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.read = jest.fn()
@@ -228,7 +229,8 @@ describe('TaskFinder Integration Tests', () => {
 			];
 
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => {
-				if (path === '/Work' || path === '/Personal') return { name: path.slice(1), path };
+				if (path === '/Work') return new TFolder('/Work', 'Work');
+				if (path === '/Personal') return new TFolder('/Personal', 'Personal');
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
@@ -356,8 +358,8 @@ describe('TaskFinder Integration Tests', () => {
 
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => {
-				if (path === '/Work') return { name: 'Work', path: '/Work' };
-				if (path === '/Projects') return { name: 'Projects', path: '/Projects' };
+				if (path === '/Work') return new TFolder('/Work', 'Work');
+				if (path === '/Projects') return new TFolder('/Projects', 'Projects');
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.read = jest.fn()

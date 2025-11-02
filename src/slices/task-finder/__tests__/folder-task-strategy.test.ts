@@ -1,4 +1,5 @@
 import { FolderTaskStrategy, FolderStrategyConfig } from '../strategies/FolderTaskStrategy';
+import { TFolder } from '../../../__mocks__/obsidian';
 
 const mockApp = {
 	vault: {
@@ -64,8 +65,8 @@ describe('FolderTaskStrategy', () => {
 				{ path: '/Projects/task2.md', name: 'task2.md' }
 			];
 
-			// Mock the folder to exist
-			const mockFolder = { name: 'Projects', path: '/Projects' };
+			// Mock the folder to exist - use TFolder mock class
+			const mockFolder = new TFolder('/Projects', 'Projects');
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => {
 				if (path === '/Projects') return mockFolder;
 				return mockFiles.find(f => f.path === path) || null;
@@ -96,8 +97,8 @@ describe('FolderTaskStrategy', () => {
 				{ path: '/Projects/2024-01-14.md', name: '2024-01-14.md' }
 			];
 
-			// Mock the folder to exist
-			const mockFolder = { name: 'Projects', path: '/Projects' };
+			// Mock the folder to exist - use TFolder mock class
+			const mockFolder = new TFolder('/Projects', 'Projects');
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => {
 				if (path === '/Projects') return mockFolder;
 				return mockFiles.find(f => f.path === path) || null;
@@ -131,8 +132,8 @@ describe('FolderTaskStrategy', () => {
 				{ path: '/Projects/task1.md', name: 'task1.md' }
 			];
 
-			// Mock the folder to exist
-			const mockFolder = { name: 'Projects', path: '/Projects' };
+			// Mock the folder to exist - use TFolder mock class
+			const mockFolder = new TFolder('/Projects', 'Projects');
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => {
 				if (path === '/Projects') return mockFolder;
 				return mockFiles.find(f => f.path === path) || null;
@@ -167,8 +168,8 @@ describe('FolderTaskStrategy', () => {
 
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
 
-			const mockFolder = { name: 'Projects', path: '/Projects' };
-			const result = strategy.getFilesInFolder(mockFolder);
+			const mockFolder = new TFolder('/Projects', 'Projects');
+			const result = strategy.getFilesInFolder(mockFolder as any);
 
 			expect(result).toHaveLength(2);
 			expect(result[0].path).toBe('/Projects/file1.md');

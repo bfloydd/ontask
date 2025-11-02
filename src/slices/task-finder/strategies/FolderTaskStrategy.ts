@@ -1,4 +1,4 @@
-import { App, TFile } from 'obsidian';
+import { App, TFile, TFolder } from 'obsidian';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 import { Logger } from '../../logging/Logger';
 import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
@@ -52,7 +52,7 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 				}
 			} else {
 				const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
-				if (!folder) {
+				if (!folder || !(folder instanceof TFolder)) {
 					return checkboxes;
 				}
 
@@ -81,7 +81,7 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		return checkboxes;
 	}
 
-	public getFilesInFolder(folder: any): TFile[] {
+	public getFilesInFolder(folder: TFolder): TFile[] {
 		const files: TFile[] = [];
 		
 		if (folder instanceof TFile) {
