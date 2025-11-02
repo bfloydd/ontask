@@ -31,15 +31,39 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 		if (!this.data.quickFilters || this.data.quickFilters.length === 0) {
 			this.data.quickFilters = [
 				{
+					id: 'all',
+					name: 'All',
+					statusSymbols: ['.', '/', 'x', '!', '*', '?', 'r', 'b', '<', '#', '>', '-', '+'],
+					enabled: true
+				},
+				{
+					id: 'plan',
+					name: 'Plan',
+					statusSymbols: ['.', '+', '/', '!', '*', '?', 'r', 'b', '>', '$'],
+					enabled: true
+				},
+				{
+					id: 'work',
+					name: 'Work',
+					statusSymbols: ['.', '/', '!', '*', '?', 'r', '+'],
+					enabled: true
+				},
+				{
 					id: 'review',
 					name: 'Review',
-					statusSymbols: ['r'],
+					statusSymbols: ['x', 'r'],
 					enabled: true
 				},
 				{
 					id: 'lagging',
-					name: 'Lagging',
-					statusSymbols: ['.', '>', 'r', 'b', '?'],
+					name: 'Delayed',
+					statusSymbols: ['>', 'r', 'b', '?', '*'],
+					enabled: true
+				},
+				{
+					id: 'dead',
+					name: 'Dead',
+					statusSymbols: ['#', '-'],
 					enabled: true
 				}
 			];
