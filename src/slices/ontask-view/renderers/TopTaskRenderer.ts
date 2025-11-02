@@ -114,7 +114,7 @@ export class TopTaskRenderer {
 				const topTaskText = existingTopTaskSection.querySelector('.ontask-toptask-hero-text');
 				if (topTaskText) {
 					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
-					topTaskText.textContent = remainingText || 'Top Task';
+					topTaskText.textContent = remainingText || 'Top task';
 				}
 				
 			} else {
@@ -132,7 +132,7 @@ export class TopTaskRenderer {
 	 */
 	private buildTopTaskContent(topTaskSection: HTMLElement, topTask: CheckboxItem, statusSymbol: string): void {
 		const topTaskHeader = topTaskSection.createDiv('ontask-toptask-hero-header');
-		topTaskHeader.createEl('h3', { text: '🔥 Top Task' });
+		topTaskHeader.createEl('h3', { text: '🔥 Top task' });
 		
 		const topTaskDisplay = topTaskSection.createDiv('ontask-toptask-hero-display');
 		topTaskDisplay.addClass('ontask-toptask-hero-item');
@@ -162,7 +162,7 @@ export class TopTaskRenderer {
 		}, { passive: true });
 		
 		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
-		topTaskText.textContent = remainingText || 'Top Task';
+		topTaskText.textContent = remainingText || 'Top task';
 		topTaskText.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
 		}, { passive: true });

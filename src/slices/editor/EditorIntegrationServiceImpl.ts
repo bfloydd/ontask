@@ -211,7 +211,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		topTaskBar.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
 
 		const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
-		const displayText = remainingText || 'Top Task';
+		const displayText = remainingText || 'Top task';
 		
 		topTaskBar.innerHTML = `
 			<div class="ontask-toptask-hero-content">

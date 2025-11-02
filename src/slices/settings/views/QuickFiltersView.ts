@@ -170,7 +170,7 @@ export class QuickFiltersView {
 
 		// Name input
 		const nameSetting = new Setting(content)
-			.setName('Filter Name')
+			.setName('Filter name')
 			.setDesc('The name that will appear on the button')
 			.addText(text => text
 				.setPlaceholder('Enter filter name')

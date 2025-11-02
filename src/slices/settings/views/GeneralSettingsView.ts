@@ -98,9 +98,9 @@ export class GeneralSettingsView {
 			.setName('Checkbox source')
 			.setDesc('Choose where to find checkboxes from')
 			.addDropdown(dropdown => dropdown
-				.addOption('streams', 'Streams Plugin')
-				.addOption('daily-notes', 'Daily Notes')
-				.addOption('folder', 'Custom Folder')
+				.addOption('streams', 'Streams plugin')
+				.addOption('daily-notes', 'Daily notes')
+				.addOption('folder', 'Custom folder')
 				.setValue(settings.checkboxSource)
 				.onChange(async (value: 'streams' | 'daily-notes' | 'folder') => {
 					await this.settingsService.updateSetting('checkboxSource', value);

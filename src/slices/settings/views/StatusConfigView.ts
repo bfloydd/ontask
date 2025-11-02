@@ -151,7 +151,7 @@ export class StatusConfigView {
 	private renderAddButton(containerEl: HTMLElement): void {
 		const addBtn = containerEl.createEl('button', { 
 			cls: 'status-config-add-btn',
-			text: '+ Add New Status'
+			text: '+ Add new status'
 		});
 		
 		addBtn.addEventListener('click', () => this.addNewStatus(), { passive: true });
@@ -167,7 +167,7 @@ export class StatusConfigView {
 
 	private showStatusModal(existingConfig?: StatusConfig, index?: number): void {
 		const modal = new Modal(this.app);
-		modal.titleEl.textContent = existingConfig ? 'Edit Status' : 'Add Status';
+		modal.titleEl.textContent = existingConfig ? 'Edit status' : 'Add status';
 		
 		const contentEl = modal.contentEl;
 		contentEl.empty();
@@ -175,7 +175,7 @@ export class StatusConfigView {
 		// Create a working copy of the config for editing
 		const workingConfig: StatusConfig = existingConfig ? { ...existingConfig } : {
 			symbol: '+',
-			name: 'New Status',
+			name: 'New status',
 			description: 'A new status',
 			color: '#6b7280',
 			backgroundColor: 'transparent'
@@ -237,7 +237,7 @@ export class StatusConfigView {
 
 		// Top Task Ranking input
 		new Setting(contentEl)
-			.setName('Top Task Ranking')
+			.setName('Top task ranking')
 			.setDesc('Priority for top task selection (lower = higher priority). Leave blank to exclude from top task selection.')
 			.addText(text => {
 				text.setValue(workingConfig.topTaskRanking?.toString() || '')
@@ -257,7 +257,7 @@ export class StatusConfigView {
 
 		// Color input
 		new Setting(contentEl)
-			.setName('Text Color')
+			.setName('Text color')
 			.setDesc('Color of the text/symbol')
 			.addText(text => text
 				.setValue(workingConfig.color)
@@ -266,7 +266,7 @@ export class StatusConfigView {
 
 		// Background color input
 		new Setting(contentEl)
-			.setName('Background Color')
+			.setName('Background color')
 			.setDesc('Background color (optional)')
 			.addText(text => text
 				.setValue(workingConfig.backgroundColor || '')
