@@ -35,7 +35,15 @@ export class OnTaskViewDateControls {
 				cls: 'ontask-segmented-button',
 				attr: { 'data-value': option.value }
 			});
-			button.innerHTML = IconService.getIcon(option.icon) + ' ' + option.label;
+			
+			// Append icon element using Obsidian's icon system
+			const iconElement = IconService.getIconElement(option.icon);
+			if (iconElement) {
+				button.appendChild(iconElement);
+			}
+			
+			// Append text label with space
+			button.appendChild(document.createTextNode(' ' + option.label));
 			
 			button.addEventListener('click', () => this.setDateFilter(option.value), { passive: true });
 			

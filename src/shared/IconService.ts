@@ -1,8 +1,10 @@
 import { Logger } from '../slices/logging/Logger';
+import { getIcon, getIconIds, setIcon } from 'obsidian';
 
 /**
- * Icon Service - Centralized SVG icon management
- * Provides reusable SVG icon definitions for consistent iconography across the plugin
+ * Icon Service - Wrapper around Obsidian's native icon system
+ * Provides a centralized way to access icons while leveraging Obsidian's built-in iconography.
+ * Uses Lucide icons via Obsidian's getIcon() API for theme compatibility and consistency.
  */
 
 export interface IconOptions {
@@ -11,8 +13,27 @@ export interface IconOptions {
 	className?: string;
 }
 
+/**
+ * Maps custom icon names to Obsidian/Lucide icon IDs
+ * All icons use Lucide icon library which is built into Obsidian
+ */
+const ICON_MAP: Record<IconName, string> = {
+	'calendar': 'calendar',
+	'search': 'search',
+	'filter': 'filter',
+	'refresh-cw': 'refresh-cw',
+	'settings': 'settings',
+};
+
+const CONFIG_ICON_MAP: Record<ConfigIconName, string> = {
+	'edit': 'pencil',
+	'delete': 'trash-2',
+	'grip-vertical': 'grip-vertical',
+};
+
 export class IconService {
 	private static logger: Logger | null = null;
+	private static availableIconIds: Set<string> | null = null;
 
 	/**
 	 * Set logger instance for icon service warnings
@@ -20,78 +41,200 @@ export class IconService {
 	static setLogger(logger: Logger | null): void {
 		IconService.logger = logger;
 	}
+
 	/**
-	 * Get SVG HTML string for an icon
+	 * Initialize available icon IDs cache (called once for performance)
 	 */
-	static getIcon(iconName: IconName, options: IconOptions = {}): string {
-		const { width = 14, height = 14, className = '' } = options;
-		const icon = ICONS[iconName];
-		
-		if (!icon) {
-			if (IconService.logger) {
-				IconService.logger.warn(`[OnTask IconService] Icon "${iconName}" not found`);
-			} else {
-				console.warn(`[OnTask IconService] Icon "${iconName}" not found`);
+	private static initializeIconCache(): void {
+		if (IconService.availableIconIds === null) {
+			try {
+				const iconIds = getIconIds();
+				IconService.availableIconIds = new Set(iconIds);
+			} catch (error) {
+				if (IconService.logger) {
+					IconService.logger.warn('[OnTask IconService] Failed to get icon IDs from Obsidian');
+				}
+				IconService.availableIconIds = new Set();
 			}
-			return '';
 		}
-
-		// Extract viewBox if present in icon definition
-		const viewBoxMatch = icon.match(/viewBox="([^"]+)"/);
-		const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
-
-		// Build class string
-		const classes = ['lucide', `lucide-${iconName}`, className].filter(Boolean).join(' ');
-
-		// Replace attributes in the icon SVG
-		let svgHtml = icon
-			.replace(/width="[^"]*"/, `width="${width}"`)
-			.replace(/height="[^"]*"/, `height="${height}"`)
-			.replace(/viewBox="[^"]*"/, `viewBox="${viewBox}"`);
-
-		// Ensure class attribute is set correctly
-		if (svgHtml.includes('class=')) {
-			svgHtml = svgHtml.replace(/class="[^"]*"/, `class="${classes}"`);
-		} else {
-			// Insert class attribute after <svg
-			svgHtml = svgHtml.replace('<svg', `<svg class="${classes}"`);
-		}
-
-		return svgHtml;
 	}
 
 	/**
-	 * Get SVG HTML string for a config button icon
+	 * Get an SVG element using Obsidian's native icon system
+	 * @param iconName - The custom icon name
+	 * @param options - Icon styling options
+	 * @returns SVG element or null if icon not found
 	 */
-	static getConfigIcon(iconName: ConfigIconName, options: IconOptions = {}): string {
-		const { width = 14, height = 14, className = '' } = options;
-		const icon = CONFIG_ICONS[iconName];
-		
-		if (!icon) {
+	static getIconElement(iconName: IconName, options: IconOptions = {}): SVGSVGElement | null {
+		IconService.initializeIconCache();
+		const obsidianIconId = ICON_MAP[iconName];
+
+		if (!obsidianIconId) {
 			if (IconService.logger) {
-				IconService.logger.warn(`[OnTask IconService] Config icon "${iconName}" not found`);
-			} else {
-				console.warn(`[OnTask IconService] Config icon "${iconName}" not found`);
+				IconService.logger.warn(`[OnTask IconService] Icon "${iconName}" not mapped`);
 			}
+			return null;
+		}
+
+		// Check if icon is available
+		if (IconService.availableIconIds && !IconService.availableIconIds.has(obsidianIconId)) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Obsidian icon "${obsidianIconId}" not found`);
+			}
+			return null;
+		}
+
+		try {
+			const iconElement = getIcon(obsidianIconId);
+			if (!iconElement) {
+				return null;
+			}
+
+			// Clone to avoid modifying the original
+			const clonedIcon = iconElement.cloneNode(true) as SVGSVGElement;
+
+			// Apply styling options
+			const { width = 14, height = 14, className = '' } = options;
+			if (width) {
+				clonedIcon.style.width = `${width}px`;
+			}
+			if (height) {
+				clonedIcon.style.height = `${height}px`;
+			}
+			if (className) {
+				clonedIcon.classList.add(...className.split(' ').filter(Boolean));
+			}
+
+			return clonedIcon;
+		} catch (error) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Failed to get icon "${obsidianIconId}": ${error}`);
+			}
+			return null;
+		}
+	}
+
+	/**
+	 * Get a config icon SVG element using Obsidian's native icon system
+	 * @param iconName - The custom config icon name
+	 * @param options - Icon styling options
+	 * @returns SVG element or null if icon not found
+	 */
+	static getConfigIconElement(iconName: ConfigIconName, options: IconOptions = {}): SVGSVGElement | null {
+		IconService.initializeIconCache();
+		const obsidianIconId = CONFIG_ICON_MAP[iconName];
+
+		if (!obsidianIconId) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Config icon "${iconName}" not mapped`);
+			}
+			return null;
+		}
+
+		if (IconService.availableIconIds && !IconService.availableIconIds.has(obsidianIconId)) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Obsidian icon "${obsidianIconId}" not found`);
+			}
+			return null;
+		}
+
+		try {
+			const iconElement = getIcon(obsidianIconId);
+			if (!iconElement) {
+				return null;
+			}
+
+			const clonedIcon = iconElement.cloneNode(true) as SVGSVGElement;
+
+			const { width = 14, height = 14, className = '' } = options;
+			if (width) {
+				clonedIcon.style.width = `${width}px`;
+			}
+			if (height) {
+				clonedIcon.style.height = `${height}px`;
+			}
+			if (className) {
+				clonedIcon.classList.add(...className.split(' ').filter(Boolean));
+			}
+
+			return clonedIcon;
+		} catch (error) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Failed to get config icon "${obsidianIconId}": ${error}`);
+			}
+			return null;
+		}
+	}
+
+	/**
+	 * Set an icon directly on an HTML element using Obsidian's setIcon API
+	 * This is the recommended approach for setting icons on buttons/containers
+	 * @param parent - The parent element to set the icon on
+	 * @param iconName - The custom icon name
+	 */
+	static setIcon(parent: HTMLElement, iconName: IconName): void {
+		const obsidianIconId = ICON_MAP[iconName];
+		if (!obsidianIconId) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Icon "${iconName}" not mapped for setIcon`);
+			}
+			return;
+		}
+
+		try {
+			setIcon(parent, obsidianIconId);
+		} catch (error) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Failed to set icon "${obsidianIconId}": ${error}`);
+			}
+		}
+	}
+
+	/**
+	 * Set a config icon directly on an HTML element using Obsidian's setIcon API
+	 * @param parent - The parent element to set the icon on
+	 * @param iconName - The custom config icon name
+	 */
+	static setConfigIcon(parent: HTMLElement, iconName: ConfigIconName): void {
+		const obsidianIconId = CONFIG_ICON_MAP[iconName];
+		if (!obsidianIconId) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Config icon "${iconName}" not mapped for setIcon`);
+			}
+			return;
+		}
+
+		try {
+			setIcon(parent, obsidianIconId);
+		} catch (error) {
+			if (IconService.logger) {
+				IconService.logger.warn(`[OnTask IconService] Failed to set config icon "${obsidianIconId}": ${error}`);
+			}
+		}
+	}
+
+	/**
+	 * Get SVG HTML string for an icon (backward compatibility)
+	 * @deprecated Use getIconElement() or setIcon() instead for better theme compatibility
+	 */
+	static getIcon(iconName: IconName, options: IconOptions = {}): string {
+		const iconElement = IconService.getIconElement(iconName, options);
+		if (!iconElement) {
 			return '';
 		}
+		return iconElement.outerHTML;
+	}
 
-		const viewBoxMatch = icon.match(/viewBox="([^"]+)"/);
-		const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 24 24';
-
-		const classes = className ? className : '';
-		let svgHtml = icon
-			.replace(/width="[^"]*"/, `width="${width}"`)
-			.replace(/height="[^"]*"/, `height="${height}"`)
-			.replace(/viewBox="[^"]*"/, `viewBox="${viewBox}"`);
-
-		if (svgHtml.includes('class=')) {
-			svgHtml = svgHtml.replace(/class="[^"]*"/, `class="${classes}"`);
-		} else if (classes) {
-			svgHtml = svgHtml.replace('<svg', `<svg class="${classes}"`);
+	/**
+	 * Get SVG HTML string for a config icon (backward compatibility)
+	 * @deprecated Use getConfigIconElement() or setConfigIcon() instead for better theme compatibility
+	 */
+	static getConfigIcon(iconName: ConfigIconName, options: IconOptions = {}): string {
+		const iconElement = IconService.getConfigIconElement(iconName, options);
+		if (!iconElement) {
+			return '';
 		}
-
-		return svgHtml;
+		return iconElement.outerHTML;
 	}
 }
 
@@ -106,22 +249,6 @@ export type ConfigIconName =
 	| 'edit'
 	| 'delete'
 	| 'grip-vertical';
-
-// Lucide icons used in the UI
-const ICONS: Record<IconName, string> = {
-	'calendar': '<svg class="lucide lucide-calendar" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
-	'search': '<svg class="lucide lucide-search" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',
-	'filter': '<svg class="lucide lucide-filter" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46 22,3"/></svg>',
-	'refresh-cw': '<svg class="lucide lucide-refresh-cw" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>',
-	'settings': '<svg class="lucide lucide-settings" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>'
-};
-
-// Config/edit/action icons (non-Lucide)
-const CONFIG_ICONS: Record<ConfigIconName, string> = {
-	'edit': '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>',
-	'delete': '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>',
-	'grip-vertical': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>'
-};
 
 
 

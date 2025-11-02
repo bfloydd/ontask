@@ -41,25 +41,25 @@ export class ViewHeaderService implements ViewHeaderServiceInterface {
 		
 		const searchButton = rightButtonsContainer.createEl('button');
 		searchButton.addClass('ontask-header-button');
-		searchButton.innerHTML = IconService.getIcon('search');
+		IconService.setIcon(searchButton, 'search');
 		searchButton.title = 'Search Tasks';
 		searchButton.addEventListener('click', callbacks.onSearch, { passive: true });
 		
 		const filtersButton = rightButtonsContainer.createEl('button');
 		filtersButton.addClass('ontask-header-button');
-		filtersButton.innerHTML = IconService.getIcon('filter');
+		IconService.setIcon(filtersButton, 'filter');
 		filtersButton.title = 'Filter statuses';
 		filtersButton.addEventListener('click', callbacks.onFilters, { passive: true });
 		
 		const refreshButton = rightButtonsContainer.createEl('button');
 		refreshButton.addClass('ontask-header-button');
-		refreshButton.innerHTML = IconService.getIcon('refresh-cw');
+		IconService.setIcon(refreshButton, 'refresh-cw');
 		refreshButton.title = 'Refresh';
 		refreshButton.addEventListener('click', callbacks.onRefresh, { passive: true });
 		
 		const configureButton = rightButtonsContainer.createEl('button');
 		configureButton.addClass('ontask-header-button');
-		configureButton.innerHTML = IconService.getIcon('settings');
+		IconService.setIcon(configureButton, 'settings');
 		configureButton.title = 'Settings';
 		configureButton.addEventListener('click', callbacks.onSettings, { passive: true });
 		

@@ -72,7 +72,10 @@ export class QuickFiltersView {
 		const dragHandle = settingItem.createDiv();
 		dragHandle.addClass('quick-filter-drag-handle');
 		dragHandle.setAttribute('data-icon', 'grip-vertical');
-		dragHandle.innerHTML = IconService.getConfigIcon('grip-vertical', { width: 16, height: 16 });
+		const gripIcon = IconService.getConfigIconElement('grip-vertical', { width: 16, height: 16 });
+		if (gripIcon) {
+			dragHandle.appendChild(gripIcon);
+		}
 
 		// Filter name
 		const nameEl = settingItem.createDiv();
@@ -110,12 +113,12 @@ export class QuickFiltersView {
 
 		// Edit button
 		const editButton = controlsContainer.createEl('button', { cls: 'quick-filter-edit-btn' });
-		editButton.innerHTML = IconService.getConfigIcon('edit');
+		IconService.setConfigIcon(editButton, 'edit');
 		editButton.addEventListener('click', () => this.showEditQuickFilterModal(filter), { passive: true });
 
 		// Delete button
 		const deleteButton = controlsContainer.createEl('button', { cls: 'quick-filter-delete-btn mod-warning' });
-		deleteButton.innerHTML = IconService.getConfigIcon('delete');
+		IconService.setConfigIcon(deleteButton, 'delete');
 		deleteButton.addEventListener('click', () => this.showDeleteConfirmation(filter), { passive: true });
 
 		// Set up drag and drop event handlers
