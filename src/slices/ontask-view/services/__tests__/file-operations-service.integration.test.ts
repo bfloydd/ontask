@@ -74,7 +74,10 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			const checkbox = {
 				file,
 				lineNumber: 2,
-				lineContent: '- [ ] Original task'
+				lineContent: '- [ ] Original task',
+				checkboxText: '- [ ] Original task',
+				sourceName: 'test',
+				sourcePath: 'test.md'
 			};
 			mockCheckboxes.push(checkbox);
 
@@ -102,7 +105,10 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			const checkbox = {
 				file,
 				lineNumber: 2,
-				lineContent: '- [ ] Original task'
+				lineContent: '- [ ] Original task',
+				checkboxText: '- [ ] Original task',
+				sourceName: 'test',
+				sourcePath: 'test.md'
 			};
 			mockCheckboxes.push(checkbox);
 
@@ -127,7 +133,10 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			const checkbox = {
 				file,
 				lineNumber: 2,
-				lineContent: '- [!] Important task'
+				lineContent: '- [!] Important task',
+				checkboxText: '- [!] Important task',
+				sourceName: 'test',
+				sourcePath: 'test.md'
 			};
 			mockCheckboxes.push(checkbox);
 
@@ -158,7 +167,10 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			const checkbox = {
 				file,
 				lineNumber: 5,
-				lineContent: '- [ ] Task'
+				lineContent: '- [ ] Task',
+				checkboxText: '- [ ] Task',
+				sourceName: 'test',
+				sourcePath: 'test.md'
 			};
 			mockCheckboxes.push(checkbox);
 
@@ -192,6 +204,9 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 				file,
 				lineNumber: 1,
 				lineContent: '- [ ] Task',
+				checkboxText: '- [ ] Task',
+				sourceName: 'test',
+				sourcePath: 'test.md',
 				isCompleted: false
 			};
 			mockCheckboxes.push(checkbox);
