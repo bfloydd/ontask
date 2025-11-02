@@ -26,7 +26,7 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	topTaskColor: '#ff6b6b',
 	useThemeDefaultColor: true,
 	showTopTaskInEditor: true,
-	checkboxSource: 'streams',
+	checkboxSource: 'daily-notes',
 	customFolderPath: '',
 	includeSubfolders: true,
 	loadMoreLimit: 10,
