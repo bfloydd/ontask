@@ -1,9 +1,9 @@
 import { App, Plugin } from 'obsidian';
 import { PluginOrchestrator, PluginDependencies } from './PluginOrchestratorInterface';
-import { SettingsService } from '../settings';
+import { SettingsService, SettingsChangeEvent } from '../settings';
 import { StreamsService } from '../streams';
 import { OnTaskViewImpl, ONTASK_VIEW_TYPE } from '../ontask-view';
-import { EventSystem } from '../events';
+import { EventSystem, EventData } from '../events';
 import { Logger } from '../logging/Logger';
 import { SettingsAwareSliceService } from '../../shared/BaseSlice';
 
@@ -77,21 +77,23 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 	setupEventListeners(): void {
 		const { app, settingsService } = this.dependencies;
 		
-		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
+		const settingsSubscription = this.eventSystem.on<EventData<SettingsChangeEvent>>('settings:changed', (event) => {
 			this.logger.debug('[OnTask Orchestrator] Settings changed event received:', event.data);
-			switch (event.data.key) {
-				case 'checkboxSource':
-				case 'customFolderPath':
-				case 'includeSubfolders':
-					this.logger.debug('[OnTask Orchestrator] Checkbox source settings changed, reconfiguring');
-					this.configureCheckboxSource();
-					break;
-				case 'showTopTaskInEditor':
-					this.logger.debug('[OnTask Orchestrator] showTopTaskInEditor setting changed, delegating to editor integration');
-					break;
-				case 'debugLoggingEnabled':
-					this.logger.debug('[OnTask Orchestrator] debugLoggingEnabled setting changed, delegating to logging service');
-					break;
+			if (event.data) {
+				switch (event.data.key) {
+					case 'checkboxSource':
+					case 'customFolderPath':
+					case 'includeSubfolders':
+						this.logger.debug('[OnTask Orchestrator] Checkbox source settings changed, reconfiguring');
+						this.configureCheckboxSource();
+						break;
+					case 'showTopTaskInEditor':
+						this.logger.debug('[OnTask Orchestrator] showTopTaskInEditor setting changed, delegating to editor integration');
+						break;
+					case 'debugLoggingEnabled':
+						this.logger.debug('[OnTask Orchestrator] debugLoggingEnabled setting changed, delegating to logging service');
+						break;
+				}
 			}
 		});
 		this.eventListeners.push(() => settingsSubscription.unsubscribe());

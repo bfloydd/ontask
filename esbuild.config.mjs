@@ -1,6 +1,8 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import fs from "fs";
+import path from "path";
 
 const banner =
 `/*
@@ -10,6 +12,12 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+const distLocation = "dist";
+const distDir = prod ? distLocation : ".";
+
+if (prod && !fs.existsSync(distDir)) {
+	fs.mkdirSync(distDir, { recursive: true });
+}
 
 const context = await esbuild.context({
 	banner: {
@@ -37,13 +45,37 @@ const context = await esbuild.context({
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
-	outfile: "main.js",
+	outfile: path.join(distDir, "main.js"),
 	minify: prod,
 });
 
 if (prod) {
 	await context.rebuild();
+	// Minify CSS in production mode
+	if (fs.existsSync("styles.css")) {
+		console.log("Minifying styles.css...");
+		const css = fs.readFileSync("styles.css", "utf8");
+		// Use esbuild's CSS minification
+		const result = await esbuild.transform(css, {
+			loader: "css",
+			minify: true
+		});
+		// Write to dist directory
+		fs.writeFileSync(path.join(distDir, "styles.css"), result.code);
+		console.log("styles.css minification complete");
+	}
+	// Copy manifest.json to dist directory
+	if (fs.existsSync("manifest.json")) {
+		console.log("Copying manifest.json to dist directory...");
+		fs.copyFileSync("manifest.json", path.join(distDir, "manifest.json"));
+		console.log("Manifest copied successfully");
+	}
 	process.exit(0);
 } else {
+	// Copy CSS in development mode
+	if (fs.existsSync("styles.css")) {
+		console.log("Copying styles.css...");
+		fs.copyFileSync("styles.css", path.join(distDir, "styles.css"));
+	}
 	await context.watch();
 }

@@ -3,8 +3,8 @@ import { Command } from '../commands';
 import { Logger, LogLevel } from './Logger';
 import { ToggleLoggingCommandImpl } from './ToggleLoggingCommandImpl';
 import { SettingsAwareSliceService } from '../../shared/BaseSlice';
-import { EventSystem } from '../events';
-import { OnTaskSettings } from '../settings/SettingsServiceInterface';
+import { EventSystem, EventData } from '../events';
+import { OnTaskSettings, SettingsChangeEvent } from '../settings/SettingsServiceInterface';
 
 export class LoggingServiceImpl extends SettingsAwareSliceService implements ILoggingService {
     private dependencies: LoggingDependencies;
@@ -94,8 +94,8 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
     private setupEventListeners(): void {
         if (!this.eventSystem) return;
 
-        const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
-            if (event.data.key === 'debugLoggingEnabled') {
+        const settingsSubscription = this.eventSystem.on<EventData<SettingsChangeEvent>>('settings:changed', (event) => {
+            if (event.data?.key === 'debugLoggingEnabled') {
                 if (event.data.value) {
                     this.logger.on(LogLevel.DEBUG);
                 } else {
