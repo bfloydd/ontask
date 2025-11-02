@@ -1432,15 +1432,24 @@
 	background: var(--background-secondary) !important;
 	color: var(--text-normal) !important;
 	border: 1px solid var(--background-modifier-border) !important;
-	font-size: 14px !important;
+	font-size: 13px !important;
 	padding: 6px !important;
 	border-radius: 4px !important;
 	transition: all 0.2s ease !important;
-	min-width: 32px !important;
-	height: 32px !important;
+	width: auto !important;
+	min-width: 28px !important;
+	height: auto !important;
+	min-height: 28px !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
+	line-height: 1 !important;
+}
+
+/* Constrain icon size within config button to match text button visual size */
+.ontask-config-button svg {
+	width: 16px !important;
+	height: 16px !important;
 }
 
 .ontask-config-button:hover {

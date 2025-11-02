@@ -7,6 +7,7 @@ import { DataService, QuickFilter } from '../../data/DataServiceInterface';
 import { StatusConfig } from '../../settings/StatusConfig';
 import { OnTaskSettingsTab } from '../../settings/views/SettingsView';
 import { AppWithSettings } from '../../../types';
+import { IconService } from '../../../shared/IconService';
 
 // Type definitions for Obsidian Setting components
 interface ObsidianToggle {
@@ -153,25 +154,27 @@ class FilterModal extends Modal {
 			// Add config button to the same row as quick filter buttons
 			new Setting(quickFiltersContainer)
 				.addButton(button => {
-					button.setButtonText('⚙️')
-						.setClass('ontask-config-button')
-						.onClick(() => {
-							this.close();
-							// Open settings and navigate to Quick Filters tab
-							const appWithSettings = this.app as AppWithSettings;
-							if (appWithSettings.setting) {
-								appWithSettings.setting.open();
-								appWithSettings.setting.openTabById(this.plugin.manifest.id);
+					// Use IconService instead of emoji for consistency and theme compatibility
+					button.setButtonText('') // Clear text to make room for icon
+						.setClass('ontask-config-button');
+					IconService.setIcon(button.buttonEl, 'settings'); // Settings/configuration icon
+					button.onClick(() => {
+						this.close();
+						// Open settings and navigate to Quick Filters tab
+						const appWithSettings = this.app as AppWithSettings;
+						if (appWithSettings.setting) {
+							appWithSettings.setting.open();
+							appWithSettings.setting.openTabById(this.plugin.manifest.id);
+						}
+						
+						// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
+						setTimeout(() => {
+							const settingsTab = (this.plugin as OnTaskPlugin).settingsTab;
+							if (settingsTab && settingsTab.navigateToTab) {
+								settingsTab.navigateToTab('quick-filters');
 							}
-							
-							// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
-							setTimeout(() => {
-								const settingsTab = (this.plugin as OnTaskPlugin).settingsTab;
-								if (settingsTab && settingsTab.navigateToTab) {
-									settingsTab.navigateToTab('quick-filters');
-								}
-							}, 100);
-						});
+						}, 100);
+					});
 				});
 			
 			// Add change listeners to all status toggles for live updates
