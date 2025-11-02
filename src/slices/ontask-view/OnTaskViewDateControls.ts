@@ -27,7 +27,7 @@ export class OnTaskViewDateControls {
 		
 		const options: Array<{ value: 'all' | 'today'; label: string; icon: 'calendar' }> = [
 			{ value: 'today', label: 'Today', icon: 'calendar' },
-			{ value: 'all', label: 'Show All', icon: 'calendar' }
+			{ value: 'all', label: 'Show all', icon: 'calendar' }
 		];
 		
 		options.forEach((option) => {

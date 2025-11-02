@@ -48,7 +48,7 @@ export class ViewHeaderService implements ViewHeaderServiceInterface {
 		const filtersButton = rightButtonsContainer.createEl('button');
 		filtersButton.addClass('ontask-header-button');
 		filtersButton.innerHTML = IconService.getIcon('filter');
-		filtersButton.title = 'Filter Statuses';
+		filtersButton.title = 'Filter statuses';
 		filtersButton.addEventListener('click', callbacks.onFilters, { passive: true });
 		
 		const refreshButton = rightButtonsContainer.createEl('button');

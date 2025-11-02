@@ -75,7 +75,10 @@ describe('DOMRenderingService - Data Attributes Integration', () => {
 			const checkbox = {
 				file,
 				lineNumber: 10,
-				lineContent: '- [ ] Test task'
+				lineContent: '- [ ] Test task',
+				checkboxText: '- [ ] Test task',
+				sourceName: 'test',
+				sourcePath: 'folder/file.md'
 			};
 
 			// Act
@@ -91,7 +94,10 @@ describe('DOMRenderingService - Data Attributes Integration', () => {
 			const checkbox = {
 				file,
 				lineNumber: 42,
-				lineContent: '- [x] Completed task'
+				lineContent: '- [x] Completed task',
+				checkboxText: '- [x] Completed task',
+				sourceName: 'test',
+				sourcePath: 'test.md'
 			};
 
 			// Act
@@ -104,9 +110,12 @@ describe('DOMRenderingService - Data Attributes Integration', () => {
 		it('should handle missing file path gracefully', () => {
 			// Arrange
 			const checkbox = {
-				file: null,
+				file: null as any,
 				lineNumber: 5,
-				lineContent: '- [ ] Task without file'
+				lineContent: '- [ ] Task without file',
+				checkboxText: '- [ ] Task without file',
+				sourceName: 'test',
+				sourcePath: ''
 			};
 
 			// Act
@@ -122,8 +131,11 @@ describe('DOMRenderingService - Data Attributes Integration', () => {
 			const file = new (TFile as any)('test.md', 'test.md', Date.now());
 			const checkbox = {
 				file,
-				lineNumber: undefined,
-				lineContent: '- [ ] Task without line number'
+				lineNumber: undefined as any,
+				lineContent: '- [ ] Task without line number',
+				checkboxText: '- [ ] Task without line number',
+				sourceName: 'test',
+				sourcePath: 'test.md'
 			};
 
 			// Act
@@ -139,9 +151,9 @@ describe('DOMRenderingService - Data Attributes Integration', () => {
 			const file1 = new (TFile as any)('file1.md', 'file1.md', Date.now());
 			const file2 = new (TFile as any)('file2.md', 'file2.md', Date.now());
 			
-			const checkbox1 = { file: file1, lineNumber: 5, lineContent: '- [ ] Task 1' };
-			const checkbox2 = { file: file2, lineNumber: 10, lineContent: '- [ ] Task 2' };
-			const checkbox3 = { file: file1, lineNumber: 15, lineContent: '- [ ] Task 3' };
+			const checkbox1 = { file: file1, lineNumber: 5, lineContent: '- [ ] Task 1', checkboxText: '- [ ] Task 1', sourceName: 'test', sourcePath: 'file1.md' };
+			const checkbox2 = { file: file2, lineNumber: 10, lineContent: '- [ ] Task 2', checkboxText: '- [ ] Task 2', sourceName: 'test', sourcePath: 'file2.md' };
+			const checkbox3 = { file: file1, lineNumber: 15, lineContent: '- [ ] Task 3', checkboxText: '- [ ] Task 3', sourceName: 'test', sourcePath: 'file1.md' };
 
 			// Act
 			const element1 = domRenderingService.createCheckboxElement(checkbox1);

@@ -13,6 +13,7 @@ jest.mock('../../../logging/Logger', () => ({
 import { TaskLoadingService } from '../TaskLoadingService';
 import { SettingsService } from '../../../settings';
 import { StatusConfigService } from '../../../settings/StatusConfig';
+import { DEFAULT_SETTINGS, OnTaskSettings } from '../../../settings/SettingsServiceInterface';
 
 // Mock dependencies
 const mockStreamsService = {
@@ -81,7 +82,7 @@ describe('TaskLoadingService', () => {
 	describe('loadTasksWithFiltering', () => {
 		it('should stop immediately when target number of tasks is reached', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 3, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 3, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			// Mock file system with multiple files containing tasks
@@ -121,7 +122,7 @@ describe('TaskLoadingService', () => {
 
 		it('should stop immediately when target is reached mid-file', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 2, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 2, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			const mockFiles = [
@@ -155,7 +156,7 @@ describe('TaskLoadingService', () => {
 
 		it('should handle case where not enough tasks are found', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 10, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			const mockFiles = [
@@ -182,7 +183,7 @@ describe('TaskLoadingService', () => {
 
 		it('should sort files Z-A by filename ignoring path', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 5, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 5, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			const mockFiles = [
@@ -212,7 +213,7 @@ describe('TaskLoadingService', () => {
 
 		it('should continue from exact position on Load More', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 3, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 3, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			const mockFiles = [
@@ -254,7 +255,7 @@ describe('TaskLoadingService', () => {
 
 		it('should stop mid-file when target reached (3/5 tasks in file)', async () => {
 			// Arrange - simulate the spec example where we stop at 3/5 tasks in a file
-			const settings = { loadMoreLimit: 10, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			const mockFiles = [
@@ -287,7 +288,7 @@ describe('TaskLoadingService', () => {
 
 		it('should only find tasks matching allowed statuses', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 10, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			mockStatusConfigService.getStatusFilters = jest.fn(() => ({ ' ': true, 'x': true, '/': true }));
 			
@@ -322,7 +323,7 @@ describe('TaskLoadingService', () => {
 
 		it('should find no tasks when no statuses are allowed', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 10, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			mockStatusConfigService.getStatusFilters = jest.fn(() => ({})); // Empty object = no statuses allowed
 			
@@ -361,7 +362,7 @@ Some regular text without checkboxes`;
 
 		it('should treat space as synonym for dot in status filtering', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 10, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			mockStatusConfigService.getStatusFilters = jest.fn(() => ({ ' ': true, '.': true }));
 			
@@ -392,7 +393,7 @@ Some regular text without checkboxes`;
 
 		it('should skip files that cannot be found', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 3, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 3, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			const mockFiles = [
@@ -423,7 +424,7 @@ Some regular text without checkboxes`;
 
 		it('should continue processing after file read error', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 3, onlyShowToday: false };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 3, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			const mockFiles = [
@@ -462,7 +463,7 @@ Some regular text without checkboxes`;
 
 		it('should handle onlyShowToday filtering', async () => {
 			// Arrange
-			const settings = { loadMoreLimit: 5, onlyShowToday: true };
+			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 5, dateFilter: 'today' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			
 			const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format

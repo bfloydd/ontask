@@ -50,8 +50,8 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 
 		const tabs = [
 			{ id: 'general', name: 'General' },
-			{ id: 'status', name: 'Status Configuration' },
-			{ id: 'quick-filters', name: 'Quick Filters' }
+			{ id: 'status', name: 'Statuses' },
+			{ id: 'quick-filters', name: 'Quick filters' }
 		];
 
 		tabs.forEach(tab => {

@@ -68,7 +68,7 @@ class FilterModal extends Modal {
 	onOpen() {
 		const { contentEl, titleEl } = this;
 		contentEl.empty();
-		titleEl.textContent = 'Filter Statuses';
+		titleEl.textContent = 'Filter statuses';
 		
 		// Add the ontask-filters-modal class to the modal element
 		this.modalEl.addClass('ontask-filters-modal');

@@ -1,7 +1,8 @@
-import { EventSystem } from '../../events';
+import { EventSystem, EventData } from '../../events';
 import { ItemView, App, TFile } from 'obsidian';
 import { Logger } from '../../logging/Logger';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
+import { SettingsChangeEvent } from '../../settings/SettingsServiceInterface';
 
 export interface EventHandlingServiceInterface {
 	setupEventListeners(): void;
@@ -47,15 +48,15 @@ export class EventHandlingService implements EventHandlingServiceInterface, Chec
 	setupEventListeners(): void {
 		this.cleanupEventListeners();
 		
-		const settingsSubscription = this.eventSystem.on('settings:changed', (event) => {
+		const settingsSubscription = this.eventSystem.on<EventData<SettingsChangeEvent>>('settings:changed', (event: EventData<SettingsChangeEvent>) => {
 			this.logger.debug('[OnTask EventHandling] Settings changed event received:', event.data);
-			if (event.data.key === 'dateFilter' || event.data.key === 'topTaskColor' || event.data.key === 'useThemeDefaultColor') {
+			if (event.data?.key === 'dateFilter' || event.data?.key === 'topTaskColor' || event.data?.key === 'useThemeDefaultColor') {
 				this.logger.debug('[OnTask EventHandling] Setting changed, refreshing entire view');
 				this.onRefreshCheckboxes();
 			}
 		});
 		
-		const checkboxUpdateSubscription = this.eventSystem.on('checkboxes:updated', (event) => {
+		const checkboxUpdateSubscription = this.eventSystem.on<EventData<{ count: number; topTask?: CheckboxItem }>>('checkboxes:updated', (event: EventData<{ count: number; topTask?: CheckboxItem }>) => {
 			this.logger.debug('[OnTask EventHandling] Checkboxes updated event received:', event.data);
 			const contentArea = this.app.workspace.getActiveViewOfType(ItemView)?.contentEl?.querySelector('.ontask-content') as HTMLElement;
 			if (contentArea) {

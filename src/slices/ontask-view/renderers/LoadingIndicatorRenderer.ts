@@ -10,7 +10,7 @@ export class LoadingIndicatorRenderer {
 		loadMoreSection.className = 'ontask-load-more-section';
 		
 		const loadMoreButton = document.createElement('button');
-		loadMoreButton.textContent = 'Load More';
+		loadMoreButton.textContent = 'Load more';
 		loadMoreButton.className = 'ontask-load-more-button';
 		loadMoreSection.appendChild(loadMoreButton);
 		

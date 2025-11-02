@@ -1,9 +1,9 @@
 import { App, MarkdownView, Plugin } from 'obsidian';
 import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
-import { SettingsService } from '../settings/SettingsServiceInterface';
+import { SettingsService, SettingsChangeEvent } from '../settings/SettingsServiceInterface';
 import { StatusConfigService } from '../settings/StatusConfig';
 import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
-import { EventSystem } from '../events/EventSystemInterface';
+import { EventSystem, EventData } from '../events/EventSystemInterface';
 import { PluginAwareSliceService } from '../../shared/BaseSlice';
 import { Logger } from '../logging/Logger';
 import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
@@ -43,20 +43,20 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	async initialize(): Promise<void> {
 		if (this.initialized) return;
 
-		this.eventSystem.on('settings:changed', (event) => {
+		this.eventSystem.on<EventData<SettingsChangeEvent>>('settings:changed', (event: EventData<SettingsChangeEvent>) => {
 			this.logger.debug('[OnTask Editor] Settings changed event received:', event.data);
-			if (event.data.key === 'showTopTaskInEditor') {
+			if (event.data?.key === 'showTopTaskInEditor') {
 				this.logger.debug('[OnTask Editor] showTopTaskInEditor setting changed, scheduling decoration update');
 				this.scheduleDecorationUpdate();
-			} else if (event.data.key === 'topTaskColor' || event.data.key === 'useThemeDefaultColor') {
+			} else if (event.data?.key === 'topTaskColor' || event.data?.key === 'useThemeDefaultColor') {
 				this.logger.debug('[OnTask Editor] top task color setting changed, updating existing overlays');
 				this.updateExistingOverlayColors();
 			}
 		});
 
-		this.eventSystem.on('top-task:found', (event) => {
+		this.eventSystem.on<EventData<{ topTask: CheckboxItem | null }>>('top-task:found', (event: EventData<{ topTask: CheckboxItem | null }>) => {
 			this.logger.debug('[OnTask Editor] Top task found event received:', event.data);
-			this.topTaskMemory = event.data.topTask;
+			this.topTaskMemory = event.data?.topTask ?? null;
 			if (this.isEnabled()) {
 				this.logger.debug('[OnTask Editor] Editor integration enabled, scheduling decoration update');
 				this.scheduleDecorationUpdate();

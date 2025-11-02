@@ -140,7 +140,7 @@ export class QuickFiltersView {
 	private renderAddButton(containerEl: HTMLElement): void {
 		const addBtn = containerEl.createEl('button', { 
 			cls: 'quick-filter-add-btn',
-			text: '+ Add Quick Filter'
+			text: '+ Add quick filter'
 		});
 		
 		addBtn.addEventListener('click', () => this.showAddQuickFilterModal(), { passive: true });
@@ -156,7 +156,7 @@ export class QuickFiltersView {
 
 	private showQuickFilterModal(existingFilter?: QuickFilter): void {
 		const modal = new Modal(this.app);
-		modal.titleEl.textContent = existingFilter ? 'Edit Quick Filter' : 'Add Quick Filter';
+		modal.titleEl.textContent = existingFilter ? 'Edit quick filter' : 'Add quick filter';
 
 		const content = modal.contentEl;
 		content.empty();
