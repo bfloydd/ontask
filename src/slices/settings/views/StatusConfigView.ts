@@ -3,7 +3,7 @@ import { StatusConfig } from '../SettingsServiceInterface';
 import { StatusConfigService } from '../StatusConfig';
 import { setupDragAndDrop } from '../../../shared/DragAndDropUtils';
 
-const NON_EDITABLE_SYMBOLS = ['/', '!', '+', '.', 'x'];
+const NON_EDITABLE_SYMBOLS = ['/', '!', '+', '.', 'x', '-', '>', '#', '<'];
 
 export class StatusConfigView {
 	private containerEl: HTMLElement;
@@ -190,6 +190,14 @@ export class StatusConfigView {
 				symbolDescription = 'Single character symbol for this status (read-only - this is the default task symbol)';
 			} else if (workingConfig.symbol === 'x') {
 				symbolDescription = 'Single character symbol for this status (read-only - this is the done/completed symbol)';
+			} else if (workingConfig.symbol === '-') {
+				symbolDescription = 'Single character symbol for this status (read-only - this is the cancelled symbol)';
+			} else if (workingConfig.symbol === '>') {
+				symbolDescription = 'Single character symbol for this status (read-only - this is the forward/tomorrow symbol)';
+			} else if (workingConfig.symbol === '#') {
+				symbolDescription = 'Single character symbol for this status (read-only - this is the backburner symbol)';
+			} else if (workingConfig.symbol === '<') {
+				symbolDescription = 'Single character symbol for this status (read-only - this is the scheduled symbol)';
 			} else {
 				symbolDescription = 'Single character symbol for this status (read-only - this is a top task symbol)';
 			}
