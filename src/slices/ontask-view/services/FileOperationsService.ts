@@ -45,36 +45,40 @@ export class FileOperationsService implements FileOperationsServiceInterface, Ch
 				return;
 			}
 			
-			const content = await this.app.vault.read(file);
-			const lines = content.split('\n');
-			
 			const lineIndex = checkbox.lineNumber - 1;
-			if (lineIndex >= 0 && lineIndex < lines.length) {
-				const line = lines[lineIndex];
-				const updatedLine = line.replace(
-					/^(-\s*\[)([^\]]*)(\])/,
-					`$1${isCompleted ? 'x' : ' '}$3`
-				);
-				lines[lineIndex] = updatedLine;
+			
+			await this.app.vault.process(file, (content) => {
+				const lines = content.split('\n');
 				
-				await this.app.vault.modify(file, lines.join('\n'));
-				checkbox.isCompleted = isCompleted;
+				if (lineIndex >= 0 && lineIndex < lines.length) {
+					const line = lines[lineIndex];
+					const updatedLine = line.replace(
+						/^(-\s*\[)([^\]]*)(\])/,
+						`$1${isCompleted ? 'x' : ' '}$3`
+					);
+					lines[lineIndex] = updatedLine;
+					return lines.join('\n');
+				}
 				
-				this.logger.debug('[OnTask FileOps] Emitting checkbox:toggled event for', file.path, 'line', checkbox.lineNumber, 'completed:', isCompleted);
-				this.eventSystem.emit('checkbox:toggled', {
-					filePath: file.path,
-					lineNumber: checkbox.lineNumber,
-					isCompleted
-				});
-				
-				this.logger.debug('[OnTask FileOps] Emitting checkboxes:updated event with', this.checkboxes.length, 'checkboxes');
-				this.eventSystem.emit('checkboxes:updated', { 
-					count: this.checkboxes.length,
-					topTask: this.checkboxes.find(cb => cb.isTopTask)
-				});
-				
-				this.scheduleRefreshCallback();
-			}
+				return content;
+			});
+			
+			checkbox.isCompleted = isCompleted;
+			
+			this.logger.debug('[OnTask FileOps] Emitting checkbox:toggled event for', file.path, 'line', checkbox.lineNumber, 'completed:', isCompleted);
+			this.eventSystem.emit('checkbox:toggled', {
+				filePath: file.path,
+				lineNumber: checkbox.lineNumber,
+				isCompleted
+			});
+			
+			this.logger.debug('[OnTask FileOps] Emitting checkboxes:updated event with', this.checkboxes.length, 'checkboxes');
+			this.eventSystem.emit('checkboxes:updated', { 
+				count: this.checkboxes.length,
+				topTask: this.checkboxes.find(cb => cb.isTopTask)
+			});
+			
+			this.scheduleRefreshCallback();
 		} catch (error) {
 			this.logger.error('[OnTask FileOps] Error toggling checkbox:', error);
 		}
@@ -90,33 +94,42 @@ export class FileOperationsService implements FileOperationsServiceInterface, Ch
 				return;
 			}
 
-			const content = await this.app.vault.read(file);
-			const lines = content.split('\n');
-
 			const lineIndex = checkbox.lineNumber - 1;
-			if (lineIndex >= 0 && lineIndex < lines.length) {
-				const line = lines[lineIndex];
-				const updatedLine = line.replace(/^(\s*)- \[[^\]]*\]/, `$1- [${newStatus}]`);
+			let updatedLineContent: string | null = null;
+
+			await this.app.vault.process(file, (content) => {
+				const lines = content.split('\n');
+
+				if (lineIndex >= 0 && lineIndex < lines.length) {
+					const line = lines[lineIndex];
+					const updatedLine = line.replace(/^(\s*)- \[[^\]]*\]/, `$1- [${newStatus}]`);
+					
+					lines[lineIndex] = updatedLine;
+					updatedLineContent = updatedLine;
+					return lines.join('\n');
+				}
 				
-				lines[lineIndex] = updatedLine;
-				await this.app.vault.modify(file, lines.join('\n'));
-				
-				// If in-place update callback is provided, read the updated content and call it
-				// Otherwise, use the standard refresh callback
-				if (onInPlaceUpdate) {
-					// Read the file again to get the exact updated line content
-					const updatedContent = await this.app.vault.read(file);
+				return content;
+			});
+			
+			// If in-place update callback is provided, call it with the updated line content
+			// Otherwise, use the standard refresh callback
+			if (onInPlaceUpdate) {
+				if (updatedLineContent !== null) {
+					onInPlaceUpdate(updatedLineContent);
+				} else {
+					// Fallback: read the file to get the updated line content
+					const updatedContent = await this.app.vault.cachedRead(file);
 					const updatedLines = updatedContent.split('\n');
 					if (lineIndex >= 0 && lineIndex < updatedLines.length) {
-						const newLineContent = updatedLines[lineIndex];
-						onInPlaceUpdate(newLineContent);
+						onInPlaceUpdate(updatedLines[lineIndex]);
 					} else {
 						// Fallback to refresh if line reading fails
 						this.scheduleRefreshCallback();
 					}
-				} else {
-					this.scheduleRefreshCallback();
 				}
+			} else {
+				this.scheduleRefreshCallback();
 			}
 		} catch (error) {
 			this.logger.error('[OnTask FileOps] Error updating checkbox status:', error);

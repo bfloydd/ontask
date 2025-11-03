@@ -97,7 +97,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		const checkboxes: TaskItem[] = [];
 		
 		try {
-			const content = await this.app.vault.read(file);
+			const content = await this.app.vault.cachedRead(file);
 			const lines = content.split('\n');
 
 			for (let i = 0; i < lines.length; i++) {

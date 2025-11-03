@@ -10,7 +10,8 @@ const mockApp = {
 	vault: {
 		getMarkdownFiles: jest.fn(),
 		getAbstractFileByPath: jest.fn(),
-		read: jest.fn()
+		read: jest.fn(),
+		cachedRead: jest.fn()
 	}
 } as any;
 
@@ -73,7 +74,7 @@ describe('StreamsTaskStrategy', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Work Task')
 				.mockResolvedValueOnce('- [x] Personal Task');
 
@@ -108,7 +109,7 @@ describe('StreamsTaskStrategy', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn().mockResolvedValue('- [ ] Today Stream Task');
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Today Stream Task');
 
 			// Mock Date to return 2024-01-15
 			jest.useFakeTimers();
@@ -160,7 +161,7 @@ describe('StreamsTaskStrategy', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn().mockResolvedValue(`
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(`
 - [ ] Task 1
 - [x] Task 2
 - [/] Task 3
@@ -193,9 +194,15 @@ describe('StreamsTaskStrategy', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn()
-				.mockResolvedValueOnce('- [ ] Work Task 1')
-				.mockResolvedValueOnce('- [x] Work Task 2');
+			// Reset and set up fresh mock for this test - each file returns one task
+			mockApp.vault.cachedRead = jest.fn((file) => {
+				if (file.path === '/Work/task1.md') {
+					return Promise.resolve('- [ ] Work Task 1');
+				} else if (file.path === '/Work/task2.md') {
+					return Promise.resolve('- [x] Work Task 2');
+				}
+				return Promise.resolve('');
+			});
 
 			const context = {
 				onlyShowToday: false,

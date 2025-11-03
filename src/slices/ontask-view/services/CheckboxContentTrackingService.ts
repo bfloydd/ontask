@@ -43,7 +43,7 @@ export class CheckboxContentTrackingService implements CheckboxContentTrackingSe
 				return false;
 			}
 			
-			const content = await this.app.vault.read(file);
+			const content = await this.app.vault.cachedRead(file);
 			const lines = content.split('\n');
 			
 			let hasCheckboxChanges = false;

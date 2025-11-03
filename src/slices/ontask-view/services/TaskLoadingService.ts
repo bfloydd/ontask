@@ -1,4 +1,4 @@
-import { TFile, App } from 'obsidian';
+import { TFile, App, normalizePath } from 'obsidian';
 import { AppWithPlugins } from '../../../types';
 import { TaskFinderFactoryImpl } from '../../task-finder/TaskFinderFactoryImpl';
 import { SettingsService } from '../../settings';
@@ -77,7 +77,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			}
 			
 			try {
-				const content = await this.app.vault.read(file);
+				const content = await this.app.vault.cachedRead(file);
 				const lines = content.split('\n');
 				
 				const fileTasks: CheckboxItem[] = [];
@@ -181,8 +181,9 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		
 		const settings = this.settingsService.getSettings();
 		if (settings.checkboxSource === 'folder' && settings.customFolderPath) {
+			const normalizedFolderPath = normalizePath(settings.customFolderPath);
 			const folderFiles = this.app.vault.getMarkdownFiles().filter((file: TFile) => 
-				file.path.startsWith(settings.customFolderPath)
+				normalizePath(file.path).startsWith(normalizedFolderPath)
 			);
 			allFiles.push(...folderFiles.map((file: TFile) => file.path));
 		}

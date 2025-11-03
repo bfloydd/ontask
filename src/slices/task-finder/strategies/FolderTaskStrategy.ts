@@ -1,4 +1,4 @@
-import { App, TFile, TFolder } from 'obsidian';
+import { App, TFile, TFolder, normalizePath } from 'obsidian';
 import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderInterfaces';
 import { Logger } from '../../logging/Logger';
 import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
@@ -17,7 +17,10 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 
 	constructor(app: App, config: FolderStrategyConfig, logger?: Logger) {
 		this.app = app;
-		this.config = config;
+		this.config = {
+			...config,
+			folderPath: normalizePath(config.folderPath)
+		};
 		this.logger = logger;
 	}
 
@@ -26,7 +29,8 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 	}
 
 	isAvailable(): boolean {
-		const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
+		const normalizedPath = normalizePath(this.config.folderPath);
+		const folder = this.app.vault.getAbstractFileByPath(normalizedPath);
 		return folder !== null;
 	}
 
@@ -51,7 +55,8 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 					}
 				}
 			} else {
-				const folder = this.app.vault.getAbstractFileByPath(this.config.folderPath);
+				const normalizedPath = normalizePath(this.config.folderPath);
+				const folder = this.app.vault.getAbstractFileByPath(normalizedPath);
 				if (!folder || !(folder instanceof TFolder)) {
 					return checkboxes;
 				}
@@ -89,14 +94,16 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		} else {
 			const allFiles = this.app.vault.getMarkdownFiles();
 			
+			const normalizedFolderPath = normalizePath(this.config.folderPath);
 			for (const file of allFiles) {
+				const normalizedFilePath = normalizePath(file.path);
 				if (this.config.recursive) {
-					if (file.path.startsWith(this.config.folderPath)) {
+					if (normalizedFilePath.startsWith(normalizedFolderPath)) {
 						files.push(file);
 					}
 				} else {
-					const relativePath = file.path.substring(this.config.folderPath.length + 1);
-					if (!relativePath.includes('/') && file.path.startsWith(this.config.folderPath)) {
+					const relativePath = normalizedFilePath.substring(normalizedFolderPath.length + 1);
+					if (!relativePath.includes('/') && normalizedFilePath.startsWith(normalizedFolderPath)) {
 						files.push(file);
 					}
 				}
@@ -110,7 +117,7 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		const checkboxes: TaskItem[] = [];
 		
 		try {
-			const content = await this.app.vault.read(file);
+			const content = await this.app.vault.cachedRead(file);
 			const lines = content.split('\n');
 
 			for (let i = 0; i < lines.length; i++) {

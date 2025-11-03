@@ -4,7 +4,8 @@ const mockApp = {
 	vault: {
 		getMarkdownFiles: jest.fn(),
 		getAbstractFileByPath: jest.fn(),
-		read: jest.fn()
+		read: jest.fn(),
+		cachedRead: jest.fn()
 	},
 	plugins: {
 		getPlugin: jest.fn()
@@ -98,7 +99,7 @@ describe('DailyNotesTaskStrategy', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1\n- [x] Task 2')
 				.mockResolvedValueOnce('- [ ] Task 3\n- [/] Task 4');
 
@@ -141,7 +142,7 @@ describe('DailyNotesTaskStrategy', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue('- [ ] Today Task');
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Today Task');
 
 			// Mock Date to return 2024-01-15
 			jest.useFakeTimers();
@@ -185,7 +186,7 @@ describe('DailyNotesTaskStrategy', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue(`
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(`
 - [ ] Task 1
 - [x] Task 2
 - [/] Task 3

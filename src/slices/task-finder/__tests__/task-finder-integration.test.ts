@@ -1,3 +1,46 @@
+// Mock obsidian module to provide normalizePath and other exports
+jest.mock('obsidian', () => {
+	const normalizePath = (path: string): string => {
+		if (!path) return path;
+		let normalized = path.replace(/\\/g, '/');
+		normalized = normalized.replace(/\/+/g, '/');
+		if (normalized.length > 1 && normalized.endsWith('/')) {
+			normalized = normalized.slice(0, -1);
+		}
+		if (path.startsWith('/') && !normalized.startsWith('/')) {
+			normalized = '/' + normalized;
+		}
+		return normalized;
+	};
+
+	return {
+		TFile: class TFile {
+			path: string;
+			name: string;
+			stat: { mtime: number };
+			constructor(path: string, name: string, mtime: number = Date.now()) {
+				this.path = path;
+				this.name = name;
+				this.stat = { mtime };
+			}
+		},
+		TFolder: class TFolder {
+			path: string;
+			name: string;
+			constructor(path: string, name?: string) {
+				this.path = path;
+				this.name = name || path.split('/').pop() || '';
+			}
+		},
+		App: class App {
+			vault: any;
+			plugins: any;
+			workspace: any;
+		},
+		normalizePath
+	};
+});
+
 import { TaskFinderFactoryImpl } from '../TaskFinderFactoryImpl';
 import { DailyNotesTaskStrategy } from '../strategies/DailyNotesTaskStrategy';
 import { FolderTaskStrategy } from '../strategies/FolderTaskStrategy';
@@ -16,6 +59,7 @@ const mockApp = {
 	vault: {
 		getAbstractFileByPath: jest.fn(),
 		read: jest.fn(),
+		cachedRead: jest.fn(),
 		getMarkdownFiles: jest.fn(),
 		getFiles: jest.fn()
 	},
@@ -78,7 +122,7 @@ describe('TaskFinder Integration Tests', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1\n- [x] Task 2')
 				.mockResolvedValueOnce('- [ ] Task 3\n- [/] Task 4');
 
@@ -113,7 +157,7 @@ describe('TaskFinder Integration Tests', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue('- [ ] Today Task');
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Today Task');
 
 			// Mock Date to return 2024-01-15
 			jest.useFakeTimers();
@@ -173,7 +217,7 @@ describe('TaskFinder Integration Tests', () => {
 				if (path === '/Projects') return new TFolder('/Projects', 'Projects');
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Project Task 1')
 				.mockResolvedValueOnce('- [x] Project Task 2');
 
@@ -234,7 +278,7 @@ describe('TaskFinder Integration Tests', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn((file) => {
+			mockApp.vault.cachedRead = jest.fn((file) => {
 				if (file.path === '/Work/task1.md') return Promise.resolve('- [ ] Work Task');
 				if (file.path === '/Personal/task2.md') return Promise.resolve('- [x] Personal Task');
 				return Promise.resolve('');
@@ -294,7 +338,7 @@ describe('TaskFinder Integration Tests', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn((file) => {
+			mockApp.vault.cachedRead = jest.fn((file) => {
 				if (file.path.includes('2024-01-14')) return Promise.resolve('- [ ] Today Stream Task');
 				return Promise.resolve('');
 			});
@@ -362,7 +406,7 @@ describe('TaskFinder Integration Tests', () => {
 				if (path === '/Projects') return new TFolder('/Projects', 'Projects');
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Daily Note Task')
 				.mockResolvedValueOnce('- [x] Work Task')
 				.mockResolvedValueOnce('- [/] Project Task');
@@ -396,6 +440,17 @@ describe('TaskFinder Integration Tests', () => {
 		it('should respect limit across all strategies', async () => {
 			// Arrange
 			mockApp.plugins.getPlugin = jest.fn().mockReturnValue({ name: 'daily-notes' });
+			// Ensure internal plugins is also set up
+			mockApp.internalPlugins.plugins = {
+				'daily-notes': {
+					enabled: true,
+					instance: {
+						options: {
+							folder: '/Daily Notes'
+						}
+					}
+				}
+			};
 
 			const mockFiles = [
 				{ path: '/Daily Notes/2024-01-15.md', name: '2024-01-15.md' }
@@ -405,7 +460,7 @@ describe('TaskFinder Integration Tests', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue(`
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(`
 - [ ] Task 1
 - [x] Task 2
 - [/] Task 3
@@ -419,8 +474,9 @@ describe('TaskFinder Integration Tests', () => {
 				filePaths: []
 			};
 
-			// Act
-			const result = await dailyNotesStrategy.findCheckboxes(context);
+			// Act - create fresh strategy after mock setup to ensure availability check passes
+			const testStrategy = new DailyNotesTaskStrategy(mockApp);
+			const result = await testStrategy.findCheckboxes(context);
 
 			// Assert
 			expect(result).toHaveLength(3); // Strategy now properly implements limit

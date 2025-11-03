@@ -57,4 +57,25 @@ export class Setting {
   addToggle(callback: (toggle: any) => void) { return this; }
 }
 
+/**
+ * Normalize a path by replacing backslashes with forward slashes
+ * and removing duplicate slashes, leading/trailing slashes
+ */
+export function normalizePath(path: string): string {
+  if (!path) return path;
+  // Replace backslashes with forward slashes
+  let normalized = path.replace(/\\/g, '/');
+  // Remove duplicate slashes
+  normalized = normalized.replace(/\/+/g, '/');
+  // Remove trailing slash (except for root)
+  if (normalized.length > 1 && normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1);
+  }
+  // Ensure leading slash for absolute paths on Windows
+  if (path.startsWith('/') && !normalized.startsWith('/')) {
+    normalized = '/' + normalized;
+  }
+  return normalized;
+}
+
 

@@ -54,7 +54,8 @@ const mockStatusConfigService = {
 const mockApp = {
 	vault: {
 		getAbstractFileByPath: jest.fn(),
-		read: jest.fn()
+		read: jest.fn(),
+		cachedRead: jest.fn()
 	}
 } as any;
 
@@ -101,7 +102,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue(mockFileContent);
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			// Initialize file tracking with mock files
 			await taskLoadingService.initializeFileTracking(false);
@@ -113,11 +114,11 @@ describe('TaskLoadingService', () => {
 
 			// Assert
 			expect(result.tasks).toHaveLength(3); // Should stop at exactly 3 tasks
-			expect(mockApp.vault.read).toHaveBeenCalledTimes(1); // Should only read 1 file (file1.md has 3 tasks)
-			expect(mockApp.vault.read).toHaveBeenCalledWith(mockFiles[0]);
-			expect(mockApp.vault.read).not.toHaveBeenCalledWith(mockFiles[1]); // Should not read file2.md
-			expect(mockApp.vault.read).not.toHaveBeenCalledWith(mockFiles[2]); // Should not read file3.md
-			expect(mockApp.vault.read).not.toHaveBeenCalledWith(mockFiles[3]); // Should not read file4.md
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledTimes(1); // Should only read 1 file (file1.md has 3 tasks)
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledWith(mockFiles[0]);
+			expect(mockApp.vault.cachedRead).not.toHaveBeenCalledWith(mockFiles[1]); // Should not read file2.md
+			expect(mockApp.vault.cachedRead).not.toHaveBeenCalledWith(mockFiles[2]); // Should not read file3.md
+			expect(mockApp.vault.cachedRead).not.toHaveBeenCalledWith(mockFiles[3]); // Should not read file4.md
 		});
 
 		it('should stop immediately when target is reached mid-file', async () => {
@@ -134,7 +135,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1') // file1.md - 1 task
 				.mockResolvedValueOnce(`- [ ] Task 2
 - [ ] Task 3
@@ -148,7 +149,7 @@ describe('TaskLoadingService', () => {
 
 			// Assert
 			expect(result.tasks).toHaveLength(2); // Should stop at exactly 2 tasks
-			expect(mockApp.vault.read).toHaveBeenCalledTimes(2); // Should read both files
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledTimes(2); // Should read both files
 			expect(result.tasks[0].lineContent).toBe('- [ ] Task 1');
 			expect(result.tasks[1].lineContent).toBe('- [ ] Task 2');
 			// Should not process Task 3 and Task 4 from file2.md
@@ -168,7 +169,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue('No tasks here');
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('No tasks here');
 
 			await taskLoadingService.initializeFileTracking(false);
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
@@ -178,7 +179,7 @@ describe('TaskLoadingService', () => {
 
 			// Assert
 			expect(result.tasks).toHaveLength(0); // Should return empty array
-			expect(mockApp.vault.read).toHaveBeenCalledTimes(2); // Should read all files
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledTimes(2); // Should read all files
 		});
 
 		it('should sort files Z-A by filename ignoring path', async () => {
@@ -195,7 +196,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue('- [ ] Task');
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');
 
 			// Mock the streams service to return files in unsorted order
 			mockStreamsService.getAllFiles = jest.fn().mockResolvedValue(mockFiles);
@@ -226,7 +227,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3') // file1.md - 3 tasks
 				.mockResolvedValueOnce('- [ ] Task 4\n- [ ] Task 5\n- [ ] Task 6'); // file2.md - 3 tasks
 
@@ -236,21 +237,21 @@ describe('TaskLoadingService', () => {
 			// First load - should stop at file1.md with 3 tasks
 			const firstResult = await taskLoadingService.loadTasksWithFiltering(settings);
 			expect(firstResult.tasks).toHaveLength(3);
-			expect(mockApp.vault.read).toHaveBeenCalledTimes(1);
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledTimes(1);
 
 			// Reset mocks for second load
 			jest.clearAllMocks();
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue('- [ ] Task 4\n- [ ] Task 5\n- [ ] Task 6'); // file2.md - 3 tasks
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task 4\n- [ ] Task 5\n- [ ] Task 6'); // file2.md - 3 tasks
 
 			// Second load - should continue from file2.md
 			const secondResult = await taskLoadingService.loadTasksWithFiltering(settings);
 			expect(secondResult.tasks).toHaveLength(3);
 			// The service may read multiple files to find the continuation point
-			expect(mockApp.vault.read).toHaveBeenCalled();
-			expect(mockApp.vault.read).toHaveBeenCalledWith(mockFiles[1]); // Should read file2.md
+			expect(mockApp.vault.cachedRead).toHaveBeenCalled();
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledWith(mockFiles[1]); // Should read file2.md
 		});
 
 		it('should stop mid-file when target reached (3/5 tasks in file)', async () => {
@@ -266,7 +267,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n- [ ] Task 4\n- [ ] Task 5') // file1.md - 5 tasks
 				.mockResolvedValueOnce('- [ ] Task 6\n- [ ] Task 7\n- [ ] Task 8\n- [ ] Task 9\n- [ ] Task 10'); // file2.md - 5 tasks
 
@@ -278,7 +279,7 @@ describe('TaskLoadingService', () => {
 
 			// Assert
 			expect(result.tasks).toHaveLength(10); // Should stop at exactly 10 tasks
-			expect(mockApp.vault.read).toHaveBeenCalledTimes(2); // Should read both files
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledTimes(2); // Should read both files
 			// Verify we got tasks from both files
 			expect(result.tasks[0].lineContent).toBe('- [ ] Task 1');
 			expect(result.tasks[4].lineContent).toBe('- [ ] Task 5');
@@ -306,7 +307,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue(mockFileContent);
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			await taskLoadingService.initializeFileTracking(false);
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
@@ -347,7 +348,7 @@ Some regular text without checkboxes`;
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue(mockFileContent);
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			await taskLoadingService.initializeFileTracking(false);
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
@@ -357,7 +358,7 @@ Some regular text without checkboxes`;
 
 			// Assert
 			expect(result.tasks).toHaveLength(0); // Should find no tasks when no statuses are allowed
-			expect(mockApp.vault.read).toHaveBeenCalledTimes(1); // Should still read the file
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledTimes(1); // Should still read the file
 		});
 
 		it('should treat space as synonym for dot in status filtering', async () => {
@@ -377,7 +378,7 @@ Some regular text without checkboxes`;
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue(mockFileContent);
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			await taskLoadingService.initializeFileTracking(false);
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
@@ -406,7 +407,7 @@ Some regular text without checkboxes`;
 				if (path === 'missing-file.md') return null; // File not found
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.read = jest.fn().mockResolvedValue('- [ ] Task');
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');
 
 			await taskLoadingService.initializeFileTracking(false);
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
@@ -416,10 +417,10 @@ Some regular text without checkboxes`;
 
 			// Assert
 			expect(result.tasks).toHaveLength(2); // Should find 2 tasks from 2 files (1 task each)
-			expect(mockApp.vault.read).toHaveBeenCalledTimes(2); // Should only read 2 files
-			expect(mockApp.vault.read).toHaveBeenCalledWith(mockFiles[0]);
-			expect(mockApp.vault.read).toHaveBeenCalledWith(mockFiles[2]);
-			expect(mockApp.vault.read).not.toHaveBeenCalledWith(mockFiles[1]); // Should not read missing file
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledTimes(2); // Should only read 2 files
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledWith(mockFiles[0]);
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledWith(mockFiles[2]);
+			expect(mockApp.vault.cachedRead).not.toHaveBeenCalledWith(mockFiles[1]); // Should not read missing file
 		});
 
 		it('should continue processing after file read error', async () => {
@@ -436,7 +437,7 @@ Some regular text without checkboxes`;
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1') // file1.md - success
 				.mockRejectedValueOnce(new Error('Read error')) // error-file.md - error
 				.mockResolvedValueOnce('- [ ] Task 2\n- [ ] Task 3'); // file2.md - success
@@ -452,7 +453,7 @@ Some regular text without checkboxes`;
 
 			// Assert
 			expect(result.tasks).toHaveLength(3); // Should find 3 tasks despite error
-			expect(mockApp.vault.read).toHaveBeenCalledTimes(3); // Should attempt to read all files
+			expect(mockApp.vault.cachedRead).toHaveBeenCalledTimes(3); // Should attempt to read all files
 			expect(result.tasks[0].lineContent).toBe('- [ ] Task 1');
 			expect(result.tasks[1].lineContent).toBe('- [ ] Task 2');
 			expect(result.tasks[2].lineContent).toBe('- [ ] Task 3');
@@ -476,7 +477,7 @@ Some regular text without checkboxes`;
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
-			mockApp.vault.read = jest.fn().mockResolvedValue('- [ ] Task');
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');
 
 			// Mock the streams service to return files
 			mockStreamsService.getAllFiles = jest.fn().mockResolvedValue(mockFiles);

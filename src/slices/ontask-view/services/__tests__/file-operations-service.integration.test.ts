@@ -37,7 +37,9 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 		mockApp = {
 			vault: {
 				read: jest.fn(),
-				modify: jest.fn().mockResolvedValue(undefined)
+				modify: jest.fn().mockResolvedValue(undefined),
+				process: jest.fn(),
+				cachedRead: jest.fn()
 			}
 		};
 
@@ -82,10 +84,11 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			mockCheckboxes.push(checkbox);
 
 			const originalContent = 'Line 1\n- [ ] Original task\nLine 3';
-			const updatedContent = 'Line 1\n- [/] Updated task\nLine 3';
-			mockApp.vault.read = jest.fn()
-				.mockResolvedValueOnce(originalContent) // First read for modification
-				.mockResolvedValueOnce(updatedContent); // Second read for callback
+			// Mock process() to call the callback with original content and return the result
+			mockApp.vault.process = jest.fn().mockImplementation(async (file, callback) => {
+				const result = callback(originalContent);
+				return result;
+			});
 
 			// Act
 			await fileOperationsService.updateCheckboxStatus(
@@ -95,8 +98,9 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			);
 
 			// Assert
-			expect(mockInPlaceUpdateCallback).toHaveBeenCalledWith('- [/] Updated task');
+			expect(mockInPlaceUpdateCallback).toHaveBeenCalledWith('- [/] Original task');
 			expect(mockScheduleRefreshCallback).not.toHaveBeenCalled();
+			expect(mockApp.vault.process).toHaveBeenCalledWith(file, expect.any(Function));
 		});
 
 		it('should fall back to scheduleRefreshCallback when in-place callback is not provided', async () => {
@@ -113,7 +117,10 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			mockCheckboxes.push(checkbox);
 
 			const originalContent = 'Line 1\n- [ ] Original task\nLine 3';
-			mockApp.vault.read = jest.fn().mockResolvedValueOnce(originalContent);
+			mockApp.vault.process = jest.fn().mockImplementation(async (file, callback) => {
+				const result = callback(originalContent);
+				return result;
+			});
 
 			// Act
 			await fileOperationsService.updateCheckboxStatus(
@@ -125,6 +132,7 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			// Assert
 			expect(mockInPlaceUpdateCallback).not.toHaveBeenCalled();
 			expect(mockScheduleRefreshCallback).toHaveBeenCalled();
+			expect(mockApp.vault.process).toHaveBeenCalled();
 		});
 
 		it('should update file content correctly before calling callback', async () => {
@@ -141,10 +149,10 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			mockCheckboxes.push(checkbox);
 
 			const originalContent = 'Line 1\n- [!] Important task\nLine 3';
-			const updatedContent = 'Line 1\n- [x] Completed task\nLine 3';
-			mockApp.vault.read = jest.fn()
-				.mockResolvedValueOnce(originalContent)
-				.mockResolvedValueOnce(updatedContent);
+			mockApp.vault.process = jest.fn().mockImplementation(async (file, callback) => {
+				const result = callback(originalContent);
+				return result;
+			});
 
 			// Act
 			await fileOperationsService.updateCheckboxStatus(
@@ -153,12 +161,12 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 				mockInPlaceUpdateCallback
 			);
 
-			// Assert - Verify modify was called (exact content match depends on regex)
-			expect(mockApp.vault.modify).toHaveBeenCalledWith(
-				file,
-				expect.stringContaining('- [x]')
-			);
-			expect(mockInPlaceUpdateCallback).toHaveBeenCalledWith('- [x] Completed task');
+			// Assert - Verify process was called with callback that modifies content
+			expect(mockApp.vault.process).toHaveBeenCalledWith(file, expect.any(Function));
+			const processCallback = mockApp.vault.process.mock.calls[0][1];
+			const processedContent = processCallback(originalContent);
+			expect(processedContent).toContain('- [x]');
+			expect(mockInPlaceUpdateCallback).toHaveBeenCalledWith('- [x] Important task');
 		});
 
 		it('should handle errors gracefully and fall back to refresh', async () => {
@@ -174,7 +182,7 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			};
 			mockCheckboxes.push(checkbox);
 
-			mockApp.vault.read = jest.fn().mockRejectedValue(new Error('File read error'));
+			mockApp.vault.process = jest.fn().mockRejectedValue(new Error('File process error'));
 
 			// Suppress console.error for this test since we're intentionally testing error handling
 			const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -212,7 +220,10 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			mockCheckboxes.push(checkbox);
 
 			const originalContent = '- [ ] Task';
-			mockApp.vault.read = jest.fn().mockResolvedValueOnce(originalContent);
+			mockApp.vault.process = jest.fn().mockImplementation(async (file, callback) => {
+				const result = callback(originalContent);
+				return result;
+			});
 
 			// Act
 			await fileOperationsService.toggleCheckbox(checkbox, true);
@@ -220,6 +231,7 @@ describe('FileOperationsService - In-Place Update Callback Integration', () => {
 			// Assert
 			expect(mockScheduleRefreshCallback).toHaveBeenCalled();
 			expect(checkbox.isCompleted).toBe(true);
+			expect(mockApp.vault.process).toHaveBeenCalled();
 		});
 	});
 });

@@ -1,5 +1,6 @@
-import { App, Setting } from 'obsidian';
+import { App, Setting, normalizePath } from 'obsidian';
 import { SettingsService } from '../SettingsServiceInterface';
+import { FolderInputSuggest } from './FolderInputSuggest';
 
 export class GeneralSettingsView {
 	private app: App;
@@ -121,19 +122,25 @@ export class GeneralSettingsView {
 			}
 		}
 		if (settings.checkboxSource === 'folder') {
-			new Setting(this.containerEl)
+			const folderPathSetting = new Setting(this.containerEl)
 				.setName('Folder path')
 				.setDesc('Path to the folder containing your task files')
-				.addText(text => text
-					.setPlaceholder('e.g., /My Tasks or My Tasks')
-					.setValue(settings.customFolderPath)
-					.onChange(async (value) => {
-						await this.settingsService.updateSetting('customFolderPath', value);
-						this.app.workspace.trigger('ontask:settings-changed', { 
-							key: 'customFolderPath', 
-							value 
+				.addText(text => {
+					text
+						.setPlaceholder('e.g., /My Tasks or My Tasks')
+						.setValue(settings.customFolderPath)
+						.onChange(async (value) => {
+							const normalizedPath = normalizePath(value);
+							await this.settingsService.updateSetting('customFolderPath', normalizedPath);
+							this.app.workspace.trigger('ontask:settings-changed', { 
+								key: 'customFolderPath', 
+								value: normalizedPath
+							});
 						});
-					}));
+					
+					// Add folder input suggest for type-ahead support
+					new FolderInputSuggest(this.app, text.inputEl);
+				});
 
 			new Setting(this.containerEl)
 				.setName('Include subfolders')

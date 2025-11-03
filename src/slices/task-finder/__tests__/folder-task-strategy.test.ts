@@ -1,3 +1,46 @@
+// Mock obsidian module to provide normalizePath and other exports
+jest.mock('obsidian', () => {
+	const normalizePath = (path: string): string => {
+		if (!path) return path;
+		let normalized = path.replace(/\\/g, '/');
+		normalized = normalized.replace(/\/+/g, '/');
+		if (normalized.length > 1 && normalized.endsWith('/')) {
+			normalized = normalized.slice(0, -1);
+		}
+		if (path.startsWith('/') && !normalized.startsWith('/')) {
+			normalized = '/' + normalized;
+		}
+		return normalized;
+	};
+
+	return {
+		TFile: class TFile {
+			path: string;
+			name: string;
+			stat: { mtime: number };
+			constructor(path: string, name: string, mtime: number = Date.now()) {
+				this.path = path;
+				this.name = name;
+				this.stat = { mtime };
+			}
+		},
+		TFolder: class TFolder {
+			path: string;
+			name: string;
+			constructor(path: string, name?: string) {
+				this.path = path;
+				this.name = name || path.split('/').pop() || '';
+			}
+		},
+		App: class App {
+			vault: any;
+			plugins: any;
+			workspace: any;
+		},
+		normalizePath
+	};
+});
+
 import { FolderTaskStrategy, FolderStrategyConfig } from '../strategies/FolderTaskStrategy';
 import { TFolder } from '../../../__mocks__/obsidian';
 
@@ -5,7 +48,8 @@ const mockApp = {
 	vault: {
 		getMarkdownFiles: jest.fn(),
 		getAbstractFileByPath: jest.fn(),
-		read: jest.fn()
+		read: jest.fn(),
+		cachedRead: jest.fn()
 	}
 } as any;
 
@@ -72,7 +116,7 @@ describe('FolderTaskStrategy', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn()
+			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Project Task 1')
 				.mockResolvedValueOnce('- [x] Project Task 2');
 
@@ -104,7 +148,7 @@ describe('FolderTaskStrategy', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn().mockResolvedValue('- [ ] Today Project Task');
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Today Project Task');
 
 			// Mock Date to return 2024-01-15
 			jest.useFakeTimers();
@@ -139,7 +183,7 @@ describe('FolderTaskStrategy', () => {
 				return mockFiles.find(f => f.path === path) || null;
 			});
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.read = jest.fn().mockResolvedValue(`
+			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(`
 - [ ] Task 1
 - [x] Task 2
 - [/] Task 3
