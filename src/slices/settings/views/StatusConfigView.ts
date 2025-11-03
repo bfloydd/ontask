@@ -2,6 +2,7 @@ import { App, Setting, Modal } from 'obsidian';
 import { StatusConfig } from '../SettingsServiceInterface';
 import { StatusConfigService } from '../StatusConfig';
 import { setupDragAndDrop } from '../../../shared/DragAndDropUtils';
+import { IconService } from '../../../shared/IconService';
 
 const NON_EDITABLE_SYMBOLS = ['/', '!', '+', '.', 'x', '-', '>', '#', '<'];
 
@@ -51,9 +52,12 @@ export class StatusConfigView {
 
 		// Drag handle (visual indicator only - the entire item is draggable)
 		const dragHandle = itemEl.createEl('div', { 
-			cls: 'status-config-drag-handle',
-			text: '⋮⋮'
+			cls: 'status-config-drag-handle'
 		});
+		const gripIcon = IconService.getConfigIconElement('grip-vertical', { width: 16, height: 16 });
+		if (gripIcon) {
+			dragHandle.appendChild(gripIcon);
+		}
 
 		// Status preview
 		const previewEl = itemEl.createEl('div', { cls: 'status-config-preview' });
@@ -108,18 +112,18 @@ export class StatusConfigView {
 
 		// Edit button
 		const editBtn = itemEl.createEl('button', { 
-			cls: 'status-config-edit-btn',
-			text: 'Edit'
+			cls: 'status-config-edit-btn'
 		});
+		IconService.setConfigIcon(editBtn, 'edit');
 
 		// Delete button (only show for editable symbols)
 		let deleteBtn: HTMLButtonElement | null = null;
 		
 		if (!isNonEditableSymbol) {
 			deleteBtn = itemEl.createEl('button', { 
-				cls: 'status-config-delete-btn',
-				text: 'Delete'
+				cls: 'status-config-delete-btn mod-warning'
 			});
+			IconService.setConfigIcon(deleteBtn, 'delete');
 		}
 
 		// Event listeners
