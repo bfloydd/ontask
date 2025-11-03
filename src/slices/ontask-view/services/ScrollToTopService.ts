@@ -37,11 +37,24 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		// Create the scroll-to-top button
 		this.scrollToTopButton = document.createElement('button');
 		this.scrollToTopButton.className = 'ontask-scroll-to-top-button';
-		this.scrollToTopButton.innerHTML = `
-			<svg class="lucide lucide-chevron-up" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<path d="m18 15-6-6-6 6"/>
-			</svg>
-		`;
+		
+		// Use DOM API instead of innerHTML for security
+		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		svg.setAttribute('class', 'lucide lucide-chevron-up');
+		svg.setAttribute('width', '16');
+		svg.setAttribute('height', '16');
+		svg.setAttribute('viewBox', '0 0 24 24');
+		svg.setAttribute('fill', 'none');
+		svg.setAttribute('stroke', 'currentColor');
+		svg.setAttribute('stroke-width', '2');
+		svg.setAttribute('stroke-linecap', 'round');
+		svg.setAttribute('stroke-linejoin', 'round');
+		
+		const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		path.setAttribute('d', 'm18 15-6-6-6 6');
+		svg.appendChild(path);
+		
+		this.scrollToTopButton.appendChild(svg);
 		this.scrollToTopButton.title = 'Scroll to top';
 		this.scrollToTopButton.setAttribute('aria-label', 'Scroll to top');
 
@@ -57,8 +70,7 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		}, { passive: false });
 
 		// Initially hide the button
-		this.scrollToTopButton.style.display = 'none';
-		this.scrollToTopButton.style.opacity = '0';
+		this.scrollToTopButton.classList.add('ontask-scroll-hidden');
 
 		// Append to the content element
 		this.contentEl.appendChild(this.scrollToTopButton);
@@ -114,13 +126,13 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		if (!this.scrollToTopButton) return;
 
 		this.isVisible = true;
-		this.scrollToTopButton.style.display = 'block';
+		this.scrollToTopButton.classList.remove('ontask-scroll-hidden');
+		this.scrollToTopButton.classList.add('ontask-scroll-visible');
 		
 		// Use requestAnimationFrame for smooth animation
 		requestAnimationFrame(() => {
 			if (this.scrollToTopButton) {
-				this.scrollToTopButton.style.opacity = '1';
-				this.scrollToTopButton.style.transform = 'translateY(0)';
+				this.scrollToTopButton.classList.add('ontask-scroll-animated');
 			}
 		});
 	}
@@ -129,13 +141,14 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		if (!this.scrollToTopButton) return;
 
 		this.isVisible = false;
-		this.scrollToTopButton.style.opacity = '0';
-		this.scrollToTopButton.style.transform = 'translateY(10px)';
+		this.scrollToTopButton.classList.remove('ontask-scroll-visible', 'ontask-scroll-animated');
+		this.scrollToTopButton.classList.add('ontask-scroll-hiding');
 		
 		// Hide the button after animation completes
 		setTimeout(() => {
 			if (this.scrollToTopButton && !this.isVisible) {
-				this.scrollToTopButton.style.display = 'none';
+				this.scrollToTopButton.classList.add('ontask-scroll-hidden');
+				this.scrollToTopButton.classList.remove('ontask-scroll-hiding');
 			}
 		}, 200);
 	}

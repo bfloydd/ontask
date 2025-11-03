@@ -18,9 +18,14 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 	}
 
 	isAvailable(): boolean {
+		// Type assertion necessary: Obsidian's internal plugin APIs are not fully typed
+		// The plugins and internalPlugins properties exist but are not in the public API types
+		// This is a known limitation when accessing community plugins or core plugins
 		const dailyNotesPlugin = (this.app as any).plugins?.getPlugin('daily-notes');
 		const hasDailyNotesPlugin = dailyNotesPlugin !== null;
 		
+		// Type assertion necessary: internalPlugins is an internal Obsidian API
+		// Used to check if the core Daily Notes plugin is enabled
 		const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
 		const hasDailyNotesCore = !!(dailyNotesCore && dailyNotesCore.enabled);
 		
@@ -40,6 +45,8 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 					}
 				}
 			} else {
+				// Type assertion necessary: internalPlugins is an internal Obsidian API
+				// Used to access the core Daily Notes plugin configuration
 				const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
 				if (!dailyNotesCore || !dailyNotesCore.enabled) {
 					return checkboxes;

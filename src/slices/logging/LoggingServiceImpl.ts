@@ -5,6 +5,15 @@ import { ToggleLoggingCommandImpl } from './ToggleLoggingCommandImpl';
 import { SettingsAwareSliceService } from '../../shared/BaseSlice';
 import { EventSystem, EventData } from '../events';
 import { OnTaskSettings, SettingsChangeEvent } from '../settings/SettingsServiceInterface';
+import { Plugin } from 'obsidian';
+
+/**
+ * Interface for plugin with settings property
+ * This provides type safety when accessing plugin settings
+ */
+interface PluginWithSettings extends Plugin {
+	settings: OnTaskSettings;
+}
 
 export class LoggingServiceImpl extends SettingsAwareSliceService implements ILoggingService {
     private dependencies: LoggingDependencies;
@@ -56,12 +65,13 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
 
     createToggleCommand(): Command {
         if (!this.toggleCommand) {
+            const pluginWithSettings = this.dependencies.plugin as PluginWithSettings;
             this.toggleCommand = new ToggleLoggingCommandImpl(
                 this.dependencies.app,
                 (enabled: boolean) => {
-                    (this.dependencies.plugin as any).settings.debugLoggingEnabled = enabled;
+                    pluginWithSettings.settings.debugLoggingEnabled = enabled;
                 },
-                () => this.dependencies.plugin.saveData((this.dependencies.plugin as any).settings),
+                () => this.dependencies.plugin.saveData(pluginWithSettings.settings),
                 this.logger
             );
         }
@@ -70,15 +80,17 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
 
     enableDebug(): void {
         this.logger.on(LogLevel.DEBUG);
-        if ((this.dependencies.plugin as any).settings) {
-            (this.dependencies.plugin as any).settings.debugLoggingEnabled = true;
+        const pluginWithSettings = this.dependencies.plugin as PluginWithSettings;
+        if (pluginWithSettings.settings) {
+            pluginWithSettings.settings.debugLoggingEnabled = true;
         }
     }
 
     disableDebug(): void {
         this.logger.on(LogLevel.INFO);
-        if ((this.dependencies.plugin as any).settings) {
-            (this.dependencies.plugin as any).settings.debugLoggingEnabled = false;
+        const pluginWithSettings = this.dependencies.plugin as PluginWithSettings;
+        if (pluginWithSettings.settings) {
+            pluginWithSettings.settings.debugLoggingEnabled = false;
         }
     }
 
@@ -87,8 +99,9 @@ export class LoggingServiceImpl extends SettingsAwareSliceService implements ILo
         this.setupEventListeners();
     }
 
-    protected getSettings(): any {
-        return (this.dependencies.plugin as any).settings || {};
+    protected getSettings<T extends OnTaskSettings = OnTaskSettings>(): T {
+        const pluginWithSettings = this.dependencies.plugin as PluginWithSettings;
+        return (pluginWithSettings.settings || {} as OnTaskSettings) as T;
     }
 
     private setupEventListeners(): void {

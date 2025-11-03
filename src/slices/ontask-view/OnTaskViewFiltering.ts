@@ -79,10 +79,12 @@ export class OnTaskViewFiltering {
 		if (currentFilter.trim() === '') {
 			// Show all tasks and file sections
 			fileSections.forEach(section => {
-				(section as HTMLElement).style.display = '';
+				const sectionElement = section as HTMLElement;
+				sectionElement.classList.remove('ontask-filter-hidden');
 				const taskElements = section.querySelectorAll('.ontask-checkbox-item');
 				taskElements.forEach(task => {
-					(task as HTMLElement).style.display = '';
+					const taskElement = task as HTMLElement;
+					taskElement.classList.remove('ontask-filter-hidden');
 				});
 			});
 		} else {
@@ -102,13 +104,18 @@ export class OnTaskViewFiltering {
 					
 					if (shouldShow) {
 						hasVisibleTasks = true;
+						taskElement.classList.remove('ontask-filter-hidden');
+					} else {
+						taskElement.classList.add('ontask-filter-hidden');
 					}
-					
-					taskElement.style.display = shouldShow ? '' : 'none';
 				});
 				
 				// Hide the entire file section if it has no visible tasks
-				sectionElement.style.display = hasVisibleTasks ? '' : 'none';
+				if (hasVisibleTasks) {
+					sectionElement.classList.remove('ontask-filter-hidden');
+				} else {
+					sectionElement.classList.add('ontask-filter-hidden');
+				}
 			});
 		}
 	}

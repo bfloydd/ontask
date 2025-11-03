@@ -65,12 +65,11 @@ export class StatusConfigView {
 			cls: 'status-config-symbol',
 			text: config.symbol
 		});
-		// Apply colors directly via inline styles for all statuses
-		statusEl.style.color = config.color;
-		statusEl.style.backgroundColor = config.backgroundColor || 'transparent';
-		
 		// Always apply dynamic styling attributes since CSS variables are set for all statuses
 		statusEl.setAttribute('data-dynamic-color', 'true');
+		// Use CSS variables for dynamic colors instead of direct style assignments
+		statusEl.style.setProperty('--ontask-config-color', config.color);
+		statusEl.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
 		
 		// Only set custom-status attribute for truly custom status configurations
 		if (!StatusConfigService.isBuiltInStatus(config.symbol)) {
@@ -292,10 +291,10 @@ export class StatusConfigView {
 			cls: 'status-config-modal-symbol',
 			text: workingConfig.symbol
 		});
-		// Always apply dynamic styling and colors directly via inline styles
+		// Always apply dynamic styling using CSS variables
 		previewStatus.setAttribute('data-dynamic-color', 'true');
-		previewStatus.style.color = workingConfig.color;
-		previewStatus.style.backgroundColor = workingConfig.backgroundColor || 'transparent';
+		previewStatus.style.setProperty('--ontask-config-color', workingConfig.color);
+		previewStatus.style.setProperty('--ontask-config-background-color', workingConfig.backgroundColor || 'transparent');
 		
 		// Only set custom-status attribute for truly custom status configurations
 		if (!StatusConfigService.isBuiltInStatus(workingConfig.symbol)) {
@@ -305,10 +304,10 @@ export class StatusConfigView {
 		// Update preview on change
 		const updatePreview = () => {
 			previewStatus.textContent = workingConfig.symbol;
-			// Always apply dynamic styling and colors directly via inline styles
-			previewStatus.setAttribute('data-dynamic-color', 'true');
-			previewStatus.style.color = workingConfig.color;
-			previewStatus.style.backgroundColor = workingConfig.backgroundColor || 'transparent';
+		// Always apply dynamic styling using CSS variables
+		previewStatus.setAttribute('data-dynamic-color', 'true');
+		previewStatus.style.setProperty('--ontask-config-color', workingConfig.color);
+		previewStatus.style.setProperty('--ontask-config-background-color', workingConfig.backgroundColor || 'transparent');
 			
 			// Only set custom-status attribute for truly custom status configurations
 			if (!StatusConfigService.isBuiltInStatus(workingConfig.symbol)) {

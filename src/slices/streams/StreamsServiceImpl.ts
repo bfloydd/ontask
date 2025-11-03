@@ -21,6 +21,9 @@ export class StreamsServiceImpl implements StreamsService {
 
 	private initializeStreamsPlugin() {
 		this.app.workspace.onLayoutReady(() => {
+			// Type assertion necessary: Obsidian's plugin API for accessing community plugins
+			// The plugins.getPlugin() method exists but the return type is not fully typed
+			// We cast to StreamsPlugin interface which defines the expected methods
 			const streamsPlugin = (this.app as any).plugins?.getPlugin('streams') as StreamsPlugin;
 			this.streamsPlugin = streamsPlugin;
 		});

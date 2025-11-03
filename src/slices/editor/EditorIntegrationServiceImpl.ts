@@ -213,13 +213,26 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 		const displayText = remainingText || 'Top task';
 		
-		topTaskBar.innerHTML = `
-			<div class="ontask-toptask-hero-content">
-				<span class="ontask-toptask-hero-icon">🔥</span>
-				<span class="ontask-toptask-hero-text">${displayText}</span>
-				<span class="ontask-toptask-hero-source">From: ${topTask.file.name}</span>
-			</div>
-		`;
+		// Use DOM API instead of innerHTML for security
+		const contentDiv = document.createElement('div');
+		contentDiv.className = 'ontask-toptask-hero-content';
+		
+		const iconSpan = document.createElement('span');
+		iconSpan.className = 'ontask-toptask-hero-icon';
+		iconSpan.textContent = '🔥';
+		
+		const textSpan = document.createElement('span');
+		textSpan.className = 'ontask-toptask-hero-text';
+		textSpan.textContent = displayText;
+		
+		const sourceSpan = document.createElement('span');
+		sourceSpan.className = 'ontask-toptask-hero-source';
+		sourceSpan.textContent = `From: ${topTask.file.name}`;
+		
+		contentDiv.appendChild(iconSpan);
+		contentDiv.appendChild(textSpan);
+		contentDiv.appendChild(sourceSpan);
+		topTaskBar.appendChild(contentDiv);
 
 		editorContainer.appendChild(topTaskBar);
 		

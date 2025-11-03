@@ -346,6 +346,11 @@
 	border-bottom: none;
 }
 
+.ontask-checkbox-item.ontask-filter-hidden,
+.ontask-file-section.ontask-filter-hidden {
+	display: none;
+}
+
 .ontask-checkbox-container {
 	margin-bottom: 0;
 }
@@ -1914,9 +1919,28 @@
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	transition: all 0.3s ease;
 	z-index: 9999;
+	backdrop-filter: blur(10px);
+}
+
+/* Scroll button visibility states */
+.ontask-scroll-to-top-button.ontask-scroll-hidden {
+	display: none;
+}
+
+.ontask-scroll-to-top-button.ontask-scroll-visible {
+	display: flex;
 	opacity: 0;
 	transform: translateY(10px);
-	backdrop-filter: blur(10px);
+}
+
+.ontask-scroll-to-top-button.ontask-scroll-visible.ontask-scroll-animated {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.ontask-scroll-to-top-button.ontask-scroll-hiding {
+	opacity: 0;
+	transform: translateY(10px);
 }
 
 .ontask-scroll-to-top-button:hover {
