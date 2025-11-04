@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	dateFilter: 'all',
 	topTaskColor: '#ff6b6b',
 	useThemeDefaultColor: true,
-	showTopTaskInEditor: true,
+	showTopTaskInEditor: false,
 	checkboxSource: 'daily-notes',
 	customFolderPath: '',
 	includeSubfolders: true,
