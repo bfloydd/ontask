@@ -1,11 +1,20 @@
-# OnTask Plugin
+![OnTask Plugin Logo](assets/logo-transparent-500.png)
 
-Bullet journal–inspired productivity  
-Seamless Streams integration
+## Features
+- Bullet journal–inspired productivity  
+- Automatically grabs tasks from your vault
+- Flexible filtering to find what matters most
+- Top task
+    - Set your top task and stay focused 
+    - ... despite distractions    
+    - Personalize your top task’s appearance  
+- Seamless Streams integration
 
-Set your top task and stay focused  
-Personalize your top task’s appearance  
-Adjust priority on the fly  
-Customizable task statuses
+## Other Plugins
 
-Powerful, flexible filtering to find what matters most
+Check out my other Obsidian plugins:
+
+- **[Streams](https://github.com/bfloydd/streams)**
+- **[Coalesce](https://github.com/bfloydd/coalesce)**
+
+*Follow me on [GitHub](https://github.com/bfloydd) for updates.*
