@@ -1,6 +1,6 @@
 {
 	"id": "on-task",
-	"name": "On Task",
+	"name": "OnTask",
 	"version": "0.0.4",
 	"minAppVersion": "0.15.0",
 	"description": "Bullet journal–inspired task manager with a focus on top-task productivity. Opinionated. Configurable. Simple. Fast.",

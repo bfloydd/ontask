@@ -144,7 +144,7 @@ export class OnTaskViewImpl extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return 'On Task';
+		return 'OnTask';
 	}
 
 	getIcon(): string {
