@@ -26,6 +26,21 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 		if (!this.data.statusConfigs || this.data.statusConfigs.length === 0) {
 			this.data.statusConfigs = [...DEFAULT_STATUS_CONFIGS];
 			await this.saveData();
+		} else {
+			// Ensure all default statuses are present
+			let needsSave = false;
+			const existingSymbols = new Set(this.data.statusConfigs.map(config => config.symbol));
+			
+			for (const defaultConfig of DEFAULT_STATUS_CONFIGS) {
+				if (!existingSymbols.has(defaultConfig.symbol)) {
+					this.data.statusConfigs.push({ ...defaultConfig });
+					needsSave = true;
+				}
+			}
+			
+			if (needsSave) {
+				await this.saveData();
+			}
 		}
 		
 		if (!this.data.quickFilters || this.data.quickFilters.length === 0) {

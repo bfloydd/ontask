@@ -368,14 +368,14 @@ export class StatusConfigView {
 		const buttonContainer = content.createDiv();
 		buttonContainer.addClass('ontask-button-container');
 
+		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
+		cancelButton.addEventListener('click', () => modal.close(), { passive: true });
+
 		const deleteButton = buttonContainer.createEl('button', { text: 'Delete' });
 		deleteButton.addEventListener('click', async () => {
 			await this.deleteStatus(index);
 			modal.close();
 		}, { passive: true });
-
-		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
-		cancelButton.addEventListener('click', () => modal.close(), { passive: true });
 
 		modal.open();
 	}
