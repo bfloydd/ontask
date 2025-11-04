@@ -39,7 +39,7 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 				{
 					id: 'plan',
 					name: 'Plan',
-					statusSymbols: ['.', '+', '/', '!', '*', '?', 'r', 'b', '>', '$'],
+					statusSymbols: ['.', '+', '/', '!', '*', '?', 'r', 'b', '>'],
 					enabled: true
 				},
 				{

@@ -218,7 +218,7 @@ class FilterModal extends Modal {
 		quickFilters.forEach((filter: QuickFilter) => {
 			const button = quickFilterButtons[filter.name];
 			if (button) {
-				const filterMatchesCurrent = this.doesQuickFilterMatchCurrentSelection(filter.statusSymbols, activeStatusSymbols);
+				const filterMatchesCurrent = this.doesQuickFilterMatchCurrentSelection(filter.statusSymbols, activeStatusSymbols, toggleElements);
 				
 				if (filterMatchesCurrent) {
 					button.buttonEl.addClass('ontask-quick-filter-selected');
@@ -229,14 +229,19 @@ class FilterModal extends Modal {
 		});
 	}
 
-	private doesQuickFilterMatchCurrentSelection(filterStatusSymbols: string[], activeStatusSymbols: string[]): boolean {
+	private doesQuickFilterMatchCurrentSelection(filterStatusSymbols: string[], activeStatusSymbols: string[], toggleElements: { [key: string]: ObsidianToggle }): boolean {
 		// A quick filter matches if all its status symbols are active and no other statuses are active
 		// This means the current selection exactly matches the quick filter's configuration
-		if (filterStatusSymbols.length !== activeStatusSymbols.length) {
+		// Filter out invalid symbols that don't exist in the available status configs (e.g., "$" in Plan filter)
+		const validFilterSymbols = filterStatusSymbols.filter(symbol => toggleElements[symbol] !== undefined);
+		
+		// Check if all valid filter symbols are active AND all active symbols are in the filter
+		// This ensures exact match (no extra statuses, all filter statuses are active)
+		if (validFilterSymbols.length !== activeStatusSymbols.length) {
 			return false;
 		}
 		
-		return filterStatusSymbols.every(symbol => activeStatusSymbols.includes(symbol));
+		return validFilterSymbols.every(symbol => activeStatusSymbols.includes(symbol));
 	}
 
 	private async saveFilterSettings(toggleElements: { [key: string]: ObsidianToggle }): Promise<void> {
