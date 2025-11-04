@@ -128,7 +128,7 @@ export class StatusConfigView {
 		// Event listeners
 		editBtn.addEventListener('click', () => this.editStatus(config, index), { passive: true });
 		if (deleteBtn) {
-			deleteBtn.addEventListener('click', () => this.deleteStatus(index), { passive: true });
+			deleteBtn.addEventListener('click', () => this.showDeleteConfirmation(config, index), { passive: true });
 		}
 		
 		// Drag and drop
@@ -350,6 +350,32 @@ export class StatusConfigView {
 			}
 			modal.close();
 		}, { passive: true });
+
+		modal.open();
+	}
+
+	private showDeleteConfirmation(config: StatusConfig, index: number): void {
+		const modal = new Modal(this.app);
+		modal.titleEl.textContent = 'Delete Status';
+
+		const content = modal.contentEl;
+		content.empty();
+
+		content.createEl('p', { 
+			text: `Are you sure you want to delete the status "${config.name}" (${config.symbol})? This action cannot be undone.`
+		});
+
+		const buttonContainer = content.createDiv();
+		buttonContainer.addClass('ontask-button-container');
+
+		const deleteButton = buttonContainer.createEl('button', { text: 'Delete' });
+		deleteButton.addEventListener('click', async () => {
+			await this.deleteStatus(index);
+			modal.close();
+		}, { passive: true });
+
+		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
+		cancelButton.addEventListener('click', () => modal.close(), { passive: true });
 
 		modal.open();
 	}
