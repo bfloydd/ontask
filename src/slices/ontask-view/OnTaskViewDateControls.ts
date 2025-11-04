@@ -5,7 +5,7 @@ import { IconService } from '../../shared/IconService';
 
 /**
  * Date filter control utility class for OnTaskView that manages
- * the date filter UI (Today/Show All toggle buttons).
+ * the date filter UI (Today/All toggle buttons).
  */
 export class OnTaskViewDateControls {
 	private dateFilterControl: HTMLElement | null = null;
@@ -27,7 +27,7 @@ export class OnTaskViewDateControls {
 		
 		const options: Array<{ value: 'all' | 'today'; label: string; icon: 'calendar' }> = [
 			{ value: 'today', label: 'Today', icon: 'calendar' },
-			{ value: 'all', label: 'Show all', icon: 'calendar' }
+			{ value: 'all', label: 'All', icon: 'calendar' }
 		];
 		
 		options.forEach((option) => {
