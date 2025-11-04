@@ -116,7 +116,7 @@ export class QuickFiltersView {
 		editButton.addEventListener('click', () => this.showEditQuickFilterModal(filter), { passive: true });
 
 		// Delete button
-		const deleteButton = controlsContainer.createEl('button', { cls: 'quick-filter-delete-btn mod-warning' });
+		const deleteButton = controlsContainer.createEl('button', { cls: 'quick-filter-delete-btn' });
 		IconService.setConfigIcon(deleteButton, 'delete');
 		deleteButton.addEventListener('click', () => this.showDeleteConfirmation(filter), { passive: true });
 
@@ -297,7 +297,6 @@ export class QuickFiltersView {
 		buttonContainer.addClass('ontask-button-container');
 
 		const deleteButton = buttonContainer.createEl('button', { text: 'Delete' });
-		deleteButton.addClass('mod-warning');
 		deleteButton.addEventListener('click', async () => {
 			await this.dataService.removeQuickFilter(filter.id);
 			modal.close();

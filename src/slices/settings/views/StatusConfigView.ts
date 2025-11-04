@@ -120,7 +120,7 @@ export class StatusConfigView {
 		
 		if (!isNonEditableSymbol) {
 			deleteBtn = itemEl.createEl('button', { 
-				cls: 'status-config-delete-btn mod-warning'
+				cls: 'status-config-delete-btn'
 			});
 			IconService.setConfigIcon(deleteBtn, 'delete');
 		}
