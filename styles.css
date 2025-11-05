@@ -2137,3 +2137,813 @@
 	padding: 6px 10px;
 	font-size: 11px;
 }
+
+/* ========================================
+   ALT1 STYLE THEME
+   SLICE: ontask-view (theme styling)
+   Note: Creative application of logo colors (#204B8A dark blue, #68BB6A vibrant green)
+   ======================================== */
+
+/* Color variables for Alt1 theme */
+.ontask-view-style-alt1 {
+	--ontask-alt1-blue: #204B8A;
+	--ontask-alt1-green: #68BB6A;
+	--ontask-alt1-blue-hover: #2a5ba3;
+	--ontask-alt1-green-hover: #7acc7c;
+	--ontask-alt1-blue-light: rgba(32, 75, 138, 0.1);
+	--ontask-alt1-green-light: rgba(104, 187, 106, 0.1);
+	--ontask-alt1-gradient: linear-gradient(135deg, #204B8A 0%, #68BB6A 100%);
+	--ontask-alt1-gradient-reverse: linear-gradient(135deg, #68BB6A 0%, #204B8A 100%);
+	--ontask-alt1-gradient-subtle: linear-gradient(135deg, rgba(32, 75, 138, 0.08) 0%, rgba(104, 187, 106, 0.08) 100%);
+}
+
+/* File sections - Dark blue headers with green accents */
+.ontask-view-style-alt1 .ontask-file-section {
+	border-color: var(--ontask-alt1-blue);
+	box-shadow: 0 2px 4px rgba(32, 75, 138, 0.15);
+}
+
+.ontask-view-style-alt1 .ontask-file-header {
+	background: var(--ontask-alt1-gradient-subtle);
+	border-bottom: 1px solid var(--ontask-alt1-blue-light);
+}
+
+.ontask-view-style-alt1 .ontask-file-header::after {
+	display: none;
+}
+
+.ontask-view-style-alt1 .ontask-file-header h3 {
+	color: var(--text-normal);
+	opacity: 0.9;
+}
+
+.ontask-view-style-alt1 .ontask-count {
+	background: var(--ontask-alt1-blue-light);
+	color: var(--text-muted);
+	border: 1px solid var(--ontask-alt1-blue-light);
+}
+
+/* Buttons - Green interactive elements with blue hover accents */
+.ontask-view-style-alt1 .ontask-button-base,
+.ontask-view-style-alt1 .ontask-header-button,
+.ontask-view-style-alt1 .ontask-load-more-button,
+.ontask-view-style-alt1 .status-config-edit-btn,
+.ontask-view-style-alt1 .status-config-add-btn,
+.ontask-view-style-alt1 .quick-filter-add-btn,
+.ontask-view-style-alt1 .ontask-quick-filter-button {
+	background: var(--ontask-alt1-green);
+	color: #ffffff;
+	border-color: var(--ontask-alt1-green);
+}
+
+.ontask-view-style-alt1 .ontask-button-base:hover,
+.ontask-view-style-alt1 .ontask-header-button:hover,
+.ontask-view-style-alt1 .ontask-load-more-button:hover,
+.ontask-view-style-alt1 .status-config-edit-btn:hover,
+.ontask-view-style-alt1 .status-config-add-btn:hover,
+.ontask-view-style-alt1 .quick-filter-add-btn:hover,
+.ontask-view-style-alt1 .ontask-quick-filter-button:hover {
+	background: var(--ontask-alt1-green-hover);
+	border-color: var(--ontask-alt1-green-hover);
+	box-shadow: 0 2px 8px rgba(104, 187, 106, 0.3);
+}
+
+/* Segmented controls - Blue base with green active state */
+.ontask-view-style-alt1 .ontask-segmented-control {
+	border-color: var(--ontask-alt1-blue);
+	background: var(--background-secondary);
+}
+
+.ontask-view-style-alt1 .ontask-segmented-button {
+	border-right-color: var(--ontask-alt1-blue);
+	color: var(--ontask-alt1-blue);
+}
+
+.ontask-view-style-alt1 .ontask-segmented-button:hover {
+	background: var(--ontask-alt1-blue-light);
+	color: var(--ontask-alt1-blue);
+}
+
+.ontask-view-style-alt1 .ontask-segmented-button.is-active {
+	background: var(--ontask-alt1-green);
+	color: #ffffff;
+	border-color: var(--ontask-alt1-green);
+}
+
+.ontask-view-style-alt1 .ontask-segmented-button.is-active + .ontask-segmented-button {
+	border-left-color: var(--ontask-alt1-green);
+}
+
+/* Checkbox labels - Blue borders with green hover */
+.ontask-view-style-alt1 .ontask-checkbox-label {
+	background: transparent;
+	border: 1px solid var(--ontask-alt1-blue-light);
+	border-radius: 4px;
+}
+
+.ontask-view-style-alt1 .ontask-checkbox-label:hover {
+	background: var(--ontask-alt1-green-light);
+	border-color: var(--ontask-alt1-green);
+}
+
+/* Checkbox displays - Green status indicators with blue accents */
+.ontask-view-style-alt1 .ontask-checkbox-display {
+	border-color: var(--ontask-alt1-blue);
+	background: var(--background-primary);
+	color: var(--ontask-alt1-blue);
+}
+
+.ontask-view-style-alt1 .ontask-checkbox-display:hover {
+	background: var(--ontask-alt1-blue-light);
+	border-color: var(--ontask-alt1-green);
+}
+
+.ontask-view-style-alt1 .ontask-checkbox-display[data-status] {
+	background: var(--ontask-alt1-green);
+	border-color: var(--ontask-alt1-green);
+	color: #ffffff;
+}
+
+.ontask-view-style-alt1 .ontask-checkbox-display[data-status]:hover {
+	background: var(--ontask-alt1-green-hover);
+	border-color: var(--ontask-alt1-green-hover);
+}
+
+/* Top task hero section - Uses configurable top task color */
+.ontask-view-style-alt1 .ontask-toptask-hero-section {
+	border: 8px solid var(--ontask-toptask-color, var(--text-error));
+	border-radius: 10px;
+	background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+	box-shadow: 0 8px 20px var(--ontask-toptask-shadow-color, rgba(255, 0, 0, 0.25)), 0 4px 8px var(--ontask-toptask-shadow-color, rgba(255, 0, 0, 0.15));
+	overflow: hidden;
+	position: relative;
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-section::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: linear-gradient(90deg, var(--ontask-toptask-color, var(--text-error)), var(--ontask-alt1-green), var(--ontask-alt1-blue));
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-header {
+	background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-modifier-border) 100%);
+	border-bottom: 1px solid var(--background-modifier-border);
+	padding: 10px;
+	position: relative;
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-header::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(90deg, transparent 0%, var(--ontask-toptask-color, var(--text-error)) 50%, transparent 100%);
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-header h3 {
+	color: var(--text-normal);
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-item .ontask-checkbox-display {
+	background: var(--ontask-alt1-green);
+	border-color: var(--ontask-alt1-green);
+	color: #ffffff;
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-item .ontask-link-btn {
+	background: var(--ontask-alt1-green);
+	color: #ffffff;
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-item .ontask-link-btn:hover {
+	background: var(--ontask-alt1-green-hover);
+}
+
+/* Quick filter buttons - Blue base with green active/hover */
+.ontask-view-style-alt1 .ontask-quick-filter-button {
+	background: var(--background-secondary);
+	color: var(--ontask-alt1-blue);
+	border-color: var(--ontask-alt1-blue);
+}
+
+.ontask-view-style-alt1 .ontask-quick-filter-button:hover {
+	background: var(--ontask-alt1-blue-light);
+	border-color: var(--ontask-alt1-green);
+	color: var(--ontask-alt1-green);
+}
+
+.ontask-view-style-alt1 .ontask-quick-filter-selected,
+.ontask-view-style-alt1 .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
+	background: var(--ontask-alt1-green) !important;
+	color: #ffffff !important;
+	border-color: var(--ontask-alt1-green) !important;
+}
+
+/* Context menus - Blue borders with green accents */
+.ontask-view-style-alt1 .ontask-color-menu {
+	border-color: var(--ontask-alt1-blue);
+	box-shadow: 0 4px 12px rgba(32, 75, 138, 0.2);
+}
+
+.ontask-view-style-alt1 .ontask-color-menu-item:hover {
+	background: var(--ontask-alt1-green-light);
+	border-left: 3px solid var(--ontask-alt1-green);
+}
+
+.ontask-view-style-alt1 .ontask-context-menu-item:hover {
+	background: var(--ontask-alt1-green-light);
+	border-left: 3px solid var(--ontask-alt1-green);
+}
+
+/* Status badges and displays - Green with blue text */
+.ontask-view-style-alt1 .ontask-status-display {
+	border-color: var(--ontask-alt1-green);
+}
+
+.ontask-view-style-alt1 .quick-filter-status-badge {
+	border-color: var(--ontask-alt1-blue);
+	background: var(--ontask-alt1-blue-light);
+	color: var(--ontask-alt1-blue);
+}
+
+/* Load more button - Enhanced green styling */
+.ontask-view-style-alt1 .ontask-load-more-button {
+	box-shadow: 0 2px 4px rgba(104, 187, 106, 0.2);
+}
+
+.ontask-view-style-alt1 .ontask-load-more-button:hover {
+	box-shadow: 0 4px 8px rgba(104, 187, 106, 0.4);
+}
+
+/* Scroll to top button - Green theme */
+.ontask-view-style-alt1 .ontask-scroll-to-top-button {
+	background: var(--ontask-alt1-green);
+	color: #ffffff;
+	box-shadow: 0 4px 12px rgba(104, 187, 106, 0.3);
+}
+
+.ontask-view-style-alt1 .ontask-scroll-to-top-button:hover {
+	background: var(--ontask-alt1-green-hover);
+	box-shadow: 0 6px 16px rgba(104, 187, 106, 0.4);
+}
+
+/* Filter section - Blue-green accents */
+.ontask-view-style-alt1 .ontask-filter-input:focus {
+	border-left: 3px solid var(--ontask-alt1-green);
+	background: var(--ontask-alt1-blue-light);
+}
+
+.ontask-view-style-alt1 .ontask-filter-clear-button:hover {
+	background: var(--ontask-alt1-green-light);
+	color: var(--ontask-alt1-green);
+}
+
+/* Status config items - Blue-green theme */
+.ontask-view-style-alt1 .status-config-item {
+	border-color: var(--ontask-alt1-blue);
+}
+
+.ontask-view-style-alt1 .status-config-item:hover {
+	border-color: var(--ontask-alt1-green);
+	box-shadow: 0 2px 8px rgba(104, 187, 106, 0.2);
+}
+
+.ontask-view-style-alt1 .status-config-delete-btn {
+	background: var(--ontask-alt1-green);
+	color: #ffffff;
+}
+
+.ontask-view-style-alt1 .status-config-delete-btn:hover {
+	background: var(--ontask-alt1-green-hover);
+}
+
+.ontask-view-style-alt1 .status-config-symbol {
+	border-color: var(--ontask-alt1-blue);
+}
+
+/* Quick filter items - Blue borders with green hover */
+.ontask-view-style-alt1 .quick-filter-item {
+	border-color: var(--ontask-alt1-blue);
+}
+
+.ontask-view-style-alt1 .quick-filter-item:hover {
+	border-color: var(--ontask-alt1-green);
+	box-shadow: 0 2px 8px rgba(104, 187, 106, 0.15);
+}
+
+.ontask-view-style-alt1 .quick-filter-edit-btn:hover {
+	background: var(--ontask-alt1-blue-light);
+	color: var(--ontask-alt1-blue);
+}
+
+/* Top task hero overlay - Green theme */
+.ontask-view-style-alt1 .ontask-toptask-hero-overlay {
+	border-top-color: var(--ontask-alt1-green);
+	background: linear-gradient(to bottom, var(--ontask-alt1-blue-light), var(--background-primary));
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-overlay:hover {
+	background: linear-gradient(to bottom, var(--ontask-alt1-green-light), var(--background-primary));
+}
+
+.ontask-view-style-alt1 .ontask-toptask-hero-icon {
+	color: var(--ontask-alt1-green);
+}
+
+/* Config button - Blue theme */
+.ontask-view-style-alt1 .ontask-config-button {
+	border-color: var(--ontask-alt1-blue) !important;
+	color: var(--ontask-alt1-blue) !important;
+}
+
+.ontask-view-style-alt1 .ontask-config-button:hover {
+	background: var(--ontask-alt1-blue-light) !important;
+	border-color: var(--ontask-alt1-green) !important;
+	color: var(--ontask-alt1-green) !important;
+}
+
+/* ========================================
+   MODERN STYLE THEME
+   SLICE: ontask-view (theme styling)
+   Note: Clean, minimal aesthetic with subtle shadows, rounded corners, and contemporary design
+   ======================================== */
+
+/* Color variables for Modern theme */
+.ontask-view-style-modern {
+	--ontask-modern-primary: #6366f1;
+	--ontask-modern-primary-hover: #818cf8;
+	--ontask-modern-secondary: #8b5cf6;
+	--ontask-modern-accent: #ec4899;
+	--ontask-modern-surface: rgba(255, 255, 255, 0.05);
+	--ontask-modern-surface-hover: rgba(255, 255, 255, 0.1);
+	--ontask-modern-border: rgba(255, 255, 255, 0.1);
+	--ontask-modern-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+	--ontask-modern-shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+	--ontask-modern-shadow-large: 0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1);
+	--ontask-modern-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	--ontask-modern-gradient-subtle: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+}
+
+/* File sections - Clean cards with subtle shadows */
+.ontask-view-style-modern .ontask-file-section {
+	border: none;
+	border-radius: 12px;
+	box-shadow: var(--ontask-modern-shadow);
+	background: var(--background-primary);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	overflow: hidden;
+}
+
+.ontask-view-style-modern .ontask-file-section:hover {
+	box-shadow: var(--ontask-modern-shadow-hover);
+	transform: translateY(-2px);
+}
+
+.ontask-view-style-modern .ontask-file-header {
+	background: var(--ontask-modern-gradient-subtle);
+	border: none;
+	border-bottom: 1px solid var(--ontask-modern-border);
+	border-radius: 12px 12px 0 0;
+	padding: 12px 16px;
+	backdrop-filter: blur(10px);
+}
+
+.ontask-view-style-modern .ontask-file-header::after {
+	display: none;
+}
+
+.ontask-view-style-modern .ontask-file-header h3 {
+	color: var(--text-normal);
+	font-weight: 600;
+	letter-spacing: 0.3px;
+	text-transform: none;
+	opacity: 0.9;
+}
+
+.ontask-view-style-modern .ontask-count {
+	background: var(--ontask-modern-surface);
+	color: var(--text-muted);
+	border: 1px solid var(--ontask-modern-border);
+	backdrop-filter: blur(10px);
+	font-weight: 500;
+}
+
+/* Buttons - Modern rounded with smooth transitions */
+.ontask-view-style-modern .ontask-button-base,
+.ontask-view-style-modern .ontask-header-button,
+.ontask-view-style-modern .ontask-load-more-button,
+.ontask-view-style-modern .status-config-edit-btn,
+.ontask-view-style-modern .status-config-add-btn,
+.ontask-view-style-modern .quick-filter-add-btn,
+.ontask-view-style-modern .ontask-quick-filter-button {
+	background: var(--ontask-modern-primary);
+	color: #ffffff;
+	border: none;
+	border-radius: 8px;
+	box-shadow: var(--ontask-modern-shadow);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	font-weight: 500;
+}
+
+.ontask-view-style-modern .ontask-button-base:hover,
+.ontask-view-style-modern .ontask-header-button:hover,
+.ontask-view-style-modern .ontask-load-more-button:hover,
+.ontask-view-style-modern .status-config-edit-btn:hover,
+.ontask-view-style-modern .status-config-add-btn:hover,
+.ontask-view-style-modern .quick-filter-add-btn:hover,
+.ontask-view-style-modern .ontask-quick-filter-button:hover {
+	background: var(--ontask-modern-primary-hover);
+	box-shadow: var(--ontask-modern-shadow-hover);
+	transform: translateY(-1px);
+}
+
+.ontask-view-style-modern .ontask-button-base:active,
+.ontask-view-style-modern .ontask-header-button:active,
+.ontask-view-style-modern .ontask-load-more-button:active {
+	transform: translateY(0);
+	box-shadow: var(--ontask-modern-shadow);
+}
+
+/* Segmented controls - Modern pill design */
+.ontask-view-style-modern .ontask-segmented-control {
+	border: 2px solid var(--ontask-modern-border);
+	border-radius: 10px;
+	background: var(--background-secondary);
+	padding: 2px;
+	gap: 2px;
+}
+
+.ontask-view-style-modern .ontask-segmented-button {
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--text-normal);
+	transition: all 0.2s ease;
+}
+
+.ontask-view-style-modern .ontask-segmented-button:hover {
+	background: var(--ontask-modern-surface-hover);
+}
+
+.ontask-view-style-modern .ontask-segmented-button.is-active {
+	background: var(--ontask-modern-primary);
+	color: #ffffff;
+	box-shadow: var(--ontask-modern-shadow);
+}
+
+.ontask-view-style-modern .ontask-segmented-button.is-active + .ontask-segmented-button {
+	border-left: none;
+}
+
+/* Checkbox labels - Clean minimal design */
+.ontask-view-style-modern .ontask-checkbox-label {
+	background: transparent;
+	border: none;
+	border-radius: 8px;
+	padding: 8px 12px;
+	transition: all 0.2s ease;
+}
+
+.ontask-view-style-modern .ontask-checkbox-label:hover {
+	background: var(--ontask-modern-surface);
+}
+
+/* Checkbox displays - Modern pill badges */
+.ontask-view-style-modern .ontask-checkbox-display {
+	border: none;
+	border-radius: 12px;
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	font-weight: 500;
+	box-shadow: var(--ontask-modern-shadow);
+	transition: all 0.2s ease;
+	min-width: 28px;
+	padding: 4px 10px;
+}
+
+.ontask-view-style-modern .ontask-checkbox-display:hover {
+	background: var(--ontask-modern-surface-hover);
+	transform: scale(1.05);
+}
+
+.ontask-view-style-modern .ontask-checkbox-display[data-status] {
+	background: var(--ontask-modern-primary);
+	color: #ffffff;
+	box-shadow: var(--ontask-modern-shadow);
+}
+
+.ontask-view-style-modern .ontask-checkbox-display[data-status]:hover {
+	background: var(--ontask-modern-primary-hover);
+	box-shadow: var(--ontask-modern-shadow-hover);
+	transform: scale(1.05);
+}
+
+/* Top task hero section - Uses configurable top task color */
+.ontask-view-style-modern .ontask-toptask-hero-section {
+	border: none;
+	border-radius: 16px;
+	background: linear-gradient(135deg, var(--ontask-toptask-color, var(--text-error)) 0%, var(--ontask-modern-primary) 100%);
+	box-shadow: 0 8px 20px var(--ontask-toptask-shadow-color, rgba(255, 0, 0, 0.25)), 0 4px 8px var(--ontask-toptask-shadow-color, rgba(255, 0, 0, 0.15));
+	overflow: hidden;
+	position: relative;
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-section::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: linear-gradient(90deg, var(--ontask-toptask-color, var(--text-error)), var(--ontask-modern-primary), var(--ontask-modern-secondary));
+	opacity: 0.8;
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-header {
+	background: transparent;
+	border: none;
+	padding: 16px 20px;
+	position: relative;
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-header::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-header h3 {
+	color: #ffffff;
+	font-weight: 600;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-item {
+	background: rgba(255, 255, 255, 0.95);
+	border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	margin: 12px;
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-item .ontask-checkbox-label {
+	background: transparent;
+	padding: 12px 16px;
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-item .ontask-checkbox-display {
+	background: var(--ontask-modern-primary);
+	color: #ffffff;
+	box-shadow: var(--ontask-modern-shadow);
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-item .ontask-link-btn {
+	background: var(--ontask-modern-primary);
+	color: #ffffff;
+	border-radius: 8px;
+	box-shadow: var(--ontask-modern-shadow);
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-item .ontask-link-btn:hover {
+	background: var(--ontask-modern-primary-hover);
+	box-shadow: var(--ontask-modern-shadow-hover);
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-item .ontask-toptask-hero-text,
+.ontask-view-style-modern .ontask-toptask-hero-item .ontask-checkbox-text {
+	color: #1a1a1a;
+	font-weight: 600;
+}
+
+/* Quick filter buttons - Modern pill design */
+.ontask-view-style-modern .ontask-quick-filter-button {
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 2px solid var(--ontask-modern-border);
+	border-radius: 20px;
+	padding: 6px 14px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+}
+
+.ontask-view-style-modern .ontask-quick-filter-button:hover {
+	background: var(--ontask-modern-surface);
+	border-color: var(--ontask-modern-primary);
+	color: var(--ontask-modern-primary);
+	transform: translateY(-1px);
+}
+
+.ontask-view-style-modern .ontask-quick-filter-selected,
+.ontask-view-style-modern .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
+	background: var(--ontask-modern-primary) !important;
+	color: #ffffff !important;
+	border-color: var(--ontask-modern-primary) !important;
+	box-shadow: var(--ontask-modern-shadow) !important;
+}
+
+/* Context menus - Modern glassmorphism */
+.ontask-view-style-modern .ontask-color-menu {
+	border: 1px solid var(--ontask-modern-border);
+	border-radius: 12px;
+	background: var(--background-primary);
+	box-shadow: var(--ontask-modern-shadow-large);
+	backdrop-filter: blur(20px);
+	padding: 8px;
+}
+
+.ontask-view-style-modern .ontask-color-menu-item {
+	border-radius: 8px;
+	border: none;
+	padding: 10px 14px;
+	margin: 2px 0;
+}
+
+.ontask-view-style-modern .ontask-color-menu-item:hover {
+	background: var(--ontask-modern-surface);
+	transform: translateX(4px);
+}
+
+.ontask-view-style-modern .ontask-context-menu-item {
+	border: none;
+	border-radius: 8px;
+	padding: 10px 14px;
+	margin: 2px 0;
+}
+
+.ontask-view-style-modern .ontask-context-menu-item:hover {
+	background: var(--ontask-modern-surface);
+	transform: translateX(4px);
+}
+
+/* Status badges - Modern rounded badges */
+.ontask-view-style-modern .ontask-status-display {
+	border: none;
+	border-radius: 12px;
+	background: var(--ontask-modern-surface);
+	box-shadow: var(--ontask-modern-shadow);
+}
+
+.ontask-view-style-modern .quick-filter-status-badge {
+	border: none;
+	border-radius: 12px;
+	background: var(--ontask-modern-surface);
+	color: var(--text-normal);
+	padding: 4px 10px;
+	font-weight: 500;
+}
+
+/* Load more button - Modern floating button */
+.ontask-view-style-modern .ontask-load-more-button {
+	border-radius: 12px;
+	padding: 12px 24px;
+	font-weight: 600;
+	box-shadow: var(--ontask-modern-shadow);
+	letter-spacing: 0.3px;
+}
+
+.ontask-view-style-modern .ontask-load-more-button:hover {
+	box-shadow: var(--ontask-modern-shadow-hover);
+}
+
+/* Scroll to top button - Modern floating design */
+.ontask-view-style-modern .ontask-scroll-to-top-button {
+	border-radius: 50%;
+	background: var(--ontask-modern-primary);
+	color: #ffffff;
+	box-shadow: var(--ontask-modern-shadow-large);
+	width: 52px;
+	height: 52px;
+	backdrop-filter: blur(10px);
+}
+
+.ontask-view-style-modern .ontask-scroll-to-top-button:hover {
+	background: var(--ontask-modern-primary-hover);
+	box-shadow: 0 8px 16px rgba(99, 102, 241, 0.4);
+	transform: translateY(-3px);
+}
+
+/* Filter section - Modern input design */
+.ontask-view-style-modern .ontask-filter-section {
+	border-radius: 12px;
+	background: var(--background-secondary);
+	padding: 12px;
+}
+
+.ontask-view-style-modern .ontask-filter-input {
+	border: 2px solid var(--ontask-modern-border);
+	border-radius: 10px;
+	background: var(--background-primary);
+	padding: 10px 14px;
+	transition: all 0.2s ease;
+}
+
+.ontask-view-style-modern .ontask-filter-input:focus {
+	border-color: var(--ontask-modern-primary);
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+	outline: none;
+}
+
+.ontask-view-style-modern .ontask-filter-clear-button {
+	border-radius: 8px;
+	padding: 8px 12px;
+	transition: all 0.2s ease;
+}
+
+.ontask-view-style-modern .ontask-filter-clear-button:hover {
+	background: var(--ontask-modern-surface);
+	color: var(--ontask-modern-primary);
+}
+
+/* Status config items - Modern card design */
+.ontask-view-style-modern .status-config-item {
+	border: 1px solid var(--ontask-modern-border);
+	border-radius: 12px;
+	background: var(--background-secondary);
+	box-shadow: var(--ontask-modern-shadow);
+	transition: all 0.2s ease;
+}
+
+.ontask-view-style-modern .status-config-item:hover {
+	border-color: var(--ontask-modern-primary);
+	box-shadow: var(--ontask-modern-shadow-hover);
+	transform: translateY(-2px);
+}
+
+.ontask-view-style-modern .status-config-delete-btn {
+	background: var(--ontask-modern-accent);
+	color: #ffffff;
+	border-radius: 8px;
+}
+
+.ontask-view-style-modern .status-config-delete-btn:hover {
+	background: #f43f5e;
+	transform: translateY(-1px);
+}
+
+.ontask-view-style-modern .status-config-symbol {
+	border: none;
+	border-radius: 10px;
+	background: var(--ontask-modern-surface);
+	box-shadow: var(--ontask-modern-shadow);
+}
+
+/* Quick filter items - Modern card layout */
+.ontask-view-style-modern .quick-filter-item {
+	border: 1px solid var(--ontask-modern-border);
+	border-radius: 12px;
+	background: var(--background-secondary);
+	box-shadow: var(--ontask-modern-shadow);
+	transition: all 0.2s ease;
+}
+
+.ontask-view-style-modern .quick-filter-item:hover {
+	border-color: var(--ontask-modern-primary);
+	box-shadow: var(--ontask-modern-shadow-hover);
+	transform: translateY(-2px);
+}
+
+.ontask-view-style-modern .quick-filter-edit-btn:hover {
+	background: var(--ontask-modern-surface);
+}
+
+/* Top task hero overlay - Modern glass design */
+.ontask-view-style-modern .ontask-toptask-hero-overlay {
+	border: none;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.95);
+	box-shadow: var(--ontask-modern-shadow);
+	backdrop-filter: blur(10px);
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-overlay:hover {
+	background: rgba(255, 255, 255, 1);
+	box-shadow: var(--ontask-modern-shadow-hover);
+}
+
+.ontask-view-style-modern .ontask-toptask-hero-icon {
+	color: var(--ontask-modern-primary);
+}
+
+/* Config button - Modern minimal design */
+.ontask-view-style-modern .ontask-config-button {
+	border: 2px solid var(--ontask-modern-border) !important;
+	border-radius: 8px !important;
+	color: var(--text-normal) !important;
+	background: transparent !important;
+	transition: all 0.2s ease !important;
+}
+
+.ontask-view-style-modern .ontask-config-button:hover {
+	background: var(--ontask-modern-surface) !important;
+	border-color: var(--ontask-modern-primary) !important;
+	color: var(--ontask-modern-primary) !important;
+}

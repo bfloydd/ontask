@@ -19,6 +19,7 @@ export interface OnTaskSettings {
 	loadMoreLimit: number;
 	hideCompletedTasks: boolean;
 	debugLoggingEnabled: boolean;
+	viewStyle: 'default' | 'alt1' | 'modern';
 }
 
 export const DEFAULT_SETTINGS: OnTaskSettings = {
@@ -31,7 +32,8 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	includeSubfolders: true,
 	loadMoreLimit: 10,
 	hideCompletedTasks: false,
-	debugLoggingEnabled: false
+	debugLoggingEnabled: false,
+	viewStyle: 'default'
 };
 
 export const DEFAULT_STATUS_CONFIGS: StatusConfig[] = [

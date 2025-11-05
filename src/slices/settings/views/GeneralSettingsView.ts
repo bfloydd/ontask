@@ -24,6 +24,22 @@ export class GeneralSettingsView {
 		const settings = this.settingsService.getSettings();
 
 		new Setting(this.containerEl)
+			.setName('View style')
+			.setDesc('Choose the visual style for the OnTask view')
+			.addDropdown(dropdown => dropdown
+				.addOption('default', 'Default')
+				.addOption('alt1', 'Alt1')
+				.addOption('modern', 'Modern')
+				.setValue(settings.viewStyle)
+				.onChange(async (value: 'default' | 'alt1' | 'modern') => {
+					await this.settingsService.updateSetting('viewStyle', value);
+					this.app.workspace.trigger('ontask:settings-changed', { 
+						key: 'viewStyle', 
+						value 
+					});
+				}));
+
+		new Setting(this.containerEl)
 			.setName('Show top task in editor')
 			.setDesc('When enabled, the current top task will be displayed at the top of every editor page below the heading')
 			.addToggle(toggle => toggle

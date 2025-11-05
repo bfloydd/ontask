@@ -52,6 +52,7 @@ export class OnTaskViewImpl extends ItemView {
 	private displayedTasksCount: number = 10;
 	private currentFilter: string = '';
 	private isSearchFilterVisible: boolean = false;
+	private settingsUnsubscribe: (() => void) | null = null;
 	
 
 
@@ -152,6 +153,8 @@ export class OnTaskViewImpl extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
+		this.applyViewStyle();
+		
 		this.viewHeaderService.createHeader(this.contentEl, {
 			onRefresh: () => this.refreshCheckboxes(),
 			onSearch: () => this.toggleSearchFilter(),
@@ -165,6 +168,13 @@ export class OnTaskViewImpl extends ItemView {
 		this.eventHandlingService.setupEventListeners();
 		
 		this.scrollToTopService.initialize(this.contentEl);
+		
+		// Listen for settings changes to update style dynamically
+		this.settingsUnsubscribe = this.settingsService.onSettingsChange((event) => {
+			if (event.key === 'viewStyle') {
+				this.applyViewStyle();
+			}
+		});
 	}
 
 	async onClose(): Promise<void> {
@@ -173,6 +183,12 @@ export class OnTaskViewImpl extends ItemView {
 		this.scrollToTopService.destroy();
 		
 		this.viewRefreshService.cleanup();
+		
+		// Clean up settings change listener
+		if (this.settingsUnsubscribe) {
+			this.settingsUnsubscribe();
+			this.settingsUnsubscribe = null;
+		}
 	}
 
 	private onFilterChange(filter: string): void {
@@ -264,6 +280,19 @@ export class OnTaskViewImpl extends ItemView {
 			this.eventSystem.emit('file:modified', { path: file.path });
 			this.refreshCheckboxes();
 		}
+	}
+
+	private applyViewStyle(): void {
+		const settings = this.settingsService.getSettings();
+		const styleClass = `ontask-view-style-${settings.viewStyle}`;
+		
+		// Remove any existing style classes
+		this.contentEl.removeClass('ontask-view-style-default');
+		this.contentEl.removeClass('ontask-view-style-alt1');
+		this.contentEl.removeClass('ontask-view-style-modern');
+		
+		// Add the current style class
+		this.contentEl.addClass(styleClass);
 	}
 
 	private openSettings(): void {
