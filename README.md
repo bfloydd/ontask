@@ -1,6 +1,7 @@
 ![OnTask Plugin Logo](assets/logo-transparent-500.png)
 
 ## Features
+
 - Bullet journal–inspired productivity  
 - Automatically grabs tasks from your vault
 - Flexible filtering to find what matters most
