@@ -1,9 +1,9 @@
 {
-	"id": "on-task",
+	"id": "ontask",
 	"name": "OnTask",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"minAppVersion": "0.15.0",
-	"description": "Bullet journal–inspired task manager with a focus on top-task productivity. Opinionated. Configurable. Simple. Fast.",
+	"description": "Bullet journal–inspired task manager with a focus on top-task productivity. Configurable. Simple. Fast.",
 	"author": "Floyd",
 	"authorUrl": "http://floyd.pro",
 	"fundingUrl": {
