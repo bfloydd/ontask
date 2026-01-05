@@ -14,6 +14,7 @@ import { TaskLoadingService } from '../TaskLoadingService';
 import { SettingsService } from '../../../settings';
 import { StatusConfigService } from '../../../settings/StatusConfig';
 import { DEFAULT_SETTINGS, OnTaskSettings } from '../../../settings/SettingsServiceInterface';
+import { DateFilterService } from '../../date-filter';
 
 // Mock dependencies
 const mockStreamsService = {
@@ -51,6 +52,13 @@ const mockStatusConfigService = {
 	getStatusFilters: jest.fn(() => ({ ' ': true, 'x': true, '/': true }))
 } as unknown as StatusConfigService;
 
+const mockDateFilterService = {
+	getAll: jest.fn().mockReturnValue([]),
+	getById: jest.fn(),
+	filterFilePaths: jest.fn((_: string, filePaths: string[]) => filePaths),
+	supportsLoadMore: jest.fn().mockReturnValue(true)
+} as unknown as DateFilterService;
+
 const mockApp = {
 	vault: {
 		getAbstractFileByPath: jest.fn(),
@@ -75,6 +83,7 @@ describe('TaskLoadingService', () => {
 			mockStreamsService,
 			mockSettingsService,
 			mockStatusConfigService,
+			mockDateFilterService,
 			mockApp,
 			mockLogger
 		);
@@ -105,7 +114,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			// Initialize file tracking with mock files
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			// Manually set tracked files for testing
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
@@ -141,7 +150,7 @@ describe('TaskLoadingService', () => {
 - [ ] Task 3
 - [ ] Task 4`); // file2.md - 3 tasks
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Act
@@ -171,7 +180,7 @@ describe('TaskLoadingService', () => {
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('No tasks here');
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Act
@@ -202,7 +211,7 @@ describe('TaskLoadingService', () => {
 			mockStreamsService.getAllFiles = jest.fn().mockResolvedValue(mockFiles);
 
 			// Act
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 
 			// Assert
 			// Test that the service can handle file tracking initialization without errors
@@ -231,7 +240,7 @@ describe('TaskLoadingService', () => {
 				.mockResolvedValueOnce('- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3') // file1.md - 3 tasks
 				.mockResolvedValueOnce('- [ ] Task 4\n- [ ] Task 5\n- [ ] Task 6'); // file2.md - 3 tasks
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// First load - should stop at file1.md with 3 tasks
@@ -271,7 +280,7 @@ describe('TaskLoadingService', () => {
 				.mockResolvedValueOnce('- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n- [ ] Task 4\n- [ ] Task 5') // file1.md - 5 tasks
 				.mockResolvedValueOnce('- [ ] Task 6\n- [ ] Task 7\n- [ ] Task 8\n- [ ] Task 9\n- [ ] Task 10'); // file2.md - 5 tasks
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Act
@@ -309,7 +318,7 @@ describe('TaskLoadingService', () => {
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Act
@@ -350,7 +359,7 @@ Some regular text without checkboxes`;
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Act
@@ -380,7 +389,7 @@ Some regular text without checkboxes`;
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Act
@@ -409,7 +418,7 @@ Some regular text without checkboxes`;
 			});
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Act
@@ -442,7 +451,7 @@ Some regular text without checkboxes`;
 				.mockRejectedValueOnce(new Error('Read error')) // error-file.md - error
 				.mockResolvedValueOnce('- [ ] Task 2\n- [ ] Task 3'); // file2.md - success
 
-			await taskLoadingService.initializeFileTracking(false);
+			await taskLoadingService.initializeFileTracking('all');
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Suppress expected error logs during test
@@ -483,7 +492,7 @@ Some regular text without checkboxes`;
 			mockStreamsService.getAllFiles = jest.fn().mockResolvedValue(mockFiles);
 
 			// Act
-			await taskLoadingService.initializeFileTracking(true);
+			await taskLoadingService.initializeFileTracking('today');
 
 			// Assert
 			const trackedFiles = (taskLoadingService as any).trackedFiles;

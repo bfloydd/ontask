@@ -10,19 +10,40 @@ export class DateFileUtils {
 	 * @returns true if the file appears to be from today
 	 */
 	static isTodayFile(file: TFile): boolean {
-		const today = new Date();
-		
-		const todayFormats = this.getTodayDateFormats(today);
+		return this.isFileForDate(file, new Date());
+	}
+
+	/**
+	 * Checks if a file name or path contains a date within the current week
+	 * (Monday through Sunday of the current week, based on the local clock).
+	 */
+	static isCurrentWeekFile(file: TFile): boolean {
+		const weekStart = this.getStartOfCurrentWeek(new Date());
+		for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+			const day = new Date(weekStart);
+			day.setDate(weekStart.getDate() + dayOffset);
+			if (this.isFileForDate(file, day)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if a file name/path contains the specified date in any supported format.
+	 */
+	private static isFileForDate(file: TFile, date: Date): boolean {
+		const dateFormats = this.getDateFormats(date);
 		const fileName = file.name.toLowerCase();
 		const filePath = file.path.toLowerCase();
 		
-		for (const dateFormat of todayFormats) {
+		for (const dateFormat of dateFormats) {
 			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
 				return true;
 			}
 		}
 		
-		const datePatterns = this.getDatePatterns(today);
+		const datePatterns = this.getDatePatterns(date);
 		for (const pattern of datePatterns) {
 			if (pattern.test(fileName) || pattern.test(filePath)) {
 				return true;
@@ -33,14 +54,30 @@ export class DateFileUtils {
 	}
 
 	/**
-	 * Gets date format strings for today in various formats
-	 * @param today - The date to format
+	 * Gets the Monday (start of day) for the week containing the given date.
+	 */
+	private static getStartOfCurrentWeek(referenceDate: Date): Date {
+		const date = new Date(referenceDate);
+		date.setHours(0, 0, 0, 0);
+		
+		// JS: Sunday=0, Monday=1, ... Saturday=6
+		// Convert to Monday-based offset where Monday=0 ... Sunday=6
+		const day = date.getDay();
+		const diffToMonday = (day + 6) % 7;
+		date.setDate(date.getDate() - diffToMonday);
+		
+		return date;
+	}
+
+	/**
+	 * Gets date format strings in various formats
+	 * @param date - The date to format
 	 * @returns Array of date format strings
 	 */
-	private static getTodayDateFormats(today: Date): string[] {
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, '0');
-		const day = String(today.getDate()).padStart(2, '0');
+	private static getDateFormats(date: Date): string[] {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
 		
 		return [
 			`${year}-${month}-${day}`,           // 2024-01-15
@@ -54,13 +91,13 @@ export class DateFileUtils {
 
 	/**
 	 * Gets regex patterns for matching today's date in various formats
-	 * @param today - The date to create patterns for
+	 * @param date - The date to create patterns for
 	 * @returns Array of regex patterns
 	 */
-	private static getDatePatterns(today: Date): RegExp[] {
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, '0');
-		const day = String(today.getDate()).padStart(2, '0');
+	private static getDatePatterns(date: Date): RegExp[] {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
 		
 		return [
 			new RegExp(`${year}-${month}-${day}`),

@@ -6,6 +6,7 @@ import { SettingsService } from '../../settings';
 import { EventSystem } from '../../events';
 import { Logger } from '../../logging/Logger';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
+import { DateFilterService } from '../date-filter';
 
 export interface ViewRefreshCallbacks {
 	onFilterChange: (filter: string) => void;
@@ -35,6 +36,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 		private topTaskProcessingService: TopTaskProcessingService,
 		private filtering: OnTaskViewFiltering,
 		private settingsService: SettingsService,
+		private dateFilterService: DateFilterService,
 		private eventSystem: EventSystem,
 		private logger: Logger,
 		private callbacks: ViewRefreshCallbacks
@@ -61,8 +63,8 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 			const loadingEl = contentArea.createDiv('ontask-loading');
 			loadingEl.textContent = 'Loading tasks...';
 			
-			const onlyShowToday = settings.dateFilter === 'today';
-			await this.taskLoadingService.initializeFileTracking(onlyShowToday);
+			const supportsLoadMore = this.dateFilterService.supportsLoadMore(settings.dateFilter);
+			await this.taskLoadingService.initializeFileTracking(settings.dateFilter);
 			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
 			const newCheckboxes = result.tasks;
 			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(newCheckboxes);
@@ -77,7 +79,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 				this.callbacks.onFilterChange,
 				this.callbacks.onClearFilter,
 				this.callbacks.onLoadMore,
-				onlyShowToday
+				supportsLoadMore
 			);
 			
 			this.callbacks.onRefreshComplete(newCheckboxes.length);
@@ -132,7 +134,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 		}
 		
 		// Add appropriate indicator based on whether there are more tasks
-		if (settings.dateFilter !== 'today') {
+		if (this.dateFilterService.supportsLoadMore(settings.dateFilter)) {
 			if (result.hasMoreTasks) {
 				const loadMoreSection = this.domRenderingService.createLoadMoreButtonElement(this.callbacks.onLoadMore);
 				contentArea.appendChild(loadMoreSection);

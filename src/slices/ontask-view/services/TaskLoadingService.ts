@@ -5,9 +5,9 @@ import { SettingsService } from '../../settings';
 import { StatusConfigService } from '../../settings/StatusConfig';
 import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
-import { DateFileUtils } from '../../../shared/DateFileUtils';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 import { OnTaskSettings } from '../../settings/SettingsServiceInterface';
+import { DateFilterService } from '../date-filter';
 
 export interface TaskLoadingResult {
 	tasks: CheckboxItem[];
@@ -16,8 +16,8 @@ export interface TaskLoadingResult {
 
 export interface TaskLoadingServiceInterface {
 	loadTasksWithFiltering(settings: OnTaskSettings): Promise<TaskLoadingResult>;
-	getFilesFromStrategies(onlyShowToday: boolean): Promise<string[]>;
-	initializeFileTracking(onlyShowToday: boolean): Promise<void>;
+	getFilesFromStrategies(dateFilter: OnTaskSettings['dateFilter']): Promise<string[]>;
+	initializeFileTracking(dateFilter: OnTaskSettings['dateFilter']): Promise<void>;
 	resetTracking(): void;
 	getCurrentFileIndex(): number;
 	getCurrentTaskIndex(): number;
@@ -30,6 +30,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 	private taskFinderFactory: TaskFinderFactoryImpl;
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
+	private dateFilterService: DateFilterService;
 	private streamsService: StreamsService;
 	private app: App;
 	private logger: Logger;
@@ -42,6 +43,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		streamsService: StreamsService,
 		settingsService: SettingsService,
 		statusConfigService: StatusConfigService,
+		dateFilterService: DateFilterService,
 		app: App,
 		logger: Logger
 	) {
@@ -49,6 +51,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		this.taskFinderFactory = new TaskFinderFactoryImpl(app, streamsService);
 		this.settingsService = settingsService;
 		this.statusConfigService = statusConfigService;
+		this.dateFilterService = dateFilterService;
 		this.app = app;
 		this.logger = logger;
 	}
@@ -145,7 +148,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		return { tasks: loadedTasks, hasMoreTasks };
 	}
 
-	async getFilesFromStrategies(onlyShowToday: boolean): Promise<string[]> {
+	async getFilesFromStrategies(dateFilter: OnTaskSettings['dateFilter']): Promise<string[]> {
 		const allFiles: string[] = [];
 		
 		const streamsService = this.taskFinderFactory.getStreamsService();
@@ -188,18 +191,13 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			allFiles.push(...folderFiles.map((file: TFile) => file.path));
 		}
 		
-		if (onlyShowToday) {
-			return allFiles.filter(filePath => {
-				const file = this.app.vault.getAbstractFileByPath(filePath);
-				return file instanceof TFile && this.isTodayFile(file);
-			});
-		}
-		
-		return [...new Set(allFiles)];
+		// De-duplicate early; filter implementations should not need to handle duplicates.
+		const uniqueFiles = [...new Set(allFiles)];
+		return this.dateFilterService.filterFilePaths(dateFilter, uniqueFiles, this.app);
 	}
 
-	async initializeFileTracking(onlyShowToday: boolean): Promise<void> {
-		const allFiles = await this.getFilesFromStrategies(onlyShowToday);
+	async initializeFileTracking(dateFilter: OnTaskSettings['dateFilter']): Promise<void> {
+		const allFiles = await this.getFilesFromStrategies(dateFilter);
 		
 		this.trackedFiles = allFiles.sort((a, b) => {
 			const filenameA = a.split('/').pop() || a;
@@ -281,8 +279,6 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		return new RegExp(regexPattern);
 	}
 
-	private isTodayFile(file: TFile): boolean {
-		return DateFileUtils.isTodayFile(file);
-	}
+	// Note: Date-based filtering is delegated to DateFilterService strategies.
 }
 

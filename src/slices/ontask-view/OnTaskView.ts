@@ -22,6 +22,7 @@ import { OnTaskViewFiltering } from './OnTaskViewFiltering';
 import { OnTaskViewDateControls } from './OnTaskViewDateControls';
 import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
 import { AppWithSettings } from '../../types';
+import { DateFilterService } from './date-filter';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -62,6 +63,7 @@ export class OnTaskViewImpl extends ItemView {
 		settingsService: SettingsService,
 		statusConfigService: StatusConfigService,
 		dataService: DataService,
+		dateFilterService: DateFilterService,
 		plugin: Plugin,
 		eventSystem: EventSystem,
 		logger: Logger
@@ -102,6 +104,7 @@ export class OnTaskViewImpl extends ItemView {
 			settingsService,
 			statusConfigService,
 			dataService,
+			dateFilterService,
 			plugin,
 			eventSystem,
 			logger,

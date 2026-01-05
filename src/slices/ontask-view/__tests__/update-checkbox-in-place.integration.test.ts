@@ -180,6 +180,13 @@ describe('updateCheckboxRowInPlace - Integration Tests', () => {
 			manifest: { id: 'ontask' }
 		};
 
+		const mockDateFilterService = {
+			getAll: jest.fn().mockReturnValue([]),
+			getById: jest.fn(),
+			filterFilePaths: jest.fn((_: string, filePaths: string[]) => filePaths),
+			supportsLoadMore: jest.fn().mockReturnValue(true),
+		} as any;
+
 		// Create view instance with mocked dependencies
 		view = new OnTaskViewImpl(
 			mockLeaf,
@@ -187,6 +194,7 @@ describe('updateCheckboxRowInPlace - Integration Tests', () => {
 			mockSettingsService,
 			mockStatusConfigService,
 			mockDataService,
+			mockDateFilterService,
 			mockPlugin,
 			mockEventSystem,
 			mockLogger

@@ -19,6 +19,7 @@ import { CheckboxUpdateService, CheckboxUpdateServiceCallbacks } from './Checkbo
 import { OnTaskViewHelpers } from '../OnTaskViewHelpers';
 import { OnTaskViewFiltering } from '../OnTaskViewFiltering';
 import { OnTaskViewDateControls } from '../OnTaskViewDateControls';
+import { DateFilterService } from '../date-filter';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 
 export interface OnTaskViewDependencies {
@@ -28,6 +29,7 @@ export interface OnTaskViewDependencies {
 	settingsService: SettingsService;
 	statusConfigService: StatusConfigService;
 	dataService: DataService;
+	dateFilterService: DateFilterService;
 	plugin: Plugin;
 	eventSystem: EventSystem;
 	logger: Logger;
@@ -73,7 +75,7 @@ export class OnTaskViewServiceFactory {
 		dependencies: OnTaskViewDependencies,
 		callbacks: OnTaskViewCallbacks
 	): OnTaskViewServices {
-		const { app, statusConfigService, settingsService, taskLoadingService, logger, eventSystem, contentEl, plugin, dataService } = dependencies;
+		const { app, statusConfigService, settingsService, taskLoadingService, dateFilterService, logger, eventSystem, contentEl, plugin, dataService } = dependencies;
 
 		// Create helper service
 		const helpers = new OnTaskViewHelpers(
@@ -107,6 +109,7 @@ export class OnTaskViewServiceFactory {
 
 		const dateControls = new OnTaskViewDateControls(
 			settingsService,
+			dateFilterService,
 			eventSystem,
 			logger
 		);
@@ -160,6 +163,7 @@ export class OnTaskViewServiceFactory {
 			topTaskProcessingService,
 			filtering,
 			settingsService,
+			dateFilterService,
 			eventSystem,
 			logger,
 			viewRefreshCallbacks

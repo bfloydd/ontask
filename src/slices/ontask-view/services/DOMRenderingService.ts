@@ -12,7 +12,7 @@ import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 import { Logger } from '../../logging/Logger';
 
 export interface DOMRenderingServiceInterface {
-	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void;
+	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, supportsLoadMore?: boolean): void;
 	createCheckboxElement(checkbox: CheckboxItem): HTMLElement;
 	createTopTaskSectionElement(topTask: CheckboxItem): HTMLElement;
 	createTopTaskSection(contentArea: HTMLElement, topTask: CheckboxItem): void;
@@ -85,7 +85,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		this.dataProcessor = new CheckboxDataProcessor(app, getFileName, logger);
 	}
 
-	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, onlyShowToday?: boolean): void {
+	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, supportsLoadMore: boolean = true): void {
 		if (checkboxes.length === 0) {
 			const emptyEl = contentArea.createDiv('ontask-empty');
 			emptyEl.textContent = 'No tasks found.';
@@ -129,8 +129,8 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		
 		fileSections.forEach(section => fragment.appendChild(section));
 		
-		// Only show load more button when not filtering by today
-		if (!onlyShowToday && onLoadMore) {
+		// Only show load more button when the active date filter supports it
+		if (supportsLoadMore && onLoadMore) {
 			const loadMoreSection = this.loadingIndicatorRenderer.createLoadMoreButtonElement(onLoadMore);
 			fragment.appendChild(loadMoreSection);
 		}

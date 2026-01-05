@@ -2,6 +2,7 @@ import { SettingsService } from '../settings';
 import { EventSystem } from '../events';
 import { Logger } from '../logging/Logger';
 import { IconService } from '../../shared/IconService';
+import { DateFilterService, DateFilterId } from './date-filter';
 
 /**
  * Date filter control utility class for OnTaskView that manages
@@ -14,6 +15,7 @@ export class OnTaskViewDateControls {
 
 	constructor(
 		private settingsService: SettingsService,
+		private dateFilterService: DateFilterService,
 		private eventSystem: EventSystem,
 		private logger: Logger
 	) {}
@@ -25,15 +27,12 @@ export class OnTaskViewDateControls {
 		this.onRefresh = onRefresh;
 		this.dateFilterControl = container.createDiv('ontask-segmented-control');
 		
-		const options: Array<{ value: 'all' | 'today'; label: string; icon: 'calendar' }> = [
-			{ value: 'today', label: 'Today', icon: 'calendar' },
-			{ value: 'all', label: 'All', icon: 'calendar' }
-		];
+		const options = this.dateFilterService.getAll();
 		
 		options.forEach((option) => {
 			const button = this.dateFilterControl!.createEl('button', {
 				cls: 'ontask-segmented-button',
-				attr: { 'data-value': option.value }
+				attr: { 'data-value': option.id }
 			});
 			
 			// Append icon element using Obsidian's icon system
@@ -45,9 +44,9 @@ export class OnTaskViewDateControls {
 			// Append text label with space
 			button.appendChild(document.createTextNode(' ' + option.label));
 			
-			button.addEventListener('click', () => this.setDateFilter(option.value), { passive: true });
+			button.addEventListener('click', () => this.setDateFilter(option.id), { passive: true });
 			
-			this.dateFilterButtons.set(option.value, button);
+			this.dateFilterButtons.set(option.id, button);
 		});
 		
 		this.updateDateFilterState();
@@ -56,7 +55,7 @@ export class OnTaskViewDateControls {
 	/**
 	 * Sets the date filter value and triggers a refresh callback
 	 */
-	private async setDateFilter(value: 'all' | 'today'): Promise<void> {
+	private async setDateFilter(value: DateFilterId): Promise<void> {
 		await this.settingsService.updateSetting('dateFilter', value);
 		this.updateDateFilterState();
 		if (this.onRefresh) {

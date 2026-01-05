@@ -6,6 +6,7 @@ import { EventSystem } from '../events';
 import { DataService } from '../data';
 import { StatusConfigService } from '../settings/StatusConfig';
 import { LoggingService } from '../logging';
+import { DateFilterService } from '../ontask-view/date-filter';
 
 export interface PluginOrchestrator {
 	// Lifecycle management
@@ -30,6 +31,7 @@ export interface PluginDependencies {
 	eventSystem: EventSystem;
 	dataService: DataService;
 	statusConfigService: StatusConfigService;
+	dateFilterService: DateFilterService;
 	loggingService: LoggingService;
 }
 

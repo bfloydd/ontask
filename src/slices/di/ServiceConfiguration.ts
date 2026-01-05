@@ -3,6 +3,7 @@ import { EventSystem, EventSystemServiceImpl } from '../events';
 import { SettingsService, SettingsServiceImpl } from '../settings';
 import { StreamsService, StreamsServiceImpl } from '../streams';
 import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
+import { DateFilterService, DateFilterServiceImpl } from '../ontask-view/date-filter';
 import { PluginOrchestrationServiceImpl, PluginDependencies } from '../plugin';
 import { EditorIntegrationServiceImpl } from '../editor';
 import { DataService, DataServiceImpl } from '../data';
@@ -51,8 +52,13 @@ export class ServiceConfiguration {
 			const streamsService = container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
 			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 			const statusConfigService = container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
+			const dateFilterService = container.resolve<DateFilterService>(SERVICE_IDS.DATE_FILTER_SERVICE);
 			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
-			return new TaskLoadingService(streamsService, settingsService, statusConfigService, app, loggingService.getLogger());
+			return new TaskLoadingService(streamsService, settingsService, statusConfigService, dateFilterService, app, loggingService.getLogger());
+		});
+
+		container.registerSingleton(SERVICE_IDS.DATE_FILTER_SERVICE, () => {
+			return new DateFilterServiceImpl();
 		});
 
 		container.registerSingleton(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE, (container) => {
@@ -83,6 +89,7 @@ export class ServiceConfiguration {
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
 			const dataService = container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
 			const statusConfigService = container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
+			const dateFilterService = container.resolve<DateFilterService>(SERVICE_IDS.DATE_FILTER_SERVICE);
 			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
 
 			const dependencies: PluginDependencies = {
@@ -94,6 +101,7 @@ export class ServiceConfiguration {
 				eventSystem,
 				dataService,
 				statusConfigService,
+				dateFilterService,
 				loggingService
 			};
 

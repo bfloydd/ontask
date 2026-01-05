@@ -122,6 +122,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 			settingsService, 
 			this.dependencies.statusConfigService,
 			this.dependencies.dataService,
+			this.dependencies.dateFilterService,
 			plugin,
 			this.dependencies.eventSystem,
 			this.dependencies.loggingService.getLogger()

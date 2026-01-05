@@ -9,7 +9,7 @@ export interface StatusConfig {
 }
 
 export interface OnTaskSettings {
-	dateFilter: 'all' | 'today';
+	dateFilter: 'all' | 'today' | 'week';
 	topTaskColor: string;
 	useThemeDefaultColor: boolean;
 	showTopTaskInEditor: boolean;
