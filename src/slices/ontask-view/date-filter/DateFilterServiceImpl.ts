@@ -62,7 +62,7 @@ export class DateFilterServiceImpl implements DateFilterService {
 			id: 'week',
 			label: 'Week',
 			icon: 'calendar',
-			supportsLoadMore: true,
+			supportsLoadMore: false,
 			order: 20,
 			filterFilePaths: (filePaths, app) => {
 				return filePaths.filter((filePath) => {
