@@ -416,7 +416,10 @@ describe('updateCheckboxRowInPlace - Integration Tests', () => {
 	describe('Scenario 3: Test with different status symbols (built-in and custom)', () => {
 		it('should handle built-in status symbols correctly', () => {
 			// Test non-top-task built-in statuses
-			const nonTopTaskBuiltInStatuses = ['x', '?', '*'];
+			// Note: '*' is configured with topTaskRanking in this test suite's mock status configs,
+			// so it behaves like a top task and is removed from the regular list on update.
+			// Keep this list limited to built-in statuses that are NOT top-task candidates.
+			const nonTopTaskBuiltInStatuses = ['x', '?'];
 			
 			for (const status of nonTopTaskBuiltInStatuses) {
 				// Verify these are actually built-in statuses

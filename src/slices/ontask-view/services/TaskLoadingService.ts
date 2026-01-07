@@ -16,6 +16,12 @@ export interface TaskLoadingResult {
 
 export interface TaskLoadingServiceInterface {
 	loadTasksWithFiltering(settings: OnTaskSettings): Promise<TaskLoadingResult>;
+	/**
+	 * Finds the current top task across all tracked files (based on topTaskRanking
+	 * in status configs), regardless of loadMoreLimit. Returns null if no top task
+	 * contenders exist or file tracking has not been initialized.
+	 */
+	findTopTaskAcrossTrackedFiles(): Promise<CheckboxItem | null>;
 	getFilesFromStrategies(dateFilter: OnTaskSettings['dateFilter']): Promise<string[]>;
 	initializeFileTracking(dateFilter: OnTaskSettings['dateFilter']): Promise<void>;
 	resetTracking(): void;
@@ -82,58 +88,61 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			try {
 				const content = await this.app.vault.cachedRead(file);
 				const lines = content.split('\n');
-				
-				const fileTasks: CheckboxItem[] = [];
+
+				// If we're resuming within a file, skip the first N matching tasks (not the first N lines).
+				const startTaskIndex = (fileIndex === this.currentFileIndex) ? this.currentTaskIndex : 0;
+
+				// We intentionally avoid building a full list of tasks for the file.
+				// Instead, we scan line-by-line and stop as soon as we have enough tasks.
+				let matchedTasksInFile = 0;
+				let loadedFromThisFile = 0;
+
 				for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
 					const line = lines[lineIndex];
-					
-					if (line.match(checkboxRegex)) {
-						const checkboxItem: CheckboxItem = {
-							file: file,
-							lineNumber: lineIndex + 1,
-							lineContent: line.trim(),
-							checkboxText: line.trim(),
-							sourceName: 'file',
-							sourcePath: file.path
-						};
-						fileTasks.push(checkboxItem);
-					}
-				}
-				
-				const startTaskIndex = (fileIndex === this.currentFileIndex) ? this.currentTaskIndex : 0;
-				const tasksToAdd = fileTasks.slice(startTaskIndex);
-				
-				// Debug log: Show file progress and tasks found
-				this.logger.debug(`Loading file ${fileIndex + 1}/${this.trackedFiles.length}: ${filePath}`);
-				this.logger.debug(`  Found ${fileTasks.length} total tasks in file`);
-				this.logger.debug(`  Adding ${tasksToAdd.length} tasks (starting from index ${startTaskIndex})`);
-				
-				// Debug log: Show each task being added
-				tasksToAdd.forEach((task, taskIndex) => {
-					this.logger.debug(`  Task ${taskIndex + 1}: Line ${task.lineNumber} - ${task.lineContent}`);
-				});
-				
-				for (const task of tasksToAdd) {
-					loadedTasks.push(task);
-					
+
+					// Use test() to avoid allocations from match().
+					if (!checkboxRegex.test(line)) continue;
+
+					// This is the Nth task match inside this file.
+					const matchIndex = matchedTasksInFile;
+					matchedTasksInFile++;
+
+					// Skip tasks we've already loaded from this file on previous batches.
+					if (matchIndex < startTaskIndex) continue;
+
+					const trimmed = line.trim();
+					loadedTasks.push({
+						file,
+						lineNumber: lineIndex + 1,
+						lineContent: trimmed,
+						checkboxText: trimmed,
+						sourceName: 'file',
+						sourcePath: file.path
+					});
+					loadedFromThisFile++;
+
 					if (loadedTasks.length >= targetTasks) {
 						this.currentFileIndex = fileIndex;
-						this.currentTaskIndex = fileTasks.indexOf(task) + 1;
-						this.logger.debug(`Target reached! Stopped at file ${fileIndex + 1}/${this.trackedFiles.length}, task ${this.currentTaskIndex}/${fileTasks.length} - Final progress: ${loadedTasks.length}/${targetTasks}`);
-						
-						// Check if there are more tasks available
+						// Resume at the *next* task match inside this file.
+						this.currentTaskIndex = matchIndex + 1;
+						this.logger.debug(
+							`Target reached! Stopped at file ${fileIndex + 1}/${this.trackedFiles.length}, ` +
+							`taskMatchIndex ${this.currentTaskIndex} - Final progress: ${loadedTasks.length}/${targetTasks}`
+						);
+
 						const hasMoreTasks = this.hasMoreTasksToLoad();
 						return { tasks: loadedTasks, hasMoreTasks };
 					}
 				}
-				
-				// Debug log: Show progress after processing this file
-				this.logger.debug(`  Progress after file ${fileIndex + 1}: ${loadedTasks.length}/${targetTasks} tasks loaded`);
-				
-				if (loadedTasks.length < targetTasks) {
-					this.currentFileIndex = fileIndex + 1;
-					this.currentTaskIndex = 0;
-				}
+
+				this.logger.debug(
+					`Processed file ${fileIndex + 1}/${this.trackedFiles.length}: ` +
+					`${loadedFromThisFile} added, ${matchedTasksInFile} matched, total ${loadedTasks.length}/${targetTasks}`
+				);
+
+				// Move to next file if we haven't reached the target yet.
+				this.currentFileIndex = fileIndex + 1;
+				this.currentTaskIndex = 0;
 				
 			} catch (error) {
 				this.logger.error(`[OnTask TaskLoading] Error reading file ${filePath}:`, error);
@@ -146,6 +155,109 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		// If we've processed all files, there are no more tasks
 		const hasMoreTasks = this.currentFileIndex < this.trackedFiles.length;
 		return { tasks: loadedTasks, hasMoreTasks };
+	}
+
+	/**
+	 * Finds the top task across all tracked files (sorted by file mtime desc).
+	 *
+	 * This is intentionally independent of loadMoreLimit so the UI can always display
+	 * the top task even when it lives outside the currently loaded batch.
+	 */
+	async findTopTaskAcrossTrackedFiles(): Promise<CheckboxItem | null> {
+		if (this.trackedFiles.length === 0) {
+			return null;
+		}
+
+		const rankedStatusConfigs = this.statusConfigService
+			.getStatusConfigs()
+			.filter((config) => config.topTaskRanking !== undefined)
+			.sort((a, b) => (a.topTaskRanking ?? 0) - (b.topTaskRanking ?? 0));
+
+		if (rankedStatusConfigs.length === 0) {
+			return null;
+		}
+
+		// Sort tracked files by mtime desc (top task algorithm breaks ties using file mtime)
+		const files = this.trackedFiles
+			.map((filePath) => this.app.vault.getAbstractFileByPath(filePath))
+			.filter((f): f is TFile => f instanceof TFile)
+			.sort((a, b) => (b.stat?.mtime ?? 0) - (a.stat?.mtime ?? 0));
+
+		// Single-pass scan: read each file at most once.
+		// We still preserve original semantics:
+		// - Lower ranking (e.g. 1) always beats higher rankings.
+		// - For the same ranking, the newest file (mtime desc) wins.
+		// - Within a file, the first matching line wins.
+		const rankBySymbol = new Map<string, number>();
+		for (const config of rankedStatusConfigs) {
+			if (config.topTaskRanking === undefined) continue;
+			rankBySymbol.set(config.symbol, config.topTaskRanking);
+		}
+
+		const rankedSymbols = rankedStatusConfigs
+			.map((c) => c.symbol)
+			.filter((s) => s !== undefined);
+		const rankedCaptureRegex = this.createCheckboxRegex(rankedSymbols);
+
+		let bestTask: CheckboxItem | null = null;
+		let bestRank: number | null = null;
+
+		for (const file of files) {
+			try {
+				const content = await this.app.vault.cachedRead(file);
+				const lines = content.split('\n');
+
+				let bestInFile: CheckboxItem | null = null;
+				let bestRankInFile: number | null = null;
+
+				for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+					const line = lines[lineIndex];
+					const match = rankedCaptureRegex.exec(line);
+					if (!match) continue;
+
+					// createCheckboxRegex uses a capture group for the symbol: \[(${statusPattern})\]
+					const symbol = match[1];
+					const ranking = rankBySymbol.get(symbol);
+					if (ranking === undefined) continue;
+
+					// First match of this rank in the file wins for that rank (line order).
+					if (bestRankInFile === null || ranking < bestRankInFile) {
+						const trimmed = line.trim();
+						bestRankInFile = ranking;
+						bestInFile = {
+							file,
+							lineNumber: lineIndex + 1,
+							lineContent: trimmed,
+							checkboxText: trimmed,
+							sourceName: 'file',
+							sourcePath: file.path,
+							topTaskRanking: ranking
+						};
+
+						// Can't beat rank 1 within the file.
+						if (bestRankInFile === 1) break;
+					}
+				}
+
+				if (!bestInFile || bestRankInFile === null) continue;
+
+				// If this file has a better rank than anything seen, it becomes the global best.
+				// If it's equal rank, keep the existing one since we're scanning newest->oldest.
+				if (bestRank === null || bestRankInFile < bestRank) {
+					bestRank = bestRankInFile;
+					bestTask = bestInFile;
+
+					// Rank 1 is globally unbeatable; because we're scanning newest->oldest,
+					// the first rank-1 found is the correct winner.
+					if (bestRank === 1) return bestTask;
+				}
+			} catch (error) {
+				this.logger.error('[OnTask TaskLoading] Error reading file while searching for top task:', file.path, error);
+				continue;
+			}
+		}
+
+		return bestTask;
 	}
 
 	async getFilesFromStrategies(dateFilter: OnTaskSettings['dateFilter']): Promise<string[]> {
@@ -277,6 +389,12 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		const regexPattern = `^\\s*-\\s*\\[(${statusPattern})\\]\\s.*`;
 		
 		return new RegExp(regexPattern);
+	}
+
+	private createSingleStatusCheckboxRegex(statusSymbol: string): RegExp {
+		const escaped = statusSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		// `statusSymbol` can be a space for "to-do" statuses; keep it literal.
+		return new RegExp(`^\\s*-\\s*\\[${escaped}\\]\\s.*`);
 	}
 
 	// Note: Date-based filtering is delegated to DateFilterService strategies.

@@ -225,6 +225,15 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		textSpan.className = 'ontask-toptask-hero-text';
 		textSpan.textContent = displayText;
 		
+		// Add ranking badge if task has topTaskRanking (match task list badge exactly)
+		if (topTask.topTaskRanking !== undefined) {
+			const rankingEl = document.createElement('span');
+			rankingEl.textContent = `Rank ${topTask.topTaskRanking}`;
+			rankingEl.addClass('ontask-task-ranking');
+			rankingEl.setAttribute('data-rank', topTask.topTaskRanking.toString());
+			textSpan.appendChild(rankingEl);
+		}
+		
 		const sourceSpan = document.createElement('span');
 		sourceSpan.className = 'ontask-toptask-hero-source';
 		sourceSpan.textContent = `From: ${topTask.file.name}`;

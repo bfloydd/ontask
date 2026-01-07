@@ -19,6 +19,22 @@ export class TopTaskRenderer {
 	) {}
 
 	/**
+	 * Sets the top task text and (when applicable) appends the exact same rank badge
+	 * used in the task list (`span.ontask-task-ranking[data-rank="..."]`).
+	 */
+	private setTopTaskTextWithRanking(textEl: HTMLElement, remainingText: string, topTaskRanking?: number): void {
+		textEl.textContent = remainingText || 'Top task';
+
+		if (topTaskRanking !== undefined) {
+			const rankingEl = document.createElement('span');
+			rankingEl.textContent = `Rank ${topTaskRanking}`;
+			rankingEl.addClass('ontask-task-ranking');
+			rankingEl.setAttribute('data-rank', topTaskRanking.toString());
+			textEl.appendChild(rankingEl);
+		}
+	}
+
+	/**
 	 * Creates a top task section element (for fragment usage).
 	 */
 	createTopTaskSectionElement(topTask: CheckboxItem): HTMLElement {
@@ -114,7 +130,7 @@ export class TopTaskRenderer {
 				const topTaskText = existingTopTaskSection.querySelector('.ontask-toptask-hero-text');
 				if (topTaskText) {
 					const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
-					topTaskText.textContent = remainingText || 'Top task';
+					this.setTopTaskTextWithRanking(topTaskText as HTMLElement, remainingText, topTask.topTaskRanking);
 				}
 				
 			} else {
@@ -162,7 +178,7 @@ export class TopTaskRenderer {
 		}, { passive: true });
 		
 		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
-		topTaskText.textContent = remainingText || 'Top task';
+		this.setTopTaskTextWithRanking(topTaskText, remainingText, topTask.topTaskRanking);
 		topTaskText.addEventListener('click', () => {
 			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
 		}, { passive: true });

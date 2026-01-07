@@ -86,7 +86,11 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	}
 
 	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, supportsLoadMore: boolean = true): void {
-		if (checkboxes.length === 0) {
+		const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
+		const listCheckboxes = checkboxes.filter((checkbox) => !checkbox.isTopTask);
+
+		// If there's no hero task and no list tasks, it's truly empty.
+		if (!topTask && listCheckboxes.length === 0) {
 			const emptyEl = contentArea.createDiv('ontask-empty');
 			emptyEl.textContent = 'No tasks found.';
 			return;
@@ -94,7 +98,6 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 
 		// Use DocumentFragment for optimized DOM manipulation
 		const fragment = document.createDocumentFragment();
-		const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
 
 		if (topTask) {
 			const topTaskSection = this.topTaskRenderer.createTopTaskSectionElement(topTask);
@@ -107,7 +110,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 			fragment.appendChild(filterSection);
 		}
 
-		const checkboxesByFile = this.dataProcessor.groupCheckboxesByFile(checkboxes);
+		const checkboxesByFile = this.dataProcessor.groupCheckboxesByFile(listCheckboxes);
 		const sortedFiles = this.dataProcessor.sortFilesByDate(checkboxesByFile);
 		
 		let tasksShown = 0;
@@ -172,8 +175,14 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 	}
 
 	renderAdditionalTasks(contentArea: HTMLElement, additionalTasks: CheckboxItem[]): void {
+		// Never render the top task into the list; it's displayed in the hero section.
+		const listTasks = additionalTasks.filter((task) => !task.isTopTask);
+		if (listTasks.length === 0) {
+			return;
+		}
+
 		const tasksByFile = new Map<string, CheckboxItem[]>();
-		for (const task of additionalTasks) {
+		for (const task of listTasks) {
 			const filePath = task.file?.path || '';
 			if (!tasksByFile.has(filePath)) {
 				tasksByFile.set(filePath, []);

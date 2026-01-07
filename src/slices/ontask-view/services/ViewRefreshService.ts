@@ -66,7 +66,9 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 			const supportsLoadMore = this.dateFilterService.supportsLoadMore(settings.dateFilter);
 			await this.taskLoadingService.initializeFileTracking(settings.dateFilter);
 			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
-			const newCheckboxes = result.tasks;
+			const topTaskCandidate = await this.taskLoadingService.findTopTaskAcrossTrackedFiles();
+			const newCheckboxes = this.mergeTopTaskCandidate(result.tasks, topTaskCandidate);
+
 			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(newCheckboxes);
 			
 			loadingEl.remove();
@@ -116,6 +118,13 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 		
 		const newCheckboxes = [...checkboxes, ...result.tasks];
 		const newDisplayedTasksCount = displayedTasksCount + result.tasks.length;
+
+		// Re-process top tasks now that we have a larger displayed set, and ensure the hero section stays correct.
+		// Note: refreshCheckboxes also merges a cross-file top task candidate, so in practice this array already
+		// contains the best-known top task even if it lives outside the loadMoreLimit window.
+		this.topTaskProcessingService.processTopTasksFromDisplayedTasks(newCheckboxes);
+		this.domRenderingService.updateTopTaskSection(contentArea, newCheckboxes);
+		this.removeTopTaskFromListIfPresent(contentArea, newCheckboxes);
 		
 		this.domRenderingService.renderAdditionalTasks(
 			contentArea,
@@ -149,6 +158,39 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 			displayedTasksCount: newDisplayedTasksCount,
 			hasMoreTasks: result.hasMoreTasks
 		};
+	}
+
+	private mergeTopTaskCandidate(tasks: CheckboxItem[], topTaskCandidate: CheckboxItem | null): CheckboxItem[] {
+		if (!topTaskCandidate) return tasks;
+
+		const alreadyIncluded = tasks.some(
+			(t) => t.file?.path === topTaskCandidate.file?.path && t.lineNumber === topTaskCandidate.lineNumber
+		);
+		if (alreadyIncluded) return tasks;
+
+		// Prepend so it's available immediately for rendering/processing; rendering itself de-dupes it from the list.
+		return [topTaskCandidate, ...tasks];
+	}
+
+	private removeTopTaskFromListIfPresent(contentArea: HTMLElement, checkboxes: CheckboxItem[]): void {
+		const topTask = checkboxes.find((cb) => cb.isTopTask);
+		if (!topTask?.file?.path || !topTask.lineNumber) return;
+
+		// The hero section is separate markup; this targets the regular list rows.
+		const selector = `.ontask-checkbox-item[data-file-path="${CSS.escape(topTask.file.path)}"][data-line-number="${topTask.lineNumber}"]`;
+		const topTaskRow = contentArea.querySelector(selector) as HTMLElement | null;
+		if (!topTaskRow) return;
+
+		const fileSection = topTaskRow.closest('.ontask-file-section') as HTMLElement | null;
+		topTaskRow.remove();
+
+		// Clean up empty sections so we don't leave orphaned headers.
+		if (fileSection) {
+			const remaining = fileSection.querySelectorAll('.ontask-checkbox-item');
+			if (remaining.length === 0) {
+				fileSection.remove();
+			}
+		}
 	}
 
 	/**
