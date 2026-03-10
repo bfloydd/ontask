@@ -94,12 +94,15 @@ class FilterModal extends Modal {
 						button.setButtonText(filter.name);
 						quickFilterButtons[filter.name] = button;
 
-						button.onClick(() => {
+						button.onClick(async () => {
 							// Update active statuses to match this quick filter precisely
 							this.activeStatusSymbols = [...filter.statusSymbols];
 
 							// Update quick filter button highlighting
 							this.updateQuickFilterHighlighting(quickFilterButtons);
+
+							// Save immediately
+							await this.saveFilterSettings();
 						});
 					});
 			}
@@ -137,14 +140,8 @@ class FilterModal extends Modal {
 		// Buttons
 		new Setting(contentEl)
 			.addButton(button => button
-				.setButtonText('Cancel')
-				.onClick(() => this.close()))
-			.addButton(button => button
-				.setButtonText('Save')
-				.setCta()
-				.onClick(async () => {
-					await this.saveFilterSettings();
-				}));
+				.setButtonText('Close')
+				.onClick(() => this.close()));
 	}
 
 	onClose() {
@@ -199,7 +196,6 @@ class FilterModal extends Modal {
 
 		this.resetTrackingCallback();
 		await this.refreshCheckboxesCallback();
-		this.close();
 	}
 }
 
