@@ -12,7 +12,7 @@ export interface OnTaskSettings {
 	dateFilter: 'all' | 'today' | 'week';
 	topTaskColor: string;
 	useThemeDefaultColor: boolean;
-	showTopTaskInEditor: boolean;
+	showTopTaskInStatusBar: boolean;
 	checkboxSource: 'streams' | 'daily-notes' | 'folder';
 	customFolderPath: string;
 	includeSubfolders: boolean;
@@ -26,7 +26,7 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	dateFilter: 'all',
 	topTaskColor: '#ff6b6b',
 	useThemeDefaultColor: true,
-	showTopTaskInEditor: false,
+	showTopTaskInStatusBar: false,
 	checkboxSource: 'daily-notes',
 	customFolderPath: '',
 	includeSubfolders: true,

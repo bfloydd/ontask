@@ -27,7 +27,7 @@ export const SERVICE_IDS = {
 	TASK_LOADING_SERVICE: Symbol('TaskLoadingService'),
 	DATE_FILTER_SERVICE: Symbol('DateFilterService'),
 	PLUGIN_ORCHESTRATOR: Symbol('PluginOrchestrator'),
-	EDITOR_INTEGRATION_SERVICE: Symbol('EditorIntegrationService'),
+	STATUS_BAR_INTEGRATION_SERVICE: Symbol('StatusBarIntegrationService'),
 	DATA_SERVICE: Symbol('DataService'),
 	STATUS_CONFIG_SERVICE: Symbol('StatusConfigService'),
 	LOGGING_SERVICE: Symbol('LoggingService'),

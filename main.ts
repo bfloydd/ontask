@@ -2,7 +2,7 @@ import { App, Plugin } from 'obsidian';
 import { OnTaskSettings, SettingsService, OnTaskSettingsTab } from './src/slices/settings';
 import { PluginOrchestrator } from './src/slices/plugin';
 import { EventSystem } from './src/slices/events';
-import { EditorIntegrationServiceImpl } from './src/slices/editor/EditorIntegrationServiceImpl';
+import { StatusBarIntegrationServiceImpl } from './src/slices/status-bar/StatusBarIntegrationServiceImpl';
 import { DIContainer, DIContainerImpl, ServiceConfiguration, SERVICE_IDS } from './src/slices/di';
 import { StreamsService } from './src/slices/streams';
 import { DataService } from './src/slices/data';
@@ -17,7 +17,7 @@ export default class OnTask extends Plugin {
 	private streamsService: StreamsService;
 	private orchestrator: PluginOrchestrator;
 	private eventSystem: EventSystem;
-	private editorIntegrationService: EditorIntegrationServiceImpl;
+	private statusBarIntegrationService: StatusBarIntegrationServiceImpl;
 	private dataService: DataService;
 	private statusConfigService: StatusConfigService;
 	private loggingService: LoggingService;
@@ -34,7 +34,7 @@ export default class OnTask extends Plugin {
 		this.settingsService = this.container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
 		this.streamsService = this.container.resolve<StreamsService>(SERVICE_IDS.STREAMS_SERVICE);
 		this.orchestrator = this.container.resolve<PluginOrchestrator>(SERVICE_IDS.PLUGIN_ORCHESTRATOR);
-		this.editorIntegrationService = this.container.resolve<EditorIntegrationServiceImpl>(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE);
+		this.statusBarIntegrationService = this.container.resolve<StatusBarIntegrationServiceImpl>(SERVICE_IDS.STATUS_BAR_INTEGRATION_SERVICE);
 		this.dataService = this.container.resolve<DataService>(SERVICE_IDS.DATA_SERVICE);
 		this.statusConfigService = this.container.resolve<StatusConfigService>(SERVICE_IDS.STATUS_CONFIG_SERVICE);
 
@@ -47,7 +47,7 @@ export default class OnTask extends Plugin {
 		IconService.setLogger(this.loggingService.getLogger());
 		
 		await this.orchestrator.initialize();
-		await this.editorIntegrationService.initialize();
+		await this.statusBarIntegrationService.initialize();
 		
 		this.settingsTab = new OnTaskSettingsTab(this.app, this, this.settingsService, this.statusConfigService, this.dataService);
 		this.addSettingTab(this.settingsTab);
@@ -62,8 +62,8 @@ export default class OnTask extends Plugin {
 			await this.orchestrator.shutdown();
 		}
 		
-		if (this.editorIntegrationService) {
-			this.editorIntegrationService.cleanup();
+		if (this.statusBarIntegrationService) {
+			this.statusBarIntegrationService.cleanup();
 		}
 		
 		if (this.container) {

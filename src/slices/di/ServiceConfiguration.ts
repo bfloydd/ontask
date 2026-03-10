@@ -5,7 +5,7 @@ import { StreamsService, StreamsServiceImpl } from '../streams';
 import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
 import { DateFilterService, DateFilterServiceImpl } from '../ontask-view/date-filter';
 import { PluginOrchestrationServiceImpl, PluginDependencies } from '../plugin';
-import { EditorIntegrationServiceImpl } from '../editor';
+import { StatusBarIntegrationServiceImpl } from '../status-bar';
 import { DataService, DataServiceImpl } from '../data';
 import { StatusConfigService } from '../settings/StatusConfig';
 import { LoggingService, LoggingServiceImpl } from '../logging';
@@ -61,7 +61,7 @@ export class ServiceConfiguration {
 			return new DateFilterServiceImpl();
 		});
 
-		container.registerSingleton(SERVICE_IDS.EDITOR_INTEGRATION_SERVICE, (container) => {
+		container.registerSingleton(SERVICE_IDS.STATUS_BAR_INTEGRATION_SERVICE, (container) => {
 			const app = container.resolve<App>(SERVICE_IDS.APP);
 			const plugin = container.resolve<Plugin>(SERVICE_IDS.PLUGIN);
 			const settingsService = container.resolve<SettingsService>(SERVICE_IDS.SETTINGS_SERVICE);
@@ -69,7 +69,7 @@ export class ServiceConfiguration {
 			const taskLoadingService = container.resolve<TaskLoadingService>(SERVICE_IDS.TASK_LOADING_SERVICE);
 			const eventSystem = container.resolve<EventSystem>(SERVICE_IDS.EVENT_SYSTEM);
 			const loggingService = container.resolve<LoggingService>(SERVICE_IDS.LOGGING_SERVICE);
-			return new EditorIntegrationServiceImpl(app, settingsService, statusConfigService, taskLoadingService, eventSystem, plugin, loggingService.getLogger());
+			return new StatusBarIntegrationServiceImpl(app, settingsService, statusConfigService, taskLoadingService, eventSystem, plugin, loggingService.getLogger());
 		});
 
 		container.registerSingleton(SERVICE_IDS.LOGGING_SERVICE, (container) => {

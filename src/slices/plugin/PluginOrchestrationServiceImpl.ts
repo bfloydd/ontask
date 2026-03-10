@@ -87,8 +87,8 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 						this.logger.debug('[OnTask Orchestrator] Checkbox source settings changed, reconfiguring');
 						this.configureCheckboxSource();
 						break;
-					case 'showTopTaskInEditor':
-						this.logger.debug('[OnTask Orchestrator] showTopTaskInEditor setting changed, delegating to editor integration');
+					case 'showTopTaskInStatusBar':
+						this.logger.debug('[OnTask Orchestrator] showTopTaskInStatusBar setting changed, delegating to status bar integration');
 						break;
 					case 'debugLoggingEnabled':
 						this.logger.debug('[OnTask Orchestrator] debugLoggingEnabled setting changed, delegating to logging service');

@@ -43,11 +43,11 @@ export class GeneralSettingsView {
 			.setName('Show top task in status bar')
 			.setDesc('When enabled, the current top task will be displayed in the Obsidian status bar')
 			.addToggle(toggle => toggle
-				.setValue(settings.showTopTaskInEditor)
+				.setValue(settings.showTopTaskInStatusBar)
 				.onChange(async (value) => {
-					await this.settingsService.updateSetting('showTopTaskInEditor', value);
+					await this.settingsService.updateSetting('showTopTaskInStatusBar', value);
 					this.app.workspace.trigger('ontask:settings-changed', {
-						key: 'showTopTaskInEditor',
+						key: 'showTopTaskInStatusBar',
 						value
 					});
 				}));

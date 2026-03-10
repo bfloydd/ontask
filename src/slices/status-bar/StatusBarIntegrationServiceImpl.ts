@@ -1,5 +1,5 @@
-import { App, MarkdownView, Plugin } from 'obsidian';
-import { EditorIntegrationService } from './EditorIntegrationServiceInterface';
+import { App, Plugin } from 'obsidian';
+import { StatusBarIntegrationService } from './StatusBarIntegrationServiceInterface';
 import { SettingsService, SettingsChangeEvent } from '../settings/SettingsServiceInterface';
 import { StatusConfigService } from '../settings/StatusConfig';
 import { TaskLoadingService } from '../ontask-view/services/TaskLoadingService';
@@ -8,7 +8,7 @@ import { PluginAwareSliceService } from '../../shared/BaseSlice';
 import { Logger } from '../logging/Logger';
 import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
 
-export class EditorIntegrationServiceImpl extends PluginAwareSliceService implements EditorIntegrationService {
+export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService implements StatusBarIntegrationService {
 	private app: App;
 	private settingsService: SettingsService;
 	private statusConfigService: StatusConfigService;
@@ -19,7 +19,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	private currentTopTask: CheckboxItem | null = null;
 	private pendingDecorationUpdate: boolean = false;
 	private updateRequestId: number | null = null;
-	private topTaskMemory: CheckboxItem | null = null; // In-memory storage for current top task
+	private topTaskMemory: CheckboxItem | null = null;
 
 	constructor(
 		app: App,
@@ -44,45 +44,45 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		if (this.initialized) return;
 
 		this.eventSystem.on<EventData<SettingsChangeEvent>>('settings:changed', (event: EventData<SettingsChangeEvent>) => {
-			this.logger.debug('[OnTask Editor] Settings changed event received:', event.data);
-			if (event.data?.key === 'showTopTaskInEditor') {
-				this.logger.debug('[OnTask Editor] showTopTaskInEditor setting changed, scheduling decoration update');
-				this.scheduleDecorationUpdate();
+			this.logger.debug('[OnTask StatusBar] Settings changed event received:', event.data);
+			if (event.data?.key === 'showTopTaskInStatusBar') {
+				this.logger.debug('[OnTask StatusBar] showTopTaskInStatusBar setting changed, scheduling status bar update');
+				this.scheduleStatusBarUpdate();
 			} else if (event.data?.key === 'topTaskColor' || event.data?.key === 'useThemeDefaultColor') {
-				this.logger.debug('[OnTask Editor] top task color setting changed, updating status bar color');
+				this.logger.debug('[OnTask StatusBar] top task color setting changed, updating status bar color');
 				this.updateStatusBarColors();
 			}
 		});
 
 		this.eventSystem.on<EventData<{ topTask: CheckboxItem | null }>>('top-task:found', (event: EventData<{ topTask: CheckboxItem | null }>) => {
-			this.logger.debug('[OnTask Editor] Top task found event received:', event.data);
+			this.logger.debug('[OnTask StatusBar] Top task found event received:', event.data);
 			this.topTaskMemory = event.data?.topTask ?? null;
 			if (this.isEnabled()) {
-				this.logger.debug('[OnTask Editor] Editor integration enabled, scheduling decoration update');
-				this.scheduleDecorationUpdate();
+				this.logger.debug('[OnTask StatusBar] Status bar integration enabled, scheduling update');
+				this.scheduleStatusBarUpdate();
 			} else {
-				this.logger.debug('[OnTask Editor] Editor integration disabled, ignoring top task found event');
+				this.logger.debug('[OnTask StatusBar] Status bar integration disabled, ignoring top task found event');
 			}
 		});
 
 		this.eventSystem.on('top-task:cleared', () => {
-			this.logger.debug('[OnTask Editor] Top task cleared event received');
+			this.logger.debug('[OnTask StatusBar] Top task cleared event received');
 			this.topTaskMemory = null;
 			if (this.isEnabled()) {
-				this.logger.debug('[OnTask Editor] Editor integration enabled, scheduling decoration update');
-				this.scheduleDecorationUpdate();
+				this.logger.debug('[OnTask StatusBar] Status bar integration enabled, scheduling update');
+				this.scheduleStatusBarUpdate();
 			} else {
-				this.logger.debug('[OnTask Editor] Editor integration disabled, ignoring top task cleared event');
+				this.logger.debug('[OnTask StatusBar] Status bar integration disabled, ignoring top task cleared event');
 			}
 		});
 
 		this.eventSystem.on('checkboxes:updated', () => {
-			this.logger.debug('[OnTask Editor] Checkboxes updated event received');
+			this.logger.debug('[OnTask StatusBar] Checkboxes updated event received');
 			if (this.isEnabled()) {
-				this.logger.debug('[OnTask Editor] Editor integration enabled, scheduling decoration update');
-				this.scheduleDecorationUpdate();
+				this.logger.debug('[OnTask StatusBar] Status bar integration enabled, scheduling update');
+				this.scheduleStatusBarUpdate();
 			} else {
-				this.logger.debug('[OnTask Editor] Editor integration disabled, ignoring checkboxes updated event');
+				this.logger.debug('[OnTask StatusBar] Status bar integration disabled, ignoring checkboxes updated event');
 			}
 		});
 
@@ -94,13 +94,9 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 	}
 
-	/**
-	 * Schedule a decoration update using requestAnimationFrame for better performance
-	 * This prevents multiple rapid updates and batches them into a single update
-	 */
-	private scheduleDecorationUpdate(): void {
+	private scheduleStatusBarUpdate(): void {
 		if (this.pendingDecorationUpdate) {
-			return; // Already scheduled
+			return;
 		}
 
 		this.pendingDecorationUpdate = true;
@@ -112,11 +108,11 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		this.updateRequestId = requestAnimationFrame(() => {
 			this.pendingDecorationUpdate = false;
 			this.updateRequestId = null;
-			this.updateEditorDecorations();
+			this.updateStatusBar();
 		});
 	}
 
-	async updateEditorDecorations(): Promise<void> {
+	async updateStatusBar(): Promise<void> {
 		if (!this.isEnabled()) {
 			this.cleanup();
 			return;
@@ -155,7 +151,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			this.statusBarItem.empty();
 			this.statusBarItem.show();
 
-			// Apply the configurable top task color
 			this.updateStatusBarColors();
 
 			const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
@@ -169,7 +164,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			textSpan.className = 'ontask-status-bar-text';
 			textSpan.textContent = displayText;
 
-			// Add ranking badge if task has topTaskRanking
 			if (topTask.topTaskRanking !== undefined) {
 				const rankingEl = document.createElement('span');
 				rankingEl.textContent = ` Rank ${topTask.topTaskRanking}`;
@@ -183,7 +177,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			this.statusBarItem.setAttribute('title', `Top Task (From: ${topTask.file.name})`);
 
 		} catch (error) {
-			this.logger.error('[OnTask Editor] Error updating editor decorations:', error);
+			this.logger.error('[OnTask StatusBar] Error updating status bar:', error);
 		}
 	}
 
@@ -211,25 +205,14 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			this.statusBarItem.hide();
 		}
 
-		const editorContainers = document.querySelectorAll('.markdown-source-view, .markdown-preview-view');
-		editorContainers.forEach(container => {
-			const overlays = container.querySelectorAll('.ontask-toptask-hero-overlay');
-			overlays.forEach((overlay: HTMLElement) => {
-				overlay.remove();
-			});
-		});
-
 		this.initialized = false;
 	}
 
 	isEnabled(): boolean {
 		const settings = this.settingsService.getSettings();
-		return settings.showTopTaskInEditor;
+		return settings.showTopTaskInStatusBar;
 	}
 
-	/**
-	 * Find top task independently without relying on OnTask View
-	 */
 	private async findTopTaskIndependently(): Promise<void> {
 		try {
 			const settings = this.settingsService.getSettings();
@@ -244,13 +227,13 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 
 			if (topTask) {
 				this.topTaskMemory = topTask;
-				this.scheduleDecorationUpdate();
+				this.scheduleStatusBarUpdate();
 			} else {
 				this.topTaskMemory = null;
-				this.scheduleDecorationUpdate();
+				this.scheduleStatusBarUpdate();
 			}
 		} catch (error) {
-			this.logger.error('[OnTask Editor] Error finding top task independently:', error);
+			this.logger.error('[OnTask StatusBar] Error finding top task independently:', error);
 		}
 	}
 
@@ -260,7 +243,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			checkbox.isTopTaskContender = false;
 		});
 
-		// Get all status configs with topTaskRanking defined
 		const allStatusConfigs = this.statusConfigService.getStatusConfigs();
 		const rankedStatusConfigs = allStatusConfigs
 			.filter(config => config.topTaskRanking !== undefined)
@@ -270,7 +252,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			return;
 		}
 
-		// Build dynamic configs with regex patterns
 		const dynamicConfigs = rankedStatusConfigs.map(config => ({
 			symbol: config.symbol,
 			name: config.name,
@@ -284,7 +265,6 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			const matchingTasks = checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
 			tasksByType[config.name] = matchingTasks;
 
-			// Mark tasks with ranking for UI display
 			matchingTasks.forEach(task => {
 				task.topTaskRanking = config.ranking;
 			});
@@ -302,16 +282,10 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 	}
 
-	/**
-	 * Check if a checkbox matches the top task configuration
-	 */
 	private isTopTaskByConfig(checkbox: CheckboxItem, config: { symbol: string; name: string; pattern: RegExp }): boolean {
 		return config.pattern.test(checkbox.lineContent);
 	}
 
-	/**
-	 * Update the color of the status bar item when the setting changes
-	 */
 	private updateStatusBarColors(): void {
 		if (!this.statusBarItem) return;
 		const settings = this.settingsService.getSettings();
@@ -319,11 +293,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		this.statusBarItem.style.setProperty('color', colorToUse);
 	}
 
-	/**
-	 * Escape special regex characters in a string
-	 */
 	private escapeRegex(string: string): string {
 		return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	}
-
 }
