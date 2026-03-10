@@ -46,6 +46,7 @@ class FilterModal extends Modal {
 	private resetTrackingCallback: () => void;
 	private statusConfigs: StatusConfig[];
 	private plugin: Plugin;
+	private activeStatusSymbols: string[] = [];
 
 	constructor(
 		app: App,
@@ -70,87 +71,39 @@ class FilterModal extends Modal {
 		const { contentEl, titleEl } = this;
 		contentEl.empty();
 		titleEl.textContent = 'Filter statuses';
-		
+
 		// Add the ontask-filters-modal class to the modal element
 		this.modalEl.addClass('ontask-filters-modal');
 
-		// Status checkboxes using native Setting components
-		const checkboxElements: { [key: string]: HTMLInputElement } = {};
-		const toggleElements: { [key: string]: ObsidianToggle } = {};
-
-		for (const status of this.statusConfigs) {
-			const setting = new Setting(contentEl)
-				.setName(`${status.name} (${status.description})`);
-
-			// Access the name container to add our status icon
-			const nameContainer = setting.nameEl;
-			
-			// Create status display icon
-			const statusDisplay = document.createElement('span');
-			statusDisplay.className = 'ontask-status-icon-inline';
-			statusDisplay.textContent = status.symbol;
-			statusDisplay.style.setProperty('--ontask-status-color', status.color);
-			statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
-			
-			// Always apply dynamic styling attributes since CSS variables are set for all statuses
-			statusDisplay.setAttribute('data-dynamic-color', 'true');
-			// Only set custom-status attribute for truly custom status configurations
-			if (!StatusConfigService.isBuiltInStatus(status.symbol)) {
-				statusDisplay.setAttribute('data-custom-status', 'true');
-			}
-			
-			// Insert icon at the beginning of the name container
-			nameContainer.insertBefore(statusDisplay, nameContainer.firstChild);
-
-			// Add toggle control
-			setting.addToggle(toggle => {
-				toggle.setValue(status.filtered !== false);
-				const checkbox = toggle.toggleEl.querySelector('input[type="checkbox"]') as HTMLInputElement;
-				if (checkbox) {
-					checkboxElements[status.symbol] = checkbox;
-					toggleElements[status.symbol] = toggle;
-				}
-				toggle.onChange(() => {
-					// Toggle callback for visual feedback
-				});
-			});
-		}
+		// Initialize active status symbols
+		this.activeStatusSymbols = this.statusConfigs
+			.filter(status => status.filtered !== false)
+			.map(status => status.symbol);
 
 		// Quick filters section
 		const quickFilters = this.dataService.getQuickFilters().filter((filter: QuickFilter) => filter.enabled);
 		if (quickFilters.length > 0) {
 			const quickFiltersContainer = contentEl.createDiv('ontask-filters-quick-filters-container');
-			
+
 			// Store quick filter buttons for live updates
 			const quickFilterButtons: { [key: string]: ObsidianButton } = {};
-			
+
 			for (const filter of quickFilters) {
 				new Setting(quickFiltersContainer)
 					.addButton(button => {
 						button.setButtonText(filter.name);
 						quickFilterButtons[filter.name] = button;
-						
-						button.onClick(() => {
-							// Update status toggles
-							filter.statusSymbols.forEach((symbol: string) => {
-								const toggle = toggleElements[symbol];
-								if (toggle) {
-									toggle.setValue(true);
-								}
-							});
 
-							Object.keys(toggleElements).forEach(symbol => {
-								if (!filter.statusSymbols.includes(symbol)) {
-									toggleElements[symbol].setValue(false);
-								}
-							});
-							
+						button.onClick(() => {
+							// Update active statuses to match this quick filter precisely
+							this.activeStatusSymbols = [...filter.statusSymbols];
+
 							// Update quick filter button highlighting
-							this.updateQuickFilterHighlighting(quickFilterButtons, toggleElements);
+							this.updateQuickFilterHighlighting(quickFilterButtons);
 						});
 					});
 			}
-			
+
 			// Add config button to the same row as quick filter buttons
 			new Setting(quickFiltersContainer)
 				.addButton(button => {
@@ -166,7 +119,7 @@ class FilterModal extends Modal {
 							appWithSettings.setting.open();
 							appWithSettings.setting.openTabById(this.plugin.manifest.id);
 						}
-						
+
 						// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
 						setTimeout(() => {
 							const settingsTab = (this.plugin as OnTaskPlugin).settingsTab;
@@ -176,16 +129,9 @@ class FilterModal extends Modal {
 						}, 100);
 					});
 				});
-			
-			// Add change listeners to all status toggles for live updates
-			Object.values(toggleElements).forEach((toggle: ObsidianToggle) => {
-				toggle.onChange(() => {
-					this.updateQuickFilterHighlighting(quickFilterButtons, toggleElements);
-				});
-			});
-			
+
 			// Initial highlighting update
-			this.updateQuickFilterHighlighting(quickFilterButtons, toggleElements);
+			this.updateQuickFilterHighlighting(quickFilterButtons);
 		}
 
 		// Buttons
@@ -197,7 +143,7 @@ class FilterModal extends Modal {
 				.setButtonText('Save')
 				.setCta()
 				.onClick(async () => {
-					await this.saveFilterSettings(toggleElements);
+					await this.saveFilterSettings();
 				}));
 	}
 
@@ -207,19 +153,16 @@ class FilterModal extends Modal {
 	}
 
 
-	private updateQuickFilterHighlighting(quickFilterButtons: { [key: string]: ObsidianButton }, toggleElements: { [key: string]: ObsidianToggle }): void {
-		// Get current active status symbols from toggles
-		const activeStatusSymbols = Object.keys(toggleElements).filter(symbol => toggleElements[symbol].getValue());
-		
+	private updateQuickFilterHighlighting(quickFilterButtons: { [key: string]: ObsidianButton }): void {
 		// Get all quick filters
 		const quickFilters = this.dataService.getQuickFilters().filter((filter: QuickFilter) => filter.enabled);
-		
+
 		// Update highlighting for each quick filter button
 		quickFilters.forEach((filter: QuickFilter) => {
 			const button = quickFilterButtons[filter.name];
 			if (button) {
-				const filterMatchesCurrent = this.doesQuickFilterMatchCurrentSelection(filter.statusSymbols, activeStatusSymbols, toggleElements);
-				
+				const filterMatchesCurrent = this.doesQuickFilterMatchCurrentSelection(filter.statusSymbols);
+
 				if (filterMatchesCurrent) {
 					button.buttonEl.addClass('ontask-quick-filter-selected');
 				} else {
@@ -229,26 +172,31 @@ class FilterModal extends Modal {
 		});
 	}
 
-	private doesQuickFilterMatchCurrentSelection(filterStatusSymbols: string[], activeStatusSymbols: string[], toggleElements: { [key: string]: ObsidianToggle }): boolean {
+	private doesQuickFilterMatchCurrentSelection(filterStatusSymbols: string[]): boolean {
 		// A quick filter matches if all its status symbols are active and no other statuses are active
 		// This means the current selection exactly matches the quick filter's configuration
 		// Filter out invalid symbols that don't exist in the available status configs (e.g., "$" in Plan filter)
-		const validFilterSymbols = filterStatusSymbols.filter(symbol => toggleElements[symbol] !== undefined);
-		
+		const validFilterSymbols = filterStatusSymbols.filter(symbol =>
+			this.statusConfigs.some(config => config.symbol === symbol)
+		);
+
 		// Check if all valid filter symbols are active AND all active symbols are in the filter
 		// This ensures exact match (no extra statuses, all filter statuses are active)
-		if (validFilterSymbols.length !== activeStatusSymbols.length) {
+		if (validFilterSymbols.length !== this.activeStatusSymbols.length) {
 			return false;
 		}
-		
-		return validFilterSymbols.every(symbol => activeStatusSymbols.includes(symbol));
+
+		return validFilterSymbols.every(symbol => this.activeStatusSymbols.includes(symbol));
 	}
 
-	private async saveFilterSettings(toggleElements: { [key: string]: ObsidianToggle }): Promise<void> {
-		for (const [symbol, toggle] of Object.entries(toggleElements)) {
-			await this.statusConfigService.updateStatusFiltered(symbol, toggle.getValue());
+	private async saveFilterSettings(): Promise<void> {
+		for (const config of this.statusConfigs) {
+			await this.statusConfigService.updateStatusFiltered(
+				config.symbol,
+				this.activeStatusSymbols.includes(config.symbol)
+			);
 		}
-		
+
 		this.resetTrackingCallback();
 		await this.refreshCheckboxesCallback();
 		this.close();
@@ -315,14 +263,14 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 					statusDisplay.textContent = status.symbol;
 					statusDisplay.style.setProperty('--ontask-status-color', status.color);
 					statusDisplay.style.setProperty('--ontask-status-background-color', status.backgroundColor || 'transparent');
-					
+
 					// Always apply dynamic styling attributes since CSS variables are set for all statuses
 					statusDisplay.setAttribute('data-dynamic-color', 'true');
 					// Only set custom-status attribute for truly custom status configurations
 					if (!StatusConfigService.isBuiltInStatus(status.symbol)) {
 						statusDisplay.setAttribute('data-custom-status', 'true');
 					}
-					
+
 					// Find the title element in the menu item
 					const titleEl = menuEl.querySelector('.menu-item-title');
 					if (titleEl) {
@@ -353,7 +301,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 			this.resetTrackingCallback,
 			this.plugin
 		);
-		
+
 		// Store the modal and clear reference when it closes
 		this.filterModal = modal;
 		const originalOnClose = modal.onClose.bind(modal);
@@ -361,7 +309,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 			originalOnClose();
 			this.filterModal = null;
 		};
-		
+
 		modal.open();
 	}
 }

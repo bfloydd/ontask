@@ -726,46 +726,6 @@
 	font-weight: 600;
 }
 
-.ontask-filters-checkboxes-container {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.ontask-filters-checkbox-item {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.ontask-filters-checkbox-label {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	cursor: pointer;
-	flex: 1;
-}
-
-.ontask-filters-checkbox-name {
-	font-weight: 500;
-}
-
-.ontask-filters-checkbox-description {
-	font-size: 12px;
-	color: var(--text-muted);
-}
-
-.ontask-filters-buttons-container {
-	display: flex;
-	justify-content: center;
-	gap: 8px;
-	margin-top: 12px;
-}
-
-.ontask-filters-separator {
-	border-top: 1px solid var(--background-modifier-border);
-	margin: 12px 0;
-}
 
 .ontask-filters-modal .ontask-filters-quick-filters-container {
 	display: flex;
