@@ -10,14 +10,14 @@ export class CheckboxDataProcessor {
 		private app: App,
 		private getFileName: (filePath: string) => string,
 		private logger?: Logger
-	) {}
+	) { }
 
 	/**
 	 * Groups checkboxes by their file path.
 	 */
 	groupCheckboxesByFile(checkboxes: CheckboxItem[]): Map<string, CheckboxItem[]> {
 		const grouped = new Map<string, CheckboxItem[]>();
-		
+
 		for (const checkbox of checkboxes) {
 			const filePath = checkbox.file?.path || 'Unknown';
 			if (!grouped.has(filePath)) {
@@ -25,7 +25,20 @@ export class CheckboxDataProcessor {
 			}
 			grouped.get(filePath)!.push(checkbox);
 		}
-		
+
+		// Sort checkboxes within each file to put ranked items at the top
+		for (const fileCheckboxes of grouped.values()) {
+			fileCheckboxes.sort((a, b) => {
+				const rankA = a.topTaskRanking !== undefined ? a.topTaskRanking : Infinity;
+				const rankB = b.topTaskRanking !== undefined ? b.topTaskRanking : Infinity;
+				if (rankA !== rankB) {
+					return rankA - rankB;
+				}
+				// Maintain document order for unranked tasks, or tasks with the same rank
+				return (a.lineNumber || 0) - (b.lineNumber || 0);
+			});
+		}
+
 		return grouped;
 	}
 
@@ -34,32 +47,32 @@ export class CheckboxDataProcessor {
 	 */
 	sortFilesByDate(checkboxesByFile: Map<string, CheckboxItem[]>): Map<string, CheckboxItem[]> {
 		const fileEntries = Array.from(checkboxesByFile.entries());
-		
+
 		fileEntries.sort((a, b) => {
 			try {
 				const fileNameA = this.getFileName(a[0]);
 				const fileNameB = this.getFileName(b[0]);
-				
+
 				const dateMatchA = fileNameA.match(/(\d{4}-\d{2}-\d{2})/);
 				const dateMatchB = fileNameB.match(/(\d{4}-\d{2}-\d{2})/);
-				
+
 				if (!dateMatchA || !dateMatchB) {
 					const fileA = this.app.vault.getAbstractFileByPath(a[0]) as TFile;
 					const fileB = this.app.vault.getAbstractFileByPath(b[0]) as TFile;
-					
+
 					if (!fileA || !fileB) {
 						return 0;
 					}
-					
+
 					const dateA = fileA.stat?.mtime || fileA.stat?.ctime || 0;
 					const dateB = fileB.stat?.mtime || fileB.stat?.ctime || 0;
-					
+
 					return dateB - dateA;
 				}
-				
+
 				const dateA = new Date(dateMatchA[1]);
 				const dateB = new Date(dateMatchB[1]);
-				
+
 				return dateB.getTime() - dateA.getTime();
 			} catch (error) {
 				if (this.logger) {
@@ -68,12 +81,12 @@ export class CheckboxDataProcessor {
 				return 0;
 			}
 		});
-		
+
 		const sortedMap = new Map<string, CheckboxItem[]>();
 		for (const [filePath, checkboxes] of fileEntries) {
 			sortedMap.set(filePath, checkboxes);
 		}
-		
+
 		return sortedMap;
 	}
 }
