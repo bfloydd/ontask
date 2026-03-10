@@ -24,14 +24,14 @@ export class StatusConfigView {
 
 		// Header
 		const headerEl = this.containerEl.createEl('div', { cls: 'status-config-header' });
-		headerEl.createEl('p', { 
+		headerEl.createEl('p', {
 			text: 'Customize the appearance and order of task statuses. Drag to reorder, click to edit.',
 			cls: 'setting-item-description'
 		});
 
 		// Status list container
 		const statusListEl = this.containerEl.createEl('div', { cls: 'status-config-list' });
-		
+
 		// Render each status
 		this.statusConfigs.forEach((config, index) => {
 			this.renderStatusItem(statusListEl, config, index);
@@ -42,7 +42,7 @@ export class StatusConfigView {
 	}
 
 	private renderStatusItem(containerEl: HTMLElement, config: StatusConfig, index: number): void {
-		const itemEl = containerEl.createEl('div', { 
+		const itemEl = containerEl.createEl('div', {
 			cls: 'status-config-item',
 			attr: { 'data-index': index.toString() }
 		});
@@ -51,7 +51,7 @@ export class StatusConfigView {
 		const isNonEditableSymbol = NON_EDITABLE_SYMBOLS.includes(config.symbol);
 
 		// Drag handle (visual indicator only - the entire item is draggable)
-		const dragHandle = itemEl.createEl('div', { 
+		const dragHandle = itemEl.createEl('div', {
 			cls: 'status-config-drag-handle'
 		});
 		const gripIcon = IconService.getConfigIconElement('grip-vertical', { width: 16, height: 16 });
@@ -61,7 +61,7 @@ export class StatusConfigView {
 
 		// Status preview
 		const previewEl = itemEl.createEl('div', { cls: 'status-config-preview' });
-		const statusEl = previewEl.createEl('span', { 
+		const statusEl = previewEl.createEl('span', {
 			cls: 'status-config-symbol',
 			text: config.symbol
 		});
@@ -70,12 +70,12 @@ export class StatusConfigView {
 		// Use CSS variables for dynamic colors instead of direct style assignments
 		statusEl.style.setProperty('--ontask-config-color', config.color);
 		statusEl.style.setProperty('--ontask-config-background-color', config.backgroundColor || 'transparent');
-		
+
 		// Only set custom-status attribute for truly custom status configurations
 		if (!StatusConfigService.isBuiltInStatus(config.symbol)) {
 			statusEl.setAttribute('data-custom-status', 'true');
 		}
-		
+
 		// Add lock icon for non-editable symbols
 		if (isNonEditableSymbol) {
 			const lockIcon = previewEl.createEl('span', {
@@ -88,38 +88,42 @@ export class StatusConfigView {
 
 		// Status info
 		const infoEl = itemEl.createEl('div', { cls: 'status-config-info' });
-		const nameEl = infoEl.createEl('div', { 
+		const nameEl = infoEl.createEl('div', {
 			cls: 'status-config-name',
 			text: config.name
 		});
-		
+
 		// Add description on the same line
-		const descriptionEl = infoEl.createEl('span', { 
+		const descriptionEl = infoEl.createEl('span', {
 			cls: 'status-config-description',
 			text: ` - ${config.description}`
 		});
-		
+
 		// Add visual indicator for ranking after description
 		if (config.topTaskRanking !== undefined) {
 			const indicatorEl = infoEl.createEl('span', {
-				cls: 'status-config-ranking-indicator',
-				text: ` - Rank #${config.topTaskRanking}`,
-				attr: { title: `Top Task Rank #${config.topTaskRanking}` }
+				cls: 'ontask-task-ranking',
+				text: `Rank ${config.topTaskRanking}`,
+				attr: {
+					title: `Top Task Rank ${config.topTaskRanking}`,
+					'data-rank': config.topTaskRanking.toString()
+				}
 			});
-			indicatorEl.addClass('status-config-indicator');
+			// Add some margin so it doesn't touch the description text
+			indicatorEl.style.marginLeft = '8px';
 		}
 
 		// Edit button
-		const editBtn = itemEl.createEl('button', { 
+		const editBtn = itemEl.createEl('button', {
 			cls: 'status-config-edit-btn'
 		});
 		IconService.setConfigIcon(editBtn, 'edit');
 
 		// Delete button (only show for editable symbols)
 		let deleteBtn: HTMLButtonElement | null = null;
-		
+
 		if (!isNonEditableSymbol) {
-			deleteBtn = itemEl.createEl('button', { 
+			deleteBtn = itemEl.createEl('button', {
 				cls: 'status-config-delete-btn'
 			});
 			IconService.setConfigIcon(deleteBtn, 'delete');
@@ -130,7 +134,7 @@ export class StatusConfigView {
 		if (deleteBtn) {
 			deleteBtn.addEventListener('click', () => this.showDeleteConfirmation(config, index), { passive: true });
 		}
-		
+
 		// Drag and drop
 		setupDragAndDrop<StatusConfig>({
 			itemElement: itemEl,
@@ -152,11 +156,11 @@ export class StatusConfigView {
 	}
 
 	private renderAddButton(containerEl: HTMLElement): void {
-		const addBtn = containerEl.createEl('button', { 
+		const addBtn = containerEl.createEl('button', {
 			cls: 'status-config-add-btn',
 			text: '+ Add new status'
 		});
-		
+
 		addBtn.addEventListener('click', () => this.addNewStatus(), { passive: true });
 	}
 
@@ -171,7 +175,7 @@ export class StatusConfigView {
 	private showStatusModal(existingConfig?: StatusConfig, index?: number): void {
 		const modal = new Modal(this.app);
 		modal.titleEl.textContent = existingConfig ? 'Edit status' : 'Add status';
-		
+
 		const contentEl = modal.contentEl;
 		contentEl.empty();
 
@@ -187,7 +191,7 @@ export class StatusConfigView {
 		// Symbol input
 		const isNonEditableSymbol = existingConfig && NON_EDITABLE_SYMBOLS.includes(workingConfig.symbol);
 		let symbolDescription: string;
-		
+
 		if (isNonEditableSymbol) {
 			if (workingConfig.symbol === '.') {
 				symbolDescription = 'Single character symbol for this status (read-only - this is the default task symbol)';
@@ -207,11 +211,11 @@ export class StatusConfigView {
 		} else {
 			symbolDescription = 'Single character symbol for this status';
 		}
-		
+
 		const symbolSetting = new Setting(contentEl)
 			.setName('Symbol')
 			.setDesc(symbolDescription);
-		
+
 		if (isNonEditableSymbol) {
 			// Make symbol read-only for non-editable symbols
 			symbolSetting.addText(text => {
@@ -287,7 +291,7 @@ export class StatusConfigView {
 		// Preview
 		const previewEl = contentEl.createEl('div', { cls: 'status-config-modal-preview' });
 		previewEl.createEl('h4', { text: 'Preview:' });
-		const previewStatus = previewEl.createEl('span', { 
+		const previewStatus = previewEl.createEl('span', {
 			cls: 'status-config-modal-symbol',
 			text: workingConfig.symbol
 		});
@@ -295,7 +299,7 @@ export class StatusConfigView {
 		previewStatus.setAttribute('data-dynamic-color', 'true');
 		previewStatus.style.setProperty('--ontask-config-color', workingConfig.color);
 		previewStatus.style.setProperty('--ontask-config-background-color', workingConfig.backgroundColor || 'transparent');
-		
+
 		// Only set custom-status attribute for truly custom status configurations
 		if (!StatusConfigService.isBuiltInStatus(workingConfig.symbol)) {
 			previewStatus.setAttribute('data-custom-status', 'true');
@@ -304,11 +308,11 @@ export class StatusConfigView {
 		// Update preview on change
 		const updatePreview = () => {
 			previewStatus.textContent = workingConfig.symbol;
-		// Always apply dynamic styling using CSS variables
-		previewStatus.setAttribute('data-dynamic-color', 'true');
-		previewStatus.style.setProperty('--ontask-config-color', workingConfig.color);
-		previewStatus.style.setProperty('--ontask-config-background-color', workingConfig.backgroundColor || 'transparent');
-			
+			// Always apply dynamic styling using CSS variables
+			previewStatus.setAttribute('data-dynamic-color', 'true');
+			previewStatus.style.setProperty('--ontask-config-color', workingConfig.color);
+			previewStatus.style.setProperty('--ontask-config-background-color', workingConfig.backgroundColor || 'transparent');
+
 			// Only set custom-status attribute for truly custom status configurations
 			if (!StatusConfigService.isBuiltInStatus(workingConfig.symbol)) {
 				previewStatus.setAttribute('data-custom-status', 'true');
@@ -324,12 +328,12 @@ export class StatusConfigView {
 
 		// Buttons
 		const buttonContainer = contentEl.createEl('div', { cls: 'status-config-modal-buttons' });
-		
-		const cancelBtn = buttonContainer.createEl('button', { 
+
+		const cancelBtn = buttonContainer.createEl('button', {
 			text: 'Cancel'
 		});
-		
-		const saveBtn = buttonContainer.createEl('button', { 
+
+		const saveBtn = buttonContainer.createEl('button', {
 			cls: 'mod-cta',
 			text: 'Save'
 		});
@@ -361,7 +365,7 @@ export class StatusConfigView {
 		const content = modal.contentEl;
 		content.empty();
 
-		content.createEl('p', { 
+		content.createEl('p', {
 			text: `Are you sure you want to delete the status "${config.name}" (${config.symbol})? This action cannot be undone.`
 		});
 
@@ -387,7 +391,7 @@ export class StatusConfigView {
 		}
 
 		const configToDelete = this.statusConfigs[index];
-		
+
 		// Don't allow deleting non-editable symbols
 		if (NON_EDITABLE_SYMBOLS.includes(configToDelete.symbol)) {
 			return;
