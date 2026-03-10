@@ -107,38 +107,31 @@ class FilterModal extends Modal {
 					});
 			}
 
-			// Add config button to the same row as quick filter buttons
-			new Setting(quickFiltersContainer)
-				.addButton(button => {
-					// Use IconService instead of emoji for consistency and theme compatibility
-					button.setButtonText('') // Clear text to make room for icon
-						.setClass('ontask-config-button');
-					IconService.setIcon(button.buttonEl, 'settings'); // Settings/configuration icon
-					button.onClick(() => {
-						this.close();
-						// Open settings and navigate to Quick Filters tab
-						const appWithSettings = this.app as AppWithSettings;
-						if (appWithSettings.setting) {
-							appWithSettings.setting.open();
-							appWithSettings.setting.openTabById(this.plugin.manifest.id);
-						}
-
-						// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
-						setTimeout(() => {
-							const settingsTab = (this.plugin as OnTaskPlugin).settingsTab;
-							if (settingsTab && settingsTab.navigateToTab) {
-								settingsTab.navigateToTab('quick-filters');
-							}
-						}, 100);
-					});
-				});
-
 			// Initial highlighting update
 			this.updateQuickFilterHighlighting(quickFilterButtons);
 		}
 
 		// Buttons
 		new Setting(contentEl)
+			.addButton(button => button
+				.setButtonText('Configure')
+				.onClick(() => {
+					this.close();
+					// Open settings and navigate to Quick Filters tab
+					const appWithSettings = this.app as AppWithSettings;
+					if (appWithSettings.setting) {
+						appWithSettings.setting.open();
+						appWithSettings.setting.openTabById(this.plugin.manifest.id);
+					}
+
+					// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
+					setTimeout(() => {
+						const settingsTab = (this.plugin as OnTaskPlugin).settingsTab;
+						if (settingsTab && settingsTab.navigateToTab) {
+							settingsTab.navigateToTab('quick-filters');
+						}
+					}, 100);
+				}))
 			.addButton(button => button
 				.setButtonText('Close')
 				.onClick(() => this.close()));

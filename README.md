@@ -2,7 +2,17 @@
 
 ## Features
 
-- Bullet journal–inspired productivity  
+- Daily Bullet journal–inspired productivity, or
+- Week view planning
+- Quick filters
+- Top task priority <--> Stay focused
+- Status tracking
+- Status configuration
+- Status icons
+- Status colors
+- Status background colors
+- 
+- 
 - Automatically grabs tasks from your vault
 - Flexible filtering to find what matters most
 - Top task
