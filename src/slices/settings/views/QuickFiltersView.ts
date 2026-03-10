@@ -26,7 +26,7 @@ export class QuickFiltersView {
 		this.containerEl.addClass('ontask-quick-filters-view');
 
 		// Header
-		this.containerEl.createEl('p', { 
+		this.containerEl.createEl('p', {
 			text: 'Create collections of status filters that can be quickly applied in the OnTask view.',
 			cls: 'setting-item-description'
 		});
@@ -41,11 +41,11 @@ export class QuickFiltersView {
 		// Create a container for draggable items
 		const filtersContainer = this.containerEl.createDiv();
 		filtersContainer.addClass('quick-filters-draggable-container');
-		
+
 		if (quickFilters.length === 0) {
 			const emptyState = filtersContainer.createDiv();
 			emptyState.addClass('setting-item');
-			emptyState.createEl('p', { 
+			emptyState.createEl('p', {
 				text: 'No quick filters created yet. Click "Add Filter" to create your first one.',
 				cls: 'setting-item-description'
 			});
@@ -98,7 +98,7 @@ export class QuickFiltersView {
 				// Use CSS variables for dynamic colors instead of direct style assignments
 				statusBadge.style.setProperty('--ontask-status-color', statusConfig.color);
 				statusBadge.style.setProperty('--ontask-status-background-color', statusConfig.backgroundColor || 'transparent');
-				
+
 				// Only set custom-status attribute for truly custom status configurations
 				if (!StatusConfigService.isBuiltInStatus(symbol)) {
 					statusBadge.setAttribute('data-custom-status', 'true');
@@ -140,11 +140,11 @@ export class QuickFiltersView {
 	}
 
 	private renderAddButton(containerEl: HTMLElement): void {
-		const addBtn = containerEl.createEl('button', { 
+		const addBtn = containerEl.createEl('button', {
 			cls: 'quick-filter-add-btn',
 			text: '+ Add quick filter'
 		});
-		
+
 		addBtn.addEventListener('click', () => this.showAddQuickFilterModal(), { passive: true });
 	}
 
@@ -196,8 +196,26 @@ export class QuickFiltersView {
 
 		statusConfigs.forEach(statusConfig => {
 			const statusSetting = new Setting(content)
-				.setName(`${statusConfig.name} (${statusConfig.description})`)
+				.setName(statusConfig.name)
 				.setDesc('');
+
+			// Add description on the same line
+			const descriptionEl = document.createElement('span');
+			descriptionEl.className = 'status-config-description';
+			descriptionEl.textContent = ` - ${statusConfig.description}`;
+			statusSetting.nameEl.appendChild(descriptionEl);
+
+			// Add visual indicator for ranking after description
+			if (statusConfig.topTaskRanking !== undefined) {
+				const indicatorEl = document.createElement('span');
+				indicatorEl.className = 'ontask-task-ranking';
+				indicatorEl.textContent = `Rank ${statusConfig.topTaskRanking}`;
+				indicatorEl.setAttribute('title', `Top Task Rank ${statusConfig.topTaskRanking}`);
+				indicatorEl.setAttribute('data-rank', statusConfig.topTaskRanking.toString());
+				// Add some margin so it doesn't touch the text
+				indicatorEl.style.marginLeft = '8px';
+				statusSetting.nameEl.appendChild(indicatorEl);
+			}
 
 			statusSetting.addToggle(toggle => toggle
 				.setValue(selectedStatuses.has(statusConfig.symbol))
@@ -225,7 +243,7 @@ export class QuickFiltersView {
 				// Show error message
 				const errorEl = content.querySelector('.ontask-error-message');
 				if (errorEl) errorEl.remove();
-				
+
 				const errorMessage = content.createDiv();
 				errorMessage.addClass('ontask-error-message');
 				errorMessage.textContent = 'Please enter a filter name.';
@@ -237,7 +255,7 @@ export class QuickFiltersView {
 				// Show error message
 				const errorEl = content.querySelector('.ontask-error-message');
 				if (errorEl) errorEl.remove();
-				
+
 				const errorMessage = content.createDiv();
 				errorMessage.addClass('ontask-error-message');
 				errorMessage.textContent = 'Please select at least one status.';
@@ -271,7 +289,7 @@ export class QuickFiltersView {
 				// Show error message
 				const errorEl = content.querySelector('.ontask-error-message');
 				if (errorEl) errorEl.remove();
-				
+
 				const errorMessage = content.createDiv();
 				errorMessage.addClass('ontask-error-message');
 				errorMessage.textContent = 'Failed to save quick filter. Please try again.';
@@ -289,7 +307,7 @@ export class QuickFiltersView {
 		const content = modal.contentEl;
 		content.empty();
 
-		content.createEl('p', { 
+		content.createEl('p', {
 			text: `Are you sure you want to delete the quick filter "${filter.name}"? This action cannot be undone.`
 		});
 
