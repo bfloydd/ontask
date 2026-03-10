@@ -35,11 +35,10 @@ const mockStreamsService = {
 	getRibbonStreams: jest.fn(),
 	getCommandStreams: jest.fn(),
 	getStreamFilesByStream: jest.fn(),
-	getStreamFilesByStreamAndDate: jest.fn(),
-	getStreamFilesByStreamAndDateRange: jest.fn(),
 	getStreamsByFolderPrefix: jest.fn(),
 	isFileInStream: jest.fn(),
-	updateStreamBarFromFile: jest.fn()
+	updateStreamBarFromFile: jest.fn(),
+	getStreamBaseFolder: jest.fn((stream: any) => stream?.folder || '')
 };
 
 // CheckboxFinderService removed - now using CheckboxFinderFactory directly
@@ -94,7 +93,7 @@ describe('TaskLoadingService', () => {
 			// Arrange
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 3, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			// Mock file system with multiple files containing tasks
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' },
@@ -108,7 +107,7 @@ describe('TaskLoadingService', () => {
 - [ ] Task 2
 - [x] Task 3`;
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
@@ -134,14 +133,14 @@ describe('TaskLoadingService', () => {
 			// Arrange
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 2, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' },
 				{ path: 'file2.md', name: 'file2.md' }
 			];
 
 			// First file has 1 task, second file has 3 tasks (we only need 2 total)
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn()
@@ -168,14 +167,14 @@ describe('TaskLoadingService', () => {
 			// Arrange
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' },
 				{ path: 'file2.md', name: 'file2.md' }
 			];
 
 			// Both files have no tasks
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('No tasks here');
@@ -195,14 +194,14 @@ describe('TaskLoadingService', () => {
 			// Arrange
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 5, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			const mockFiles = [
 				{ path: 'folder1/2024-01-01.md', name: '2024-01-01.md' },
 				{ path: 'folder2/2024-01-02.md', name: '2024-01-02.md' },
 				{ path: 'folder1/2024-01-03.md', name: '2024-01-03.md' }
 			];
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');
@@ -225,7 +224,7 @@ describe('TaskLoadingService', () => {
 			// Arrange
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 3, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' },
 				{ path: 'file2.md', name: 'file2.md' },
@@ -233,7 +232,7 @@ describe('TaskLoadingService', () => {
 				{ path: 'file4.md', name: 'file4.md' }
 			];
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn()
@@ -250,7 +249,7 @@ describe('TaskLoadingService', () => {
 
 			// Reset mocks for second load
 			jest.clearAllMocks();
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task 4\n- [ ] Task 5\n- [ ] Task 6'); // file2.md - 3 tasks
@@ -267,13 +266,13 @@ describe('TaskLoadingService', () => {
 			// Arrange - simulate the spec example where we stop at 3/5 tasks in a file
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' },
 				{ path: 'file2.md', name: 'file2.md' }
 			];
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn()
@@ -301,7 +300,7 @@ describe('TaskLoadingService', () => {
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			mockStatusConfigService.getStatusFilters = jest.fn(() => ({ ' ': true, 'x': true, '/': true }));
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' }
 			];
@@ -313,7 +312,7 @@ describe('TaskLoadingService', () => {
 - [*] Another status (should be ignored)
 - [!] Important status (should be ignored)`;
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
@@ -336,7 +335,7 @@ describe('TaskLoadingService', () => {
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			mockStatusConfigService.getStatusFilters = jest.fn(() => ({})); // Empty object = no statuses allowed
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' }
 			];
@@ -354,7 +353,7 @@ Another blank line
 
 Some regular text without checkboxes`;
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
@@ -375,7 +374,7 @@ Some regular text without checkboxes`;
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 10, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
 			mockStatusConfigService.getStatusFilters = jest.fn(() => ({ ' ': true, '.': true }));
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' }
 			];
@@ -384,7 +383,7 @@ Some regular text without checkboxes`;
 - [.] Dot to-do task
 - [x] Completed task (should be ignored)`;
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
@@ -405,7 +404,7 @@ Some regular text without checkboxes`;
 			// Arrange
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 3, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' },
 				{ path: 'missing-file.md', name: 'missing-file.md' },
@@ -436,14 +435,14 @@ Some regular text without checkboxes`;
 			// Arrange
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 3, dateFilter: 'all' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			const mockFiles = [
 				{ path: 'file1.md', name: 'file1.md' },
 				{ path: 'error-file.md', name: 'error-file.md' },
 				{ path: 'file2.md', name: 'file2.md' }
 			];
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn()
@@ -455,7 +454,7 @@ Some regular text without checkboxes`;
 			(taskLoadingService as any).trackedFiles = mockFiles.map(f => f.path);
 
 			// Suppress expected error logs during test
-			const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+			const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
 			// Act
 			const result = await taskLoadingService.loadTasksWithFiltering(settings);
@@ -475,7 +474,7 @@ Some regular text without checkboxes`;
 			// Arrange
 			const settings: OnTaskSettings = { ...DEFAULT_SETTINGS, loadMoreLimit: 5, dateFilter: 'today' };
 			mockSettingsService.getSettings = jest.fn().mockReturnValue(settings);
-			
+
 			const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 			const mockFiles = [
 				{ path: `${today}.md`, name: `${today}.md` },
@@ -483,7 +482,7 @@ Some regular text without checkboxes`;
 				{ path: `${today}-notes.md`, name: `${today}-notes.md` }
 			];
 
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');

@@ -40,7 +40,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 	private streamsService: StreamsService;
 	private app: App;
 	private logger: Logger;
-	
+
 	private currentFileIndex: number = 0;
 	private currentTaskIndex: number = 0;
 	private trackedFiles: string[] = [];
@@ -70,21 +70,21 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		const targetTasks = settings.loadMoreLimit;
 		const loadedTasks: CheckboxItem[] = [];
 		const statusFilters = this.statusConfigService.getStatusFilters();
-		
+
 		const allowedStatuses = this.getAllowedStatuses(statusFilters);
 		const checkboxRegex = this.createCheckboxRegex(allowedStatuses);
-		
+
 		this.logger.debug(`Starting task loading: target=${targetTasks}, files=${this.trackedFiles.length}, currentFile=${this.currentFileIndex}, currentTask=${this.currentTaskIndex}`);
-		
+
 		for (let fileIndex = this.currentFileIndex; fileIndex < this.trackedFiles.length; fileIndex++) {
 			const filePath = this.trackedFiles[fileIndex];
 			const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
-			
+
 			if (!file) {
 				this.logger.warn(`TaskLoadingService: File not found: ${filePath}`);
 				continue;
 			}
-			
+
 			try {
 				const content = await this.app.vault.cachedRead(file);
 				const lines = content.split('\n');
@@ -143,15 +143,15 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 				// Move to next file if we haven't reached the target yet.
 				this.currentFileIndex = fileIndex + 1;
 				this.currentTaskIndex = 0;
-				
+
 			} catch (error) {
 				this.logger.error(`[OnTask TaskLoading] Error reading file ${filePath}:`, error);
 				continue;
 			}
 		}
-		
+
 		this.logger.debug(`Task loading completed: ${loadedTasks.length}/${targetTasks} tasks loaded from ${this.trackedFiles.length} files`);
-		
+
 		// If we've processed all files, there are no more tasks
 		const hasMoreTasks = this.currentFileIndex < this.trackedFiles.length;
 		return { tasks: loadedTasks, hasMoreTasks };
@@ -262,47 +262,56 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 
 	async getFilesFromStrategies(dateFilter: OnTaskSettings['dateFilter']): Promise<string[]> {
 		const allFiles: string[] = [];
-		
+
 		const streamsService = this.taskFinderFactory.getStreamsService();
 		if (streamsService && streamsService.isStreamsPluginAvailable()) {
 			const allStreams = streamsService.getAllStreams();
-			const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');
-			
+			const streams = allStreams.filter(stream => {
+				const folder = streamsService.getStreamBaseFolder(stream);
+				return folder && folder.trim() !== '';
+			});
+
 			for (const stream of streams) {
-				const streamFolder = this.app.vault.getAbstractFileByPath(stream.folder);
-				if (streamFolder) {
-					if (streamFolder instanceof TFile) {
-						allFiles.push(stream.folder);
-					} else {
-						const streamFiles = this.app.vault.getMarkdownFiles().filter((file: TFile) => 
-							file.path.startsWith(stream.folder)
-						);
-						allFiles.push(...streamFiles.map((file: TFile) => file.path));
+				const streamFolderStr = streamsService.getStreamBaseFolder(stream);
+				if (streamFolderStr) {
+					const streamFolder = this.app.vault.getAbstractFileByPath(streamFolderStr);
+					if (streamFolder) {
+						if (streamFolder instanceof TFile) {
+							allFiles.push(streamFolderStr);
+						} else {
+							// For folders, ensure we match exactly the folder or its subfolders,
+							// not just another folder with the same prefix string
+							const targetFolder = streamFolderStr.endsWith('/') ? streamFolderStr : `${streamFolderStr}/`;
+							const streamFiles = this.app.vault.getMarkdownFiles().filter((file: TFile) =>
+								file.path === streamFolderStr || file.path.startsWith(targetFolder)
+							);
+							allFiles.push(...streamFiles.map((file: TFile) => file.path));
+						}
 					}
 				}
 			}
 		}
-		
+
 		const dailyNotesPlugin = (this.app as AppWithPlugins).plugins?.getPlugin('daily-notes');
 		if (dailyNotesPlugin) {
 			const dailyNotes = this.app.vault.getMarkdownFiles().filter((file: TFile) => {
 				const fileName = file.name.toLowerCase();
-				return fileName.match(/\d{4}-\d{2}-\d{2}/) || 
-					   fileName.match(/\d{2}-\d{2}-\d{4}/) ||
-					   fileName.match(/\d{4}\d{2}\d{2}/);
+				return fileName.match(/\d{4}-\d{2}-\d{2}/) ||
+					fileName.match(/\d{2}-\d{2}-\d{4}/) ||
+					fileName.match(/\d{4}\d{2}\d{2}/);
 			});
 			allFiles.push(...dailyNotes.map((file: TFile) => file.path));
 		}
-		
+
 		const settings = this.settingsService.getSettings();
 		if (settings.checkboxSource === 'folder' && settings.customFolderPath) {
 			const normalizedFolderPath = normalizePath(settings.customFolderPath);
-			const folderFiles = this.app.vault.getMarkdownFiles().filter((file: TFile) => 
+			const folderFiles = this.app.vault.getMarkdownFiles().filter((file: TFile) =>
 				normalizePath(file.path).startsWith(normalizedFolderPath)
 			);
 			allFiles.push(...folderFiles.map((file: TFile) => file.path));
 		}
-		
+
 		// De-duplicate early; filter implementations should not need to handle duplicates.
 		const uniqueFiles = [...new Set(allFiles)];
 		return this.dateFilterService.filterFilePaths(dateFilter, uniqueFiles, this.app);
@@ -310,13 +319,13 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 
 	async initializeFileTracking(dateFilter: OnTaskSettings['dateFilter']): Promise<void> {
 		const allFiles = await this.getFilesFromStrategies(dateFilter);
-		
+
 		this.trackedFiles = allFiles.sort((a, b) => {
 			const filenameA = a.split('/').pop() || a;
 			const filenameB = b.split('/').pop() || b;
 			return filenameB.localeCompare(filenameA);
 		});
-		
+
 	}
 
 	resetTracking(): void {
@@ -346,12 +355,12 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		if (this.trackedFiles.length === 0) {
 			return true;
 		}
-		
+
 		// If we've reached the end of all files, there are no more tasks
 		if (this.currentFileIndex >= this.trackedFiles.length) {
 			return false;
 		}
-		
+
 		// If we're at the last file and have checked all tasks in it, there are no more tasks
 		if (this.currentFileIndex === this.trackedFiles.length - 1) {
 			// We can't easily check if we've reached the end of tasks in the last file
@@ -359,7 +368,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			// The actual check will happen during loadTasksWithFiltering
 			return true;
 		}
-		
+
 		// If we're not at the last file, there are definitely more tasks
 		return true;
 	}
@@ -368,11 +377,11 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		const allowedStatuses = Object.entries(statusFilters)
 			.filter(([_, isAllowed]) => isAllowed !== false)
 			.map(([status, _]) => status);
-		
+
 		if (allowedStatuses.includes('.')) {
 			allowedStatuses.push(' ');
 		}
-		
+
 		return allowedStatuses;
 	}
 
@@ -380,14 +389,14 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 		if (allowedStatuses.length === 0) {
 			return /(?=a)b/; // This regex never matches anything
 		}
-		
-		const escapedStatuses = allowedStatuses.map(status => 
+
+		const escapedStatuses = allowedStatuses.map(status =>
 			status.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 		);
-		
+
 		const statusPattern = escapedStatuses.join('|');
 		const regexPattern = `^\\s*-\\s*\\[(${statusPattern})\\]\\s.*`;
-		
+
 		return new RegExp(regexPattern);
 	}
 

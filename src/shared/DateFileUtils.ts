@@ -18,10 +18,43 @@ export class DateFileUtils {
 	 * (Monday through Sunday of the current week, based on the local clock).
 	 */
 	static isCurrentWeekFile(file: TFile): boolean {
-		const weekStart = this.getStartOfCurrentWeek(new Date());
+		const moment = (window as any).moment;
+		if (moment) {
+			const currentMoment = moment();
+			const weekStart = currentMoment.clone().startOf('week');
+
+			// Check standard YYYY-MM-DD patterns for each day of the week
+			for (let i = 0; i < 7; i++) {
+				const day = weekStart.clone().add(i, 'days').toDate();
+				if (this.isFileForDate(file, day)) {
+					return true;
+				}
+			}
+
+			// Also support literal weekly patterns in the filename (e.g. 2026-W11)
+			const weekFormats = [
+				currentMoment.format('GGGG-[W]WW'),
+				currentMoment.format('gggg-[w]ww'),
+				currentMoment.format('YYYY-[W]ww')
+			];
+
+			const fileName = file.name.toLowerCase();
+			const filePath = file.path.toLowerCase();
+
+			for (const fmt of weekFormats) {
+				const fmtLower = fmt.toLowerCase();
+				if (fileName.includes(fmtLower) || filePath.includes(fmtLower)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Fallback if moment is unavailable
+		const weekStartFallback = this.getStartOfCurrentWeek(new Date());
 		for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-			const day = new Date(weekStart);
-			day.setDate(weekStart.getDate() + dayOffset);
+			const day = new Date(weekStartFallback);
+			day.setDate(weekStartFallback.getDate() + dayOffset);
 			if (this.isFileForDate(file, day)) {
 				return true;
 			}
@@ -36,20 +69,20 @@ export class DateFileUtils {
 		const dateFormats = this.getDateFormats(date);
 		const fileName = file.name.toLowerCase();
 		const filePath = file.path.toLowerCase();
-		
+
 		for (const dateFormat of dateFormats) {
 			if (fileName.includes(dateFormat) || filePath.includes(dateFormat)) {
 				return true;
 			}
 		}
-		
+
 		const datePatterns = this.getDatePatterns(date);
 		for (const pattern of datePatterns) {
 			if (pattern.test(fileName) || pattern.test(filePath)) {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -59,13 +92,13 @@ export class DateFileUtils {
 	private static getStartOfCurrentWeek(referenceDate: Date): Date {
 		const date = new Date(referenceDate);
 		date.setHours(0, 0, 0, 0);
-		
+
 		// JS: Sunday=0, Monday=1, ... Saturday=6
 		// Convert to Monday-based offset where Monday=0 ... Sunday=6
 		const day = date.getDay();
 		const diffToMonday = (day + 6) % 7;
 		date.setDate(date.getDate() - diffToMonday);
-		
+
 		return date;
 	}
 
@@ -78,7 +111,7 @@ export class DateFileUtils {
 		const year = date.getFullYear();
 		const month = String(date.getMonth() + 1).padStart(2, '0');
 		const day = String(date.getDate()).padStart(2, '0');
-		
+
 		return [
 			`${year}-${month}-${day}`,           // 2024-01-15
 			`${year}${month}${day}`,             // 20240115
@@ -98,7 +131,7 @@ export class DateFileUtils {
 		const year = date.getFullYear();
 		const month = String(date.getMonth() + 1).padStart(2, '0');
 		const day = String(date.getDate()).padStart(2, '0');
-		
+
 		return [
 			new RegExp(`${year}-${month}-${day}`),
 			new RegExp(`${year}${month}${day}`),

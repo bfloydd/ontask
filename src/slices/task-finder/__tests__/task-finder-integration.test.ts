@@ -52,7 +52,8 @@ import { TFolder } from '../../../__mocks__/obsidian';
 const mockStreamsService = {
 	isStreamsPluginAvailable: jest.fn().mockReturnValue(true),
 	getAllFiles: jest.fn(),
-	getAllStreams: jest.fn().mockReturnValue([])
+	getAllStreams: jest.fn().mockReturnValue([]),
+	getStreamBaseFolder: jest.fn((stream) => stream.folder || '')
 } as unknown as StreamsService;
 
 const mockApp = {
@@ -79,7 +80,7 @@ describe('TaskFinder Integration Tests', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		
+
 		// Reset mock app with default Daily Notes config
 		mockApp.internalPlugins.plugins = {
 			'daily-notes': {
@@ -91,10 +92,10 @@ describe('TaskFinder Integration Tests', () => {
 				}
 			}
 		};
-		
+
 		// Set default mock behavior for streams plugin
 		mockStreamsService.isStreamsPluginAvailable = jest.fn().mockReturnValue(true);
-		
+
 		// Create strategy instances
 		dailyNotesStrategy = new DailyNotesTaskStrategy(mockApp);
 		folderStrategy = new FolderTaskStrategy(mockApp, {
@@ -119,7 +120,7 @@ describe('TaskFinder Integration Tests', () => {
 			];
 
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn()
@@ -154,7 +155,7 @@ describe('TaskFinder Integration Tests', () => {
 			];
 
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Today Task');
@@ -342,7 +343,7 @@ describe('TaskFinder Integration Tests', () => {
 				if (file.path.includes('2024-01-14')) return Promise.resolve('- [ ] Today Stream Task');
 				return Promise.resolve('');
 			});
-			
+
 			// Mock Date to return 2024-01-15
 			jest.useFakeTimers();
 			jest.setSystemTime(new Date('2024-01-15T00:00:00.000Z'));
@@ -457,7 +458,7 @@ describe('TaskFinder Integration Tests', () => {
 			];
 
 			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
-			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
+			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(`

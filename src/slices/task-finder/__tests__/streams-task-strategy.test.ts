@@ -3,7 +3,8 @@ import { StreamsService } from '../../streams';
 
 const mockStreamsService = {
 	isStreamsPluginAvailable: jest.fn().mockReturnValue(true),
-	getAllStreams: jest.fn().mockReturnValue([])
+	getAllStreams: jest.fn().mockReturnValue([]),
+	getStreamBaseFolder: jest.fn((stream) => stream.folder || '')
 } as unknown as StreamsService;
 
 const mockApp = {

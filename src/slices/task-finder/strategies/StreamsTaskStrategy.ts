@@ -30,7 +30,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		}
 
 		const allCheckboxes: TaskItem[] = [];
-		
+
 		if (context.filePaths && context.filePaths.length > 0) {
 			for (const filePath of context.filePaths) {
 				const file = this.app.vault.getAbstractFileByPath(filePath);
@@ -41,13 +41,16 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 			}
 		} else {
 			const allStreams = this.streamsService.getAllStreams();
-			const streams = allStreams.filter(stream => stream.folder && stream.folder.trim() !== '');
+			const streams = allStreams.filter(stream => {
+				const folder = this.streamsService.getStreamBaseFolder(stream);
+				return folder && folder.trim() !== '';
+			});
 			const limit = context.limit;
 
 			for (const stream of streams) {
 				const streamCheckboxes = await this.findCheckboxesInStream(stream, context);
 				allCheckboxes.push(...streamCheckboxes);
-				
+
 				if (limit && allCheckboxes.length >= limit) {
 					break;
 				}
@@ -57,21 +60,22 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		return allCheckboxes;
 	}
 
-	public async findCheckboxesInStream(stream: { name: string; folder: string }, context: TaskFinderContext): Promise<TaskItem[]> {
+	public async findCheckboxesInStream(stream: { name: string; folder?: string; dateFormat?: string; id?: string }, context: TaskFinderContext): Promise<TaskItem[]> {
 		const checkboxes: TaskItem[] = [];
-		
+
 		try {
-			const streamFolder = this.app.vault.getAbstractFileByPath(stream.folder);
-			
+			const baseFolder = this.streamsService.getStreamBaseFolder(stream as any);
+			const streamFolder = this.app.vault.getAbstractFileByPath(baseFolder);
+
 			if (!streamFolder || !(streamFolder instanceof TFile)) {
-				let files = this.app.vault.getMarkdownFiles().filter(file => 
-					file.path.startsWith(stream.folder)
+				let files = this.app.vault.getMarkdownFiles().filter(file =>
+					file.path.startsWith(baseFolder)
 				);
-				
+
 				if (context.onlyShowToday) {
 					files = files.filter(file => DateFileUtils.isTodayFile(file));
 				}
-				
+
 				for (const file of files) {
 					const fileCheckboxes = await this.findCheckboxesInFile(file, stream, context);
 					checkboxes.push(...fileCheckboxes);
@@ -80,7 +84,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 				if (context.onlyShowToday && !DateFileUtils.isTodayFile(streamFolder)) {
 					return checkboxes;
 				}
-				
+
 				const fileCheckboxes = await this.findCheckboxesInFile(streamFolder, stream, context);
 				checkboxes.push(...fileCheckboxes);
 			}
@@ -93,9 +97,9 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		return checkboxes;
 	}
 
-	private async findCheckboxesInFile(file: TFile, stream: { name: string; folder: string }, context: TaskFinderContext): Promise<TaskItem[]> {
+	private async findCheckboxesInFile(file: TFile, stream: { name: string; folder?: string; dateFormat?: string }, context: TaskFinderContext): Promise<TaskItem[]> {
 		const checkboxes: TaskItem[] = [];
-		
+
 		try {
 			const content = await this.app.vault.cachedRead(file);
 			const lines = content.split('\n');
@@ -103,7 +107,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i];
 				const checkboxMatch = CheckboxParsingUtils.findCheckboxInLine(line);
-				
+
 				if (checkboxMatch) {
 					checkboxes.push({
 						file: file,
@@ -111,9 +115,9 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 						lineContent: line.trim(),
 						checkboxText: line.trim(),
 						sourceName: 'Streams',
-						sourcePath: stream.folder
+						sourcePath: this.streamsService.getStreamBaseFolder(stream as any)
 					});
-					
+
 					if (context.limit && checkboxes.length >= context.limit) {
 						break;
 					}

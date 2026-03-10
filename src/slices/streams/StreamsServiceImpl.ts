@@ -50,9 +50,16 @@ export class StreamsServiceImpl implements StreamsService {
 		return streams.find(stream => stream.name.toLowerCase() === name.toLowerCase());
 	}
 
+	public getStreamBaseFolder(stream: Stream): string {
+		const format = stream.dateFormat || stream.folder || '';
+		const firstBraceIndex = format.indexOf('{');
+		let base = firstBraceIndex !== -1 ? format.substring(0, firstBraceIndex) : format;
+		return base.replace(/\/+$/, '');
+	}
+
 	public getStreamByFolder(folder: string): Stream | undefined {
 		const streams = this.getAllStreams();
-		return streams.find(stream => stream.folder === folder);
+		return streams.find(stream => this.getStreamBaseFolder(stream) === folder);
 	}
 
 	public getStreamByPath(path: string): Stream | undefined {
@@ -68,7 +75,7 @@ export class StreamsServiceImpl implements StreamsService {
 	}
 
 	public getStreamFolders(): string[] {
-		return this.getAllStreams().map(stream => stream.folder);
+		return this.getAllStreams().map(stream => this.getStreamBaseFolder(stream));
 	}
 
 	public getStreamPaths(): string[] {
@@ -84,7 +91,7 @@ export class StreamsServiceImpl implements StreamsService {
 	}
 
 	public getStreamsByFolderPrefix(prefix: string): Stream[] {
-		return this.getAllStreams().filter(stream => stream.folder.startsWith(prefix));
+		return this.getAllStreams().filter(stream => this.getStreamBaseFolder(stream).startsWith(prefix));
 	}
 
 	public isStreamsPluginAvailable(): boolean {
@@ -113,7 +120,7 @@ export class StreamsServiceImpl implements StreamsService {
 
 		const streams = this.getAllStreams();
 		for (const stream of streams) {
-			if (filePath.startsWith(stream.folder)) {
+			if (filePath.startsWith(this.getStreamBaseFolder(stream)) && this.getStreamBaseFolder(stream) !== '') {
 				return stream;
 			}
 		}
