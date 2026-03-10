@@ -15,7 +15,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	private taskLoadingService: TaskLoadingService;
 	private eventSystem: EventSystem;
 	private logger: Logger;
-	private topTaskOverlays: Map<string, HTMLElement> = new Map();
+	private statusBarItem: HTMLElement | null = null;
 	private currentTopTask: CheckboxItem | null = null;
 	private pendingDecorationUpdate: boolean = false;
 	private updateRequestId: number | null = null;
@@ -49,8 +49,8 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 				this.logger.debug('[OnTask Editor] showTopTaskInEditor setting changed, scheduling decoration update');
 				this.scheduleDecorationUpdate();
 			} else if (event.data?.key === 'topTaskColor' || event.data?.key === 'useThemeDefaultColor') {
-				this.logger.debug('[OnTask Editor] top task color setting changed, updating existing overlays');
-				this.updateExistingOverlayColors();
+				this.logger.debug('[OnTask Editor] top task color setting changed, updating status bar color');
+				this.updateStatusBarColors();
 			}
 		});
 
@@ -104,7 +104,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 
 		this.pendingDecorationUpdate = true;
-		
+
 		if (this.updateRequestId !== null) {
 			cancelAnimationFrame(this.updateRequestId);
 		}
@@ -124,144 +124,78 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 
 		try {
 			const topTask = this.topTaskMemory;
-			
-			const needsUpdate = !this.currentTopTask || 
-				this.currentTopTask.lineContent !== topTask?.lineContent || 
+
+			const needsUpdate = !this.currentTopTask ||
+				this.currentTopTask.lineContent !== topTask?.lineContent ||
 				this.currentTopTask.file.path !== topTask?.file.path;
-			
+
 			if (!needsUpdate) {
 				return;
 			}
-			
+
 			this.currentTopTask = topTask;
-			
+
 			if (!topTask) {
 				this.cleanup();
 				return;
 			}
 
-			this.cleanup();
+			if (!this.statusBarItem) {
+				const plugin = this.getPlugin();
+				if (!plugin) return;
+				this.statusBarItem = plugin.addStatusBarItem();
+				this.statusBarItem.addClass('ontask-status-bar-item');
+				this.statusBarItem.addEventListener('click', () => {
+					this.app.workspace.openLinkText(topTask.file.path, '', true);
+				});
+			}
 
-			const markdownLeaves = this.app.workspace.getLeavesOfType('markdown');
-			
-			if (markdownLeaves.length === 0) {
-				setTimeout(() => {
-					this.scheduleDecorationUpdate();
-				}, 1000);
-				return;
+			if (!this.statusBarItem) return;
+
+			this.statusBarItem.empty();
+			this.statusBarItem.show();
+
+			// Apply the configurable top task color
+			this.updateStatusBarColors();
+
+			const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
+			const displayText = remainingText || 'Top task';
+
+			const iconSpan = document.createElement('span');
+			iconSpan.className = 'ontask-status-bar-icon';
+			iconSpan.textContent = '🔥 ';
+
+			const textSpan = document.createElement('span');
+			textSpan.className = 'ontask-status-bar-text';
+			textSpan.textContent = displayText;
+
+			// Add ranking badge if task has topTaskRanking
+			if (topTask.topTaskRanking !== undefined) {
+				const rankingEl = document.createElement('span');
+				rankingEl.textContent = ` Rank ${topTask.topTaskRanking}`;
+				rankingEl.addClass('ontask-task-ranking');
+				rankingEl.setAttribute('data-rank', topTask.topTaskRanking.toString());
+				textSpan.appendChild(rankingEl);
 			}
-			
-			for (const leaf of markdownLeaves) {
-				if (leaf.view instanceof MarkdownView) {
-					await new Promise(resolve => setTimeout(resolve, 100));
-					await this.addTopTaskOverlay(leaf.view, topTask);
-				}
-			}
+
+			this.statusBarItem.appendChild(iconSpan);
+			this.statusBarItem.appendChild(textSpan);
+			this.statusBarItem.setAttribute('title', `Top Task (From: ${topTask.file.name})`);
+
 		} catch (error) {
 			this.logger.error('[OnTask Editor] Error updating editor decorations:', error);
 		}
 	}
 
-	private async addTopTaskOverlay(view: MarkdownView, topTask: CheckboxItem): Promise<void> {
-		const editor = view.editor;
-		if (!editor) {
-			return;
-		}
-
-		const containerSelectors = [
-			'.markdown-source-view',
-			'.markdown-preview-view', 
-			'.cm-editor',
-			'.markdown-preview-section',
-			'.workspace-leaf-content',
-			'.view-content'
-		];
-
-		let editorContainer: HTMLElement | null = null;
-
-		for (const selector of containerSelectors) {
-			editorContainer = view.containerEl.querySelector(selector);
-			if (editorContainer) {
-				break;
-			}
-		}
-
-		if (!editorContainer) {
-			return;
-		}
-
-		const existingOverlay = editorContainer.querySelector('.ontask-toptask-hero-overlay');
-		if (existingOverlay) {
-			return;
-		}
-		const topTaskBar = editorContainer.createEl('div', {
-			cls: 'ontask-toptask-hero-overlay',
-			attr: {
-				'data-top-task': 'true'
-			}
-		});
-
-		// Apply the configurable top task color
-		const settings = this.settingsService.getSettings();
-		const colorToUse = settings.useThemeDefaultColor ? 'var(--text-error)' : settings.topTaskColor;
-		topTaskBar.style.setProperty('--ontask-toptask-color', colorToUse);
-		
-		// Calculate and apply shadow color that complements the chosen color
-		const shadowColor = this.calculateShadowColor(colorToUse);
-		topTaskBar.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
-
-		const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
-		const displayText = remainingText || 'Top task';
-		
-		// Use DOM API instead of innerHTML for security
-		const contentDiv = document.createElement('div');
-		contentDiv.className = 'ontask-toptask-hero-content';
-		
-		const iconSpan = document.createElement('span');
-		iconSpan.className = 'ontask-toptask-hero-icon';
-		iconSpan.textContent = '🔥';
-		
-		const textSpan = document.createElement('span');
-		textSpan.className = 'ontask-toptask-hero-text';
-		textSpan.textContent = displayText;
-		
-		// Add ranking badge if task has topTaskRanking (match task list badge exactly)
-		if (topTask.topTaskRanking !== undefined) {
-			const rankingEl = document.createElement('span');
-			rankingEl.textContent = `Rank ${topTask.topTaskRanking}`;
-			rankingEl.addClass('ontask-task-ranking');
-			rankingEl.setAttribute('data-rank', topTask.topTaskRanking.toString());
-			textSpan.appendChild(rankingEl);
-		}
-		
-		const sourceSpan = document.createElement('span');
-		sourceSpan.className = 'ontask-toptask-hero-source';
-		sourceSpan.textContent = `From: ${topTask.file.name}`;
-		
-		contentDiv.appendChild(iconSpan);
-		contentDiv.appendChild(textSpan);
-		contentDiv.appendChild(sourceSpan);
-		topTaskBar.appendChild(contentDiv);
-
-		editorContainer.appendChild(topTaskBar);
-		
-		const overlayKey = view.file?.path || 'unknown';
-		this.topTaskOverlays.set(overlayKey, topTaskBar);
-
-		topTaskBar.addEventListener('click', () => {
-			editor.focus();
-		}, { passive: true });
-	}
-
 	private parseCheckboxLine(line: string): { remainingText: string } {
 		const trimmedLine = line.trim();
-		
+
 		const bracketIndex = trimmedLine.indexOf(']');
 		if (bracketIndex !== -1) {
 			const remainingText = trimmedLine.substring(bracketIndex + 1).trim();
 			return { remainingText };
 		}
-		
+
 		return { remainingText: trimmedLine };
 	}
 
@@ -272,12 +206,10 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 		}
 		this.pendingDecorationUpdate = false;
 
-		this.topTaskOverlays.forEach((overlay, key) => {
-			if (overlay && overlay.parentNode) {
-				overlay.remove();
-			}
-		});
-		this.topTaskOverlays.clear();
+		if (this.statusBarItem) {
+			this.statusBarItem.empty();
+			this.statusBarItem.hide();
+		}
 
 		const editorContainers = document.querySelectorAll('.markdown-source-view, .markdown-preview-view');
 		editorContainers.forEach(container => {
@@ -286,7 +218,7 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 				overlay.remove();
 			});
 		});
-		
+
 		this.initialized = false;
 	}
 
@@ -301,15 +233,15 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	private async findTopTaskIndependently(): Promise<void> {
 		try {
 			const settings = this.settingsService.getSettings();
-			
+
 			const onlyShowToday = settings.dateFilter === 'today';
 			await this.taskLoadingService.initializeFileTracking(settings.dateFilter);
 			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
-			
+
 			this.processTopTasks(result.tasks);
-			
+
 			const topTask = result.tasks.find(checkbox => checkbox.isTopTask);
-			
+
 			if (topTask) {
 				this.topTaskMemory = topTask;
 				this.scheduleDecorationUpdate();
@@ -327,17 +259,17 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			checkbox.isTopTask = false;
 			checkbox.isTopTaskContender = false;
 		});
-		
+
 		// Get all status configs with topTaskRanking defined
 		const allStatusConfigs = this.statusConfigService.getStatusConfigs();
 		const rankedStatusConfigs = allStatusConfigs
 			.filter(config => config.topTaskRanking !== undefined)
 			.sort((a, b) => (a.topTaskRanking || 0) - (b.topTaskRanking || 0));
-		
+
 		if (rankedStatusConfigs.length === 0) {
 			return;
 		}
-		
+
 		// Build dynamic configs with regex patterns
 		const dynamicConfigs = rankedStatusConfigs.map(config => ({
 			symbol: config.symbol,
@@ -345,19 +277,19 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 			pattern: new RegExp(`^\\s*-\\s*\\[${this.escapeRegex(config.symbol)}\\]\\s.*`),
 			ranking: config.topTaskRanking
 		}));
-		
+
 		const tasksByType: Record<string, CheckboxItem[]> = {};
-		
+
 		dynamicConfigs.forEach(config => {
 			const matchingTasks = checkboxes.filter(checkbox => this.isTopTaskByConfig(checkbox, config));
 			tasksByType[config.name] = matchingTasks;
-			
+
 			// Mark tasks with ranking for UI display
 			matchingTasks.forEach(task => {
 				task.topTaskRanking = config.ranking;
 			});
 		});
-		
+
 		let finalTopTask: CheckboxItem | null = null;
 		for (const config of dynamicConfigs) {
 			const tasks = tasksByType[config.name];
@@ -378,46 +310,13 @@ export class EditorIntegrationServiceImpl extends PluginAwareSliceService implem
 	}
 
 	/**
-	 * Update the color of existing top task overlays when the setting changes
+	 * Update the color of the status bar item when the setting changes
 	 */
-	private updateExistingOverlayColors(): void {
+	private updateStatusBarColors(): void {
+		if (!this.statusBarItem) return;
 		const settings = this.settingsService.getSettings();
-		const colorToUse = settings.useThemeDefaultColor ? 'var(--text-error)' : settings.topTaskColor;
-		const shadowColor = this.calculateShadowColor(colorToUse);
-		this.topTaskOverlays.forEach((overlay) => {
-			overlay.style.setProperty('--ontask-toptask-color', colorToUse);
-			overlay.style.setProperty('--ontask-toptask-shadow-color', shadowColor);
-		});
-	}
-
-	/**
-	 * Calculate a shadow color that complements the chosen top task color
-	 */
-	private calculateShadowColor(color: string): string {
-		// For CSS variables, use a default shadow color
-		if (color.startsWith('var(')) {
-			return 'rgba(255, 0, 0, 0.25)'; // More prominent red shadow for theme colors
-		}
-		
-		// For hex colors, convert to RGB and create a shadow color
-		try {
-			// Remove # if present
-			const hex = color.replace('#', '');
-			
-			// Convert hex to RGB
-			const r = parseInt(hex.substr(0, 2), 16);
-			const g = parseInt(hex.substr(2, 2), 16);
-			const b = parseInt(hex.substr(4, 2), 16);
-			
-			// Create shadow colors with higher opacity for more prominence
-			const shadowColor1 = `rgba(${r}, ${g}, ${b}, 0.25)`;
-			const shadowColor2 = `rgba(${r}, ${g}, ${b}, 0.15)`;
-			
-			return shadowColor1;
-		} catch (error) {
-			// Fallback to default red shadow if color parsing fails
-			return 'rgba(255, 0, 0, 0.25)';
-		}
+		const colorToUse = settings.useThemeDefaultColor ? 'var(--text-normal)' : settings.topTaskColor;
+		this.statusBarItem.style.setProperty('color', colorToUse);
 	}
 
 	/**

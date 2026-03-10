@@ -33,22 +33,22 @@ export class GeneralSettingsView {
 				.setValue(settings.viewStyle)
 				.onChange(async (value: 'default' | 'alt1' | 'modern') => {
 					await this.settingsService.updateSetting('viewStyle', value);
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'viewStyle', 
-						value 
+					this.app.workspace.trigger('ontask:settings-changed', {
+						key: 'viewStyle',
+						value
 					});
 				}));
 
 		new Setting(this.containerEl)
-			.setName('Show top task in editor')
-			.setDesc('When enabled, the current top task will be displayed at the top of every editor page below the heading')
+			.setName('Show top task in status bar')
+			.setDesc('When enabled, the current top task will be displayed in the Obsidian status bar')
 			.addToggle(toggle => toggle
 				.setValue(settings.showTopTaskInEditor)
 				.onChange(async (value) => {
 					await this.settingsService.updateSetting('showTopTaskInEditor', value);
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'showTopTaskInEditor', 
-						value 
+					this.app.workspace.trigger('ontask:settings-changed', {
+						key: 'showTopTaskInEditor',
+						value
 					});
 				}));
 
@@ -59,9 +59,9 @@ export class GeneralSettingsView {
 				.setValue(settings.useThemeDefaultColor)
 				.onChange(async (value) => {
 					await this.settingsService.updateSetting('useThemeDefaultColor', value);
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'useThemeDefaultColor', 
-						value 
+					this.app.workspace.trigger('ontask:settings-changed', {
+						key: 'useThemeDefaultColor',
+						value
 					});
 					// Re-render to show/hide the color picker
 					this.render();
@@ -75,9 +75,9 @@ export class GeneralSettingsView {
 					colorPicker.setValue(settings.topTaskColor)
 						.onChange(async (value) => {
 							await this.settingsService.updateSetting('topTaskColor', value);
-							this.app.workspace.trigger('ontask:settings-changed', { 
-								key: 'topTaskColor', 
-								value 
+							this.app.workspace.trigger('ontask:settings-changed', {
+								key: 'topTaskColor',
+								value
 							});
 						});
 				});
@@ -101,9 +101,9 @@ export class GeneralSettingsView {
 				.setValue(settings.debugLoggingEnabled)
 				.onChange(async (value) => {
 					await this.settingsService.updateSetting('debugLoggingEnabled', value);
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'debugLoggingEnabled', 
-						value 
+					this.app.workspace.trigger('ontask:settings-changed', {
+						key: 'debugLoggingEnabled',
+						value
 					});
 				}));
 	}
@@ -121,16 +121,16 @@ export class GeneralSettingsView {
 				.setValue(settings.checkboxSource)
 				.onChange(async (value: 'streams' | 'daily-notes' | 'folder') => {
 					await this.settingsService.updateSetting('checkboxSource', value);
-					this.app.workspace.trigger('ontask:settings-changed', { 
-						key: 'checkboxSource', 
-						value 
+					this.app.workspace.trigger('ontask:settings-changed', {
+						key: 'checkboxSource',
+						value
 					});
 					this.render();
 				}));
 
 		if (settings.checkboxSource === 'daily-notes') {
 			if (!this.settingsService.isDailyNotesAvailable()) {
-				const warningEl = this.containerEl.createEl('div', { 
+				const warningEl = this.containerEl.createEl('div', {
 					cls: 'setting-item-description',
 					text: '⚠️ Daily Notes plugin is not enabled. Please enable it in Settings → Community plugins.'
 				});
@@ -148,12 +148,12 @@ export class GeneralSettingsView {
 						.onChange(async (value) => {
 							const normalizedPath = normalizePath(value);
 							await this.settingsService.updateSetting('customFolderPath', normalizedPath);
-							this.app.workspace.trigger('ontask:settings-changed', { 
-								key: 'customFolderPath', 
+							this.app.workspace.trigger('ontask:settings-changed', {
+								key: 'customFolderPath',
 								value: normalizedPath
 							});
 						});
-					
+
 					// Add folder input suggest for type-ahead support
 					new FolderInputSuggest(this.app, text.inputEl);
 				});
@@ -165,9 +165,9 @@ export class GeneralSettingsView {
 					.setValue(settings.includeSubfolders)
 					.onChange(async (value) => {
 						await this.settingsService.updateSetting('includeSubfolders', value);
-						this.app.workspace.trigger('ontask:settings-changed', { 
-							key: 'includeSubfolders', 
-							value 
+						this.app.workspace.trigger('ontask:settings-changed', {
+							key: 'includeSubfolders',
+							value
 						});
 					}));
 		}
