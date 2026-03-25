@@ -12,6 +12,7 @@
 - Status colors
 - Status background colors
 - Maintains visual task indentation for sub-tasks
+- Ignores tasks placed inside code blocks
 - Automatically grabs tasks from your vault
 - Flexible filtering to find what matters most
 - Top task

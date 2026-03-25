@@ -99,9 +99,18 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 				// Instead, we scan line-by-line and stop as soon as we have enough tasks.
 				let matchedTasksInFile = 0;
 				let loadedFromThisFile = 0;
+				let inCodeBlock = false;
 
 				for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
 					const line = lines[lineIndex];
+
+					const trimmedLine = line.trim();
+					if (trimmedLine.startsWith('```') || trimmedLine.startsWith('~~~')) {
+						inCodeBlock = !inCodeBlock;
+						continue;
+					}
+
+					if (inCodeBlock) continue;
 
 					// Use test() to avoid allocations from match().
 					if (!checkboxRegex.test(line)) continue;
@@ -216,9 +225,19 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 
 				let bestInFile: CheckboxItem | null = null;
 				let bestRankInFile: number | null = null;
+				let inCodeBlock = false;
 
 				for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
 					const line = lines[lineIndex];
+
+					const trimmedLine = line.trim();
+					if (trimmedLine.startsWith('```') || trimmedLine.startsWith('~~~')) {
+						inCodeBlock = !inCodeBlock;
+						continue;
+					}
+
+					if (inCodeBlock) continue;
+
 					const match = rankedCaptureRegex.exec(line);
 					if (!match) continue;
 
