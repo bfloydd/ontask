@@ -22,6 +22,11 @@ export class CheckboxRenderer {
 		const checkboxEl = document.createElement('div');
 		checkboxEl.addClass('ontask-checkbox-item');
 
+		if (checkbox.indentationLevel && checkbox.indentationLevel > 0) {
+			checkboxEl.style.marginLeft = `${checkbox.indentationLevel * 20}px`;
+			checkboxEl.addClass('ontask-indented-task');
+		}
+
 		// Add data attributes for identification during in-place updates
 		if (checkbox.file?.path) {
 			checkboxEl.setAttribute('data-file-path', checkbox.file.path);

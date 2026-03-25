@@ -103,19 +103,24 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		try {
 			const content = await this.app.vault.cachedRead(file);
 			const lines = content.split('\n');
+			const fileCache = this.app.metadataCache.getFileCache(file);
+			const listItems = fileCache?.listItems;
 
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i];
 				const checkboxMatch = CheckboxParsingUtils.findCheckboxInLine(line);
 
 				if (checkboxMatch) {
+					const indentationLevel = CheckboxParsingUtils.calculateTaskIndentation(i, listItems);
+
 					checkboxes.push({
 						file: file,
 						lineNumber: i + 1, // 1-based line numbers
 						lineContent: line.trim(),
 						checkboxText: line.trim(),
 						sourceName: 'Streams',
-						sourcePath: this.streamsService.getStreamBaseFolder(stream as any)
+						sourcePath: this.streamsService.getStreamBaseFolder(stream as any),
+						indentationLevel
 					});
 
 					if (context.limit && checkboxes.length >= context.limit) {

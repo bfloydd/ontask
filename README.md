@@ -11,8 +11,7 @@
 - Status icons
 - Status colors
 - Status background colors
-- 
-- 
+- Maintains visual task indentation for sub-tasks
 - Automatically grabs tasks from your vault
 - Flexible filtering to find what matters most
 - Top task

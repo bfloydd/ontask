@@ -11,6 +11,7 @@ export interface TaskItem {
 	isTopTaskContender?: boolean;
 	topTaskRanking?: number;
 	isCompleted?: boolean;
+	indentationLevel?: number;
 }
 
 // Backward compatibility

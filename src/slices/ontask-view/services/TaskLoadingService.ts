@@ -8,6 +8,7 @@ import { Logger } from '../../logging/Logger';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 import { OnTaskSettings } from '../../settings/SettingsServiceInterface';
 import { DateFilterService } from '../date-filter';
+import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
 
 export interface TaskLoadingResult {
 	tasks: CheckboxItem[];
@@ -88,6 +89,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			try {
 				const content = await this.app.vault.cachedRead(file);
 				const lines = content.split('\n');
+				const fileCache = this.app.metadataCache.getFileCache(file);
+				const listItems = fileCache?.listItems;
 
 				// If we're resuming within a file, skip the first N matching tasks (not the first N lines).
 				const startTaskIndex = (fileIndex === this.currentFileIndex) ? this.currentTaskIndex : 0;
@@ -110,6 +113,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 					// Skip tasks we've already loaded from this file on previous batches.
 					if (matchIndex < startTaskIndex) continue;
 
+					const indentationLevel = CheckboxParsingUtils.calculateTaskIndentation(lineIndex, listItems);
 					const trimmed = line.trim();
 					loadedTasks.push({
 						file,
@@ -117,7 +121,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 						lineContent: trimmed,
 						checkboxText: trimmed,
 						sourceName: 'file',
-						sourcePath: file.path
+						sourcePath: file.path,
+						indentationLevel
 					});
 					loadedFromThisFile++;
 
@@ -206,6 +211,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			try {
 				const content = await this.app.vault.cachedRead(file);
 				const lines = content.split('\n');
+				const fileCache = this.app.metadataCache.getFileCache(file);
+				const listItems = fileCache?.listItems;
 
 				let bestInFile: CheckboxItem | null = null;
 				let bestRankInFile: number | null = null;
@@ -222,6 +229,7 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 
 					// First match of this rank in the file wins for that rank (line order).
 					if (bestRankInFile === null || ranking < bestRankInFile) {
+						const indentationLevel = CheckboxParsingUtils.calculateTaskIndentation(lineIndex, listItems);
 						const trimmed = line.trim();
 						bestRankInFile = ranking;
 						bestInFile = {
@@ -231,7 +239,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 							checkboxText: trimmed,
 							sourceName: 'file',
 							sourcePath: file.path,
-							topTaskRanking: ranking
+							topTaskRanking: ranking,
+							indentationLevel
 						};
 
 						// Can't beat rank 1 within the file.

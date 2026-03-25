@@ -1,3 +1,5 @@
+import { ListItemCache } from 'obsidian';
+
 /**
  * Utility functions for parsing checkbox syntax from markdown lines
  */
@@ -32,6 +34,34 @@ export class CheckboxParsingUtils {
 		const checkboxContent = checkboxMatch[1].trim().toLowerCase();
 		
 		return checkboxContent === 'x' || checkboxContent === 'checked';
+	}
+
+	/**
+	 * Calculates the semantic indentation level of a task.
+	 * Indentation only increases if an ancestor list item is also a task.
+	 * @param lineIndex - The 0-indexed line number of the task
+	 * @param listItems - The listItems cache from Obsidian
+	 * @returns The semantic indentation level (0 for root tasks or tasks under non-tasks)
+	 */
+	static calculateTaskIndentation(lineIndex: number, listItems: ListItemCache[] | undefined): number {
+		if (!listItems || listItems.length === 0) return 0;
+		
+		const listItemsByLine = new Map<number, ListItemCache>();
+		for (const item of listItems) {
+			listItemsByLine.set(item.position.start.line, item);
+		}
+		
+		let indentationLevel = 0;
+		let currentItem = listItemsByLine.get(lineIndex);
+
+		while (currentItem && currentItem.parent >= 0) {
+			currentItem = listItemsByLine.get(currentItem.parent);
+			if (currentItem && currentItem.task !== undefined) {
+				indentationLevel++;
+			}
+		}
+		
+		return indentationLevel;
 	}
 }
 
