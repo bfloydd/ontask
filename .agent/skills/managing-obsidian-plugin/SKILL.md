@@ -35,6 +35,7 @@ description: Manages the development, refactoring, and maintenance of an Obsidia
 - We use a vertical slice architecture.
 - Strict adherance to cleancode rules.
 - Use ADRs to document design decisions in adr/. Refer to the ADRs folder for more information and ensure compliance with existing ADRs.
+- CSS in styles.css
 
 ## Resources
 - None
