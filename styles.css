@@ -95,7 +95,7 @@
 
 .ontask-buttons-right {
 	display: flex;
-	gap: 5px;
+	gap: 2px;
 	align-items: center;
 }
 
@@ -146,8 +146,8 @@
 	gap: 0;
 	border-radius: 4px;
 	overflow: hidden;
-	border: 1px solid var(--background-modifier-border);
-	background: var(--background-secondary);
+	/* border: 1px solid var(--background-modifier-border); */
+	/* background: var(--background-secondary); */
 }
 
 .ontask-segmented-button {
@@ -155,7 +155,7 @@
 	color: var(--text-normal);
 	border: none;
 	border-right: 1px solid var(--background-modifier-border);
-	padding: 4px 12px;
+	padding: 2px 10px;
 	font-size: 14px;
 	transition: all 0.2s ease;
 	display: flex;
@@ -179,18 +179,18 @@
 }
 
 /* Remove border between active and adjacent buttons for seamless look */
-.ontask-segmented-button.is-active + .ontask-segmented-button {
+.ontask-segmented-button.is-active+.ontask-segmented-button {
 	border-left-color: var(--interactive-accent);
 }
 
 /* Mobile touch support */
 .is-mobile .ontask-segmented-button {
-	padding: 6px 14px;
+	padding: 4px 12px;
 	min-height: 32px;
 }
 
 .is-phone .ontask-segmented-button {
-	padding: 8px 16px;
+	padding: 6px 14px;
 	font-size: 13px;
 }
 
@@ -480,8 +480,13 @@
 }
 
 @keyframes ontask-spin {
-	0% { transform: translateY(-50%) rotate(0deg); }
-	100% { transform: translateY(-50%) rotate(360deg); }
+	0% {
+		transform: translateY(-50%) rotate(0deg);
+	}
+
+	100% {
+		transform: translateY(-50%) rotate(360deg);
+	}
 }
 
 /* ========================================
@@ -613,9 +618,12 @@
 	flex-wrap: wrap;
 }
 
-.is-mobile .ontask-buttons-left,
-.is-mobile .ontask-buttons-right {
+.is-mobile .ontask-buttons-left {
 	gap: 6px;
+}
+
+.is-mobile .ontask-buttons-right {
+	gap: 2px;
 }
 
 .is-mobile .ontask-header-button {
@@ -1719,10 +1727,13 @@
 }
 
 @keyframes drop-indicator-pulse {
-	0%, 100% {
+
+	0%,
+	100% {
 		opacity: 1;
 		box-shadow: 0 0 4px var(--interactive-accent-hover);
 	}
+
 	50% {
 		opacity: 0.7;
 		box-shadow: 0 0 8px var(--interactive-accent-hover);
@@ -1920,9 +1931,9 @@
    ======================================== */
 
 .ontask-scroll-to-top-button {
-    position: fixed;
-    bottom: 35px;
-    right: 20px;
+	position: fixed;
+	bottom: 35px;
+	right: 20px;
 	width: 48px;
 	height: 48px;
 	background: var(--interactive-accent);
@@ -1981,7 +1992,7 @@
 
 /* --- Mobile: Scroll to Top Button --- */
 .is-mobile .ontask-scroll-to-top-button {
-    bottom: 48px;
+	bottom: 48px;
 	right: 16px;
 	width: 44px;
 	height: 44px;
@@ -1989,7 +2000,7 @@
 }
 
 .is-phone .ontask-scroll-to-top-button {
-    bottom: 40px;
+	bottom: 40px;
 	right: 12px;
 	width: 40px;
 	height: 40px;
@@ -2190,7 +2201,7 @@
 	border-color: var(--ontask-alt1-green);
 }
 
-.ontask-view-style-alt1 .ontask-segmented-button.is-active + .ontask-segmented-button {
+.ontask-view-style-alt1 .ontask-segmented-button.is-active+.ontask-segmented-button {
 	border-left-color: var(--ontask-alt1-green);
 }
 
@@ -2557,7 +2568,7 @@
 	box-shadow: var(--ontask-modern-shadow);
 }
 
-.ontask-view-style-modern .ontask-segmented-button.is-active + .ontask-segmented-button {
+.ontask-view-style-modern .ontask-segmented-button.is-active+.ontask-segmented-button {
 	border-left: none;
 }
 
