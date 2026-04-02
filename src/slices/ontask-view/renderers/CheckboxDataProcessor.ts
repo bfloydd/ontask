@@ -26,15 +26,10 @@ export class CheckboxDataProcessor {
 			grouped.get(filePath)!.push(checkbox);
 		}
 
-		// Sort checkboxes within each file to put ranked items at the top
+		// Sort checkboxes within each file strictly by ascending line number to maintain visual hierarchy.
 		for (const fileCheckboxes of grouped.values()) {
 			fileCheckboxes.sort((a, b) => {
-				const rankA = a.topTaskRanking !== undefined ? a.topTaskRanking : Infinity;
-				const rankB = b.topTaskRanking !== undefined ? b.topTaskRanking : Infinity;
-				if (rankA !== rankB) {
-					return rankA - rankB;
-				}
-				// Maintain document order for unranked tasks, or tasks with the same rank
+				// Maintain document order strictly to preserve task indentation and parent-child relations
 				return (a.lineNumber || 0) - (b.lineNumber || 0);
 			});
 		}
