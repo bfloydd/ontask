@@ -235,8 +235,12 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 		for (const status of statuses) {
 			menu.addItem((item) => {
-				// Set title with status symbol and name
-				item.setTitle(status.name)
+				// Set title with status symbol, name, and description if available
+				const titleText = status.description 
+					? `${status.name} (${status.description})`
+					: status.name;
+					
+				item.setTitle(titleText)
 					.setChecked(false)
 					.onClick(async () => {
 						await this.updateCheckboxStatusCallback(checkbox, status.symbol);
