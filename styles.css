@@ -230,6 +230,13 @@
 	pointer-events: none;
 }
 
+/* Disabled state when Day Planner is active */
+.ontask-view.day-planner-active .ontask-buttons-left,
+.ontask-view.day-planner-active .ontask-header-button:not(.ontask-day-planner-btn):not([title="Settings"]) {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
 /* ========================================
    FILE SECTIONS & TASK CONTAINERS
    SLICE: ontask-view
@@ -2996,4 +3003,21 @@
 .ontask-day-planner-row:last-child .ontask-day-planner-time,
 .ontask-day-planner-row:last-child .ontask-day-planner-tasks {
 	border-bottom: none;
+}
+
+.ontask-day-planner-row.is-past .ontask-day-planner-time,
+.ontask-day-planner-row.is-past .ontask-day-planner-tasks {
+	opacity: 0.6;
+	background: repeating-linear-gradient(
+		-45deg,
+		var(--background-secondary),
+		var(--background-secondary) 10px,
+		var(--background-secondary-alt) 10px,
+		var(--background-secondary-alt) 20px
+	);
+	color: var(--text-faint);
+}
+
+.ontask-day-planner-row.is-past .ontask-day-planner-tasks {
+	text-decoration: line-through;
 }

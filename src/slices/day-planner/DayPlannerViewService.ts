@@ -26,7 +26,7 @@ export class DayPlannerViewService {
 		}
 	}
 
-	renderPlan(plan: DayPlanResult): void {
+	renderPlan(plan: DayPlanResult, scheduleFromNow: boolean): void {
 		this.containerEl.empty();
 		
 		const plannerContainer = this.containerEl.createDiv('ontask-day-planner-container');
@@ -52,6 +52,10 @@ export class DayPlannerViewService {
 		
 		for (const slot of plan.schedule) {
 			const rowEl = gridEl.createDiv('ontask-day-planner-row');
+			
+			if (scheduleFromNow && this.isTimeInPast(slot.time)) {
+				rowEl.addClass('is-past');
+			}
 			
 			const timeEl = rowEl.createDiv('ontask-day-planner-time');
 			timeEl.setText(slot.time);
@@ -82,5 +86,29 @@ export class DayPlannerViewService {
 		errorEl.setText(message);
 		errorEl.style.color = 'var(--text-error)';
 		errorEl.style.padding = '10px';
+	}
+
+	private isTimeInPast(timeStr: string): boolean {
+		const matches = [...timeStr.matchAll(/(\d+):(\d+)\s*(AM|PM)/gi)];
+		if (matches.length === 0) return false;
+		
+		// Use the last time found in the string (end time if it's a range, or the only time)
+		const targetMatch = matches[matches.length - 1];
+		let [_, hoursStr, minsStr, ampm] = targetMatch;
+		
+		let hours = parseInt(hoursStr, 10);
+		const mins = parseInt(minsStr, 10);
+		
+		if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+		if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+		
+		const now = new Date();
+		const currentHours = now.getHours();
+		const currentMins = now.getMinutes();
+		
+		if (hours < currentHours) return true;
+		if (hours === currentHours && mins <= currentMins) return true;
+		
+		return false;
 	}
 }

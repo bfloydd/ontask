@@ -180,7 +180,7 @@ export class OnTaskViewImpl extends ItemView {
 		
 		const settings = this.settingsService.getSettings();
 		if (settings.lastDayPlan) {
-			this.dayPlannerViewService.renderPlan(settings.lastDayPlan);
+			this.dayPlannerViewService.renderPlan(settings.lastDayPlan, settings.dayPlannerScheduleFromNow);
 		} else {
 			this.dayPlannerViewService.renderInitialState(false);
 		}
@@ -258,12 +258,13 @@ export class OnTaskViewImpl extends ItemView {
 			settings.geminiModel,
 			settings.dayPlannerPrompt,
 			settings.dayPlannerSchedule,
+			settings.dayPlannerScheduleFromNow,
 			this.checkboxes
 		);
 
 		if (result) {
 			await this.settingsService.updateSetting('lastDayPlan', result);
-			this.dayPlannerViewService.renderPlan(result);
+			this.dayPlannerViewService.renderPlan(result, settings.dayPlannerScheduleFromNow);
 		} else {
 			this.dayPlannerViewService.renderError('Failed to generate day plan. Check your API key and try again.');
 		}
@@ -359,6 +360,13 @@ export class OnTaskViewImpl extends ItemView {
 		if (appWithSettings.setting) {
 			appWithSettings.setting.open();
 			appWithSettings.setting.openTabById(this.plugin.manifest.id);
+			
+			if (this.isDayPlannerVisible) {
+				const myPlugin = this.plugin as any;
+				if (myPlugin.settingsTab && typeof myPlugin.settingsTab.navigateToTab === 'function') {
+					myPlugin.settingsTab.navigateToTab('day-planner');
+				}
+			}
 		}
 	}
 }

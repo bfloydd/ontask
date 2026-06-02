@@ -19,6 +19,7 @@ export class DayPlannerService {
 		model: string,
 		systemPrompt: string,
 		schedulePrompt: string,
+		scheduleFromNow: boolean,
 		tasks: CheckboxItem[]
 	): Promise<DayPlanResult | null> {
 		if (!apiKey) {
@@ -29,7 +30,13 @@ export class DayPlannerService {
 		// Format tasks
 		const taskListStr = tasks.map(t => t.lineContent.trim()).join('\n');
 		
-		const fullPrompt = `If this is my schedule:\n\n${taskListStr}\n\nMy daily schedule and availability:\n${schedulePrompt}\n\nInstructions:\n${systemPrompt}`;
+		let timeContext = '';
+		if (scheduleFromNow) {
+			const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+			timeContext = `\n\nCRITICAL CONSTRAINT:\nThe current time is ${currentTime}. You MUST NOT schedule any tasks in time slots that have already passed today (before ${currentTime}). Leave the tasks array completely empty for all past time slots. Only schedule tasks for the remaining time in the day.`;
+		}
+		
+		const fullPrompt = `If this is my schedule:\n\n${taskListStr}\n\nMy daily schedule and availability:\n${schedulePrompt}${timeContext}\n\nInstructions:\n${systemPrompt}`;
 
 		const url = `https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-2.5-flash'}:generateContent?key=${apiKey}`;
 

@@ -62,5 +62,15 @@ export class DayPlannerSettingsView {
 				text.inputEl.rows = 6;
 				text.inputEl.cols = 50;
 			});
+
+		new Setting(this.containerEl)
+			.setName('Schedule from "now" until end of day')
+			.setDesc('When enabled, the planner will grey out past hours and only consider the remaining time in the day for scheduling your tasks.')
+			.addToggle(toggle => {
+				toggle.setValue(settings.dayPlannerScheduleFromNow)
+					.onChange(async (value) => {
+						await this.settingsService.updateSetting('dayPlannerScheduleFromNow', value);
+					});
+			});
 	}
 }
