@@ -176,16 +176,16 @@ export class OnTaskViewImpl extends ItemView {
 		
 		this.dayPlannerContainer = this.contentEl.createDiv('ontask-day-planner-wrapper');
 		this.dayPlannerContainer.hide();
-		this.dayPlannerViewService = new DayPlannerViewService(this.dayPlannerContainer, () => this.generateDayPlan());
+		this.dayPlannerViewService = new DayPlannerViewService(this.dayPlannerContainer, this.domRenderingService, () => this.generateDayPlan());
 		
+		await this.refreshCheckboxes();
+
 		const settings = this.settingsService.getSettings();
 		if (settings.lastDayPlan) {
-			this.dayPlannerViewService.renderPlan(settings.lastDayPlan, settings.dayPlannerScheduleFromNow);
+			this.dayPlannerViewService.renderPlan(settings.lastDayPlan, settings.dayPlannerScheduleFromNow, this.checkboxes);
 		} else {
 			this.dayPlannerViewService.renderInitialState(false);
 		}
-		
-		await this.refreshCheckboxes();
 		this.eventHandlingService.setupEventListeners();
 		
 		this.scrollToTopService.initialize(this.contentEl);
@@ -266,7 +266,7 @@ export class OnTaskViewImpl extends ItemView {
 
 		if (result) {
 			await this.settingsService.updateSetting('lastDayPlan', result);
-			this.dayPlannerViewService.renderPlan(result, settings.dayPlannerScheduleFromNow);
+			this.dayPlannerViewService.renderPlan(result, settings.dayPlannerScheduleFromNow, this.checkboxes);
 		} else {
 			this.dayPlannerViewService.renderError('Failed to generate day plan. Check your API key and try again.');
 		}

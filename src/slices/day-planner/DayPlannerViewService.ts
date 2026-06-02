@@ -1,11 +1,15 @@
 import { DayPlanResult } from './DayPlannerService';
+import { DOMRenderingServiceInterface } from '../ontask-view/services/DOMRenderingService';
+import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
 
 export class DayPlannerViewService {
 	private containerEl: HTMLElement;
 	private generateCallback: () => void;
+	private domRenderingService: DOMRenderingServiceInterface;
 
-	constructor(containerEl: HTMLElement, onGenerate: () => void) {
+	constructor(containerEl: HTMLElement, domRenderingService: DOMRenderingServiceInterface, onGenerate: () => void) {
 		this.containerEl = containerEl;
+		this.domRenderingService = domRenderingService;
 		this.generateCallback = onGenerate;
 	}
 
@@ -26,7 +30,7 @@ export class DayPlannerViewService {
 		}
 	}
 
-	renderPlan(plan: DayPlanResult, scheduleFromNow: boolean): void {
+	renderPlan(plan: DayPlanResult, scheduleFromNow: boolean, checkboxes: CheckboxItem[]): void {
 		this.containerEl.empty();
 		
 		const plannerContainer = this.containerEl.createDiv('ontask-day-planner-container');
@@ -62,11 +66,36 @@ export class DayPlannerViewService {
 			
 			const tasksEl = rowEl.createDiv('ontask-day-planner-tasks');
 			if (slot.tasks && slot.tasks.length > 0) {
-				const ul = tasksEl.createEl('ul');
-				ul.style.margin = '0';
-				ul.style.paddingLeft = '20px';
-				for (const task of slot.tasks) {
-					ul.createEl('li', { text: task });
+				const tasksContainer = tasksEl.createDiv('ontask-day-planner-tasks-list');
+				tasksContainer.style.display = 'flex';
+				tasksContainer.style.flexDirection = 'column';
+				tasksContainer.style.gap = '4px';
+				
+				for (const taskStr of slot.tasks) {
+					// Clean up the LLM string (it sometimes returns "- task" instead of "- [ ] task")
+					const cleanLLM = taskStr.replace(/^[-*]\s*(\[.*?\])?\s*/, '').trim().toLowerCase();
+					
+					// Try to find a matching CheckboxItem
+					const taskItem = checkboxes.find(c => {
+						const cleanOrig = c.lineContent.replace(/^[-*]\s*\[.*?\]\s*/, '').trim().toLowerCase();
+						return cleanOrig === cleanLLM || cleanOrig.includes(cleanLLM) || cleanLLM.includes(cleanOrig);
+					});
+					
+					if (taskItem) {
+						// Render as a fully functional checkbox
+						const checkboxEl = this.domRenderingService.createCheckboxElement(taskItem);
+						// Strip out unnecessary margins for the dense day planner view
+						checkboxEl.style.margin = '0';
+						checkboxEl.style.borderBottom = 'none';
+						tasksContainer.appendChild(checkboxEl);
+					} else {
+						// Fallback if not found (e.g. task was deleted since plan was generated)
+						const fallbackEl = tasksContainer.createDiv('ontask-day-planner-task-fallback');
+						fallbackEl.setText(taskStr);
+						fallbackEl.style.padding = '8px';
+						fallbackEl.style.color = 'var(--text-muted)';
+						fallbackEl.style.fontStyle = 'italic';
+					}
 				}
 			}
 		}
