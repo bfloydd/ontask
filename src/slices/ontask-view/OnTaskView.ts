@@ -259,6 +259,8 @@ export class OnTaskViewImpl extends ItemView {
 			settings.dayPlannerPrompt,
 			settings.dayPlannerSchedule,
 			settings.dayPlannerScheduleFromNow,
+			settings.dayPlannerStartTime,
+			settings.dayPlannerEndTime,
 			this.checkboxes
 		);
 

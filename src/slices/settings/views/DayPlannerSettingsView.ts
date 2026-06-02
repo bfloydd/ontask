@@ -72,5 +72,27 @@ export class DayPlannerSettingsView {
 						await this.settingsService.updateSetting('dayPlannerScheduleFromNow', value);
 					});
 			});
+
+		new Setting(this.containerEl)
+			.setName('Day Start Time')
+			.setDesc('The absolute earliest time your day starts (e.g. 06:00 AM). The planner will not schedule anything before this.')
+			.addText(text => {
+				text.setPlaceholder('06:00 AM')
+					.setValue(settings.dayPlannerStartTime)
+					.onChange(async (value) => {
+						await this.settingsService.updateSetting('dayPlannerStartTime', value);
+					});
+			});
+
+		new Setting(this.containerEl)
+			.setName('Day End Time')
+			.setDesc('The absolute latest time your day ends (e.g. 10:00 PM). The planner will not schedule anything after this.')
+			.addText(text => {
+				text.setPlaceholder('10:00 PM')
+					.setValue(settings.dayPlannerEndTime)
+					.onChange(async (value) => {
+						await this.settingsService.updateSetting('dayPlannerEndTime', value);
+					});
+			});
 	}
 }

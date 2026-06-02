@@ -20,6 +20,8 @@ export class DayPlannerService {
 		systemPrompt: string,
 		schedulePrompt: string,
 		scheduleFromNow: boolean,
+		startTime: string,
+		endTime: string,
 		tasks: CheckboxItem[]
 	): Promise<DayPlanResult | null> {
 		if (!apiKey) {
@@ -30,10 +32,11 @@ export class DayPlannerService {
 		// Format tasks
 		const taskListStr = tasks.map(t => t.lineContent.trim()).join('\n');
 		
-		let timeContext = '';
+		let timeContext = `\n\nCRITICAL CONSTRAINT:\nYou MUST start the day's schedule at EXACTLY ${startTime || '06:00 AM'} and end the schedule at EXACTLY ${endTime || '10:00 PM'}. No tasks can be scheduled outside of these bounds.`;
+		
 		if (scheduleFromNow) {
 			const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-			timeContext = `\n\nCRITICAL CONSTRAINT:\nThe current time is ${currentTime}. You MUST NOT schedule any tasks in time slots that have already passed today (before ${currentTime}). Leave the tasks array completely empty for all past time slots. Only schedule tasks for the remaining time in the day.`;
+			timeContext += `\nAlso, the current time is ${currentTime}. You MUST NOT schedule any tasks in time slots that have already passed today (before ${currentTime}). Leave the tasks array completely empty for all past time slots. Only schedule tasks for the remaining time in the day.`;
 		}
 		
 		const fullPrompt = `If this is my schedule:\n\n${taskListStr}\n\nMy daily schedule and availability:\n${schedulePrompt}${timeContext}\n\nInstructions:\n${systemPrompt}`;

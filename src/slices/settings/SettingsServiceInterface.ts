@@ -25,6 +25,8 @@ export interface OnTaskSettings {
 	dayPlannerPrompt: string;
 	dayPlannerSchedule: string;
 	dayPlannerScheduleFromNow: boolean;
+	dayPlannerStartTime: string;
+	dayPlannerEndTime: string;
 	geminiApiKey: string;
 	geminiModel: string;
 	lastDayPlan: DayPlanResult | null;
@@ -45,6 +47,8 @@ export const DEFAULT_SETTINGS: OnTaskSettings = {
 	dayPlannerPrompt: 'How would my Todo list fit into this neatly given each todo item\'s description and time the task will take? Organizing properly for my day. Also consider:\n- My task priorities based on statues (and the status\' criticality).\n- Real world descriptions like "do it early in the day" or "urgent" to prioritize and put into the correct time slots.\n- Only give the final checklist reorganized, but include a time of day for each task as a header\n- If the todo list takes longer than the time given in my schedule, then mention it and just do what we can, properly balancing in important tasks with what can actually be accomplished.',
 	dayPlannerSchedule: '',
 	dayPlannerScheduleFromNow: true,
+	dayPlannerStartTime: '06:00 AM',
+	dayPlannerEndTime: '10:00 PM',
 	geminiApiKey: '',
 	geminiModel: 'gemini-2.5-flash',
 	lastDayPlan: null
