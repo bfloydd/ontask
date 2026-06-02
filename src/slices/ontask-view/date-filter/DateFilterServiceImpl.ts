@@ -48,7 +48,7 @@ export class DateFilterServiceImpl implements DateFilterService {
 			id: 'today',
 			label: 'Today',
 			icon: 'calendar',
-			supportsLoadMore: false,
+			supportsLoadMore: true,
 			order: 10,
 			filterFilePaths: (filePaths, app) => {
 				return filePaths.filter((filePath) => {
@@ -62,7 +62,7 @@ export class DateFilterServiceImpl implements DateFilterService {
 			id: 'week',
 			label: 'Week',
 			icon: 'calendar',
-			supportsLoadMore: false,
+			supportsLoadMore: true,
 			order: 20,
 			filterFilePaths: (filePaths, app) => {
 				return filePaths.filter((filePath) => {

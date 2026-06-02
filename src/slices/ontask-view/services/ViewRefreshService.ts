@@ -66,8 +66,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 			const supportsLoadMore = this.dateFilterService.supportsLoadMore(settings.dateFilter);
 			await this.taskLoadingService.initializeFileTracking(settings.dateFilter);
 			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
-			const topTaskCandidate = await this.taskLoadingService.findTopTaskAcrossTrackedFiles();
-			const newCheckboxes = this.mergeTopTaskCandidate(result.tasks, topTaskCandidate);
+			const newCheckboxes = result.tasks;
 
 			this.topTaskProcessingService.processTopTasksFromDisplayedTasks(newCheckboxes);
 			
@@ -160,17 +159,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 		};
 	}
 
-	private mergeTopTaskCandidate(tasks: CheckboxItem[], topTaskCandidate: CheckboxItem | null): CheckboxItem[] {
-		if (!topTaskCandidate) return tasks;
 
-		const alreadyIncluded = tasks.some(
-			(t) => t.file?.path === topTaskCandidate.file?.path && t.lineNumber === topTaskCandidate.lineNumber
-		);
-		if (alreadyIncluded) return tasks;
-
-		// Prepend so it's available immediately for rendering/processing; rendering itself de-dupes it from the list.
-		return [topTaskCandidate, ...tasks];
-	}
 
 	private removeTopTaskFromListIfPresent(contentArea: HTMLElement, checkboxes: CheckboxItem[]): void {
 		const topTask = checkboxes.find((cb) => cb.isTopTask);
