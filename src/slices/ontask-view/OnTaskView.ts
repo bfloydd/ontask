@@ -23,6 +23,8 @@ import { OnTaskViewDateControls } from './OnTaskViewDateControls';
 import { CheckboxItem } from '../task-finder/TaskFinderInterfaces';
 import { AppWithSettings } from '../../types';
 import { DateFilterService } from './date-filter';
+import { DayPlannerService } from '../day-planner/DayPlannerService';
+import { DayPlannerViewService } from '../day-planner/DayPlannerViewService';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -55,7 +57,10 @@ export class OnTaskViewImpl extends ItemView {
 	private isSearchFilterVisible: boolean = false;
 	private settingsUnsubscribe: (() => void) | null = null;
 	
-
+	private isDayPlannerVisible: boolean = false;
+	private dayPlannerService: DayPlannerService;
+	private dayPlannerViewService: DayPlannerViewService;
+	private dayPlannerContainer: HTMLElement;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -76,6 +81,7 @@ export class OnTaskViewImpl extends ItemView {
 		this.plugin = plugin;
 		this.eventSystem = eventSystem;
 		this.logger = logger;
+		this.dayPlannerService = new DayPlannerService(this.logger);
 
 		// Create callbacks for service initialization
 		const callbacks: OnTaskViewCallbacks = {
@@ -162,10 +168,22 @@ export class OnTaskViewImpl extends ItemView {
 			onRefresh: () => this.refreshCheckboxes(),
 			onSearch: () => this.toggleSearchFilter(),
 			onFilters: () => this.contextMenuService.showFiltersMenu(),
-			onSettings: () => this.openSettings()
+			onSettings: () => this.openSettings(),
+			onToggleDayPlanner: () => this.toggleDayPlanner()
 		});
 		
 		const contentArea = this.contentEl.createDiv('ontask-content');
+		
+		this.dayPlannerContainer = this.contentEl.createDiv('ontask-day-planner-wrapper');
+		this.dayPlannerContainer.hide();
+		this.dayPlannerViewService = new DayPlannerViewService(this.dayPlannerContainer, () => this.generateDayPlan());
+		
+		const settings = this.settingsService.getSettings();
+		if (settings.lastDayPlan) {
+			this.dayPlannerViewService.renderPlan(settings.lastDayPlan);
+		} else {
+			this.dayPlannerViewService.renderInitialState(false);
+		}
 		
 		await this.refreshCheckboxes();
 		this.eventHandlingService.setupEventListeners();
@@ -211,6 +229,44 @@ export class OnTaskViewImpl extends ItemView {
 			this.isSearchFilterVisible,
 			() => this.clearFilter()
 		);
+	}
+
+	private toggleDayPlanner(): void {
+		this.isDayPlannerVisible = !this.isDayPlannerVisible;
+		const contentArea = this.contentEl.querySelector('.ontask-content') as HTMLElement;
+		const plannerBtn = this.contentEl.querySelector('.ontask-day-planner-btn') as HTMLElement;
+		if (!contentArea) return;
+		
+		if (this.isDayPlannerVisible) {
+			contentArea.hide();
+			this.dayPlannerContainer.show();
+			if (plannerBtn) plannerBtn.addClass('is-active');
+			this.contentEl.addClass('day-planner-active');
+		} else {
+			contentArea.show();
+			this.dayPlannerContainer.hide();
+			if (plannerBtn) plannerBtn.removeClass('is-active');
+			this.contentEl.removeClass('day-planner-active');
+		}
+	}
+
+	private async generateDayPlan(): Promise<void> {
+		this.dayPlannerViewService.renderInitialState(true);
+		const settings = this.settingsService.getSettings();
+		const result = await this.dayPlannerService.generateDayPlan(
+			settings.geminiApiKey,
+			settings.geminiModel,
+			settings.dayPlannerPrompt,
+			settings.dayPlannerSchedule,
+			this.checkboxes
+		);
+
+		if (result) {
+			await this.settingsService.updateSetting('lastDayPlan', result);
+			this.dayPlannerViewService.renderPlan(result);
+		} else {
+			this.dayPlannerViewService.renderError('Failed to generate day plan. Check your API key and try again.');
+		}
 	}
 
 	async refreshCheckboxes(): Promise<void> {

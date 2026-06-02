@@ -23,6 +23,7 @@ const ICON_MAP: Record<IconName, string> = {
 	'filter': 'filter',
 	'refresh-cw': 'refresh-cw',
 	'settings': 'settings',
+	'star': 'star',
 };
 
 const CONFIG_ICON_MAP: Record<ConfigIconName, string> = {
@@ -243,7 +244,8 @@ export type IconName =
 	| 'search'
 	| 'filter'
 	| 'refresh-cw'
-	| 'settings';
+	| 'settings'
+	| 'star';
 
 export type ConfigIconName =
 	| 'edit'

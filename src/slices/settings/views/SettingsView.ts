@@ -5,6 +5,7 @@ import { DataService } from '../../data/DataServiceInterface';
 import { GeneralSettingsView } from './GeneralSettingsView';
 import { StatusConfigSettingsView } from './StatusConfigSettingsView';
 import { QuickFiltersView } from './QuickFiltersView';
+import { DayPlannerSettingsView } from './DayPlannerSettingsView';
 import { Logger } from '../../logging/Logger';
 
 interface PluginWithLogger extends Plugin {
@@ -16,7 +17,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	private statusConfigService: StatusConfigService;
 	private dataService: DataService;
 	private plugin: PluginWithLogger;
-	private currentTab: 'general' | 'status' | 'quick-filters' = 'general';
+	private currentTab: 'general' | 'status' | 'quick-filters' | 'day-planner' = 'general';
 
 	constructor(app: App, plugin: Plugin, settingsService: SettingsService, statusConfigService: StatusConfigService, dataService: DataService) {
 		super(app, plugin);
@@ -38,7 +39,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	}
 
 	// Method to navigate to a specific tab
-	navigateToTab(tabId: 'general' | 'status' | 'quick-filters'): void {
+	navigateToTab(tabId: 'general' | 'status' | 'quick-filters' | 'day-planner'): void {
 		this.currentTab = tabId;
 		this.display(); // Re-render with new tab
 	}
@@ -51,7 +52,8 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 		const tabs = [
 			{ id: 'general', name: 'General' },
 			{ id: 'status', name: 'Statuses' },
-			{ id: 'quick-filters', name: 'Quick filters' }
+			{ id: 'quick-filters', name: 'Quick filters' },
+			{ id: 'day-planner', name: 'Day Planner' }
 		];
 
 		tabs.forEach(tab => {
@@ -63,7 +65,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 			}
 
 			tabEl.addEventListener('click', () => {
-				this.currentTab = tab.id as 'general' | 'status' | 'quick-filters';
+				this.currentTab = tab.id as 'general' | 'status' | 'quick-filters' | 'day-planner';
 				this.display(); // Re-render with new tab
 			}, { passive: true });
 		});
@@ -82,6 +84,9 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 				break;
 			case 'quick-filters':
 				this.renderQuickFiltersSettings(contentContainer);
+				break;
+			case 'day-planner':
+				this.renderDayPlannerSettings(contentContainer);
 				break;
 		}
 	}
@@ -102,6 +107,10 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 		quickFiltersView.render();
 	}
 
+	private renderDayPlannerSettings(containerEl: HTMLElement): void {
+		const dayPlannerView = new DayPlannerSettingsView(this.app, this.settingsService, containerEl);
+		dayPlannerView.render();
+	}
 }
 
 

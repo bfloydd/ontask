@@ -218,6 +218,18 @@
 	transform: translateY(1px);
 }
 
+.ontask-header-button.is-active {
+	background: var(--interactive-accent-hover);
+	color: var(--text-on-accent);
+}
+
+/* Disabled state when Day Planner is active */
+.ontask-view.day-planner-active .ontask-buttons-left,
+.ontask-view.day-planner-active .ontask-header-button:not(.ontask-day-planner-btn):not([title="Settings"]) {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
 /* ========================================
    FILE SECTIONS & TASK CONTAINERS
    SLICE: ontask-view
@@ -2919,4 +2931,69 @@
 	background: var(--ontask-modern-surface) !important;
 	border-color: var(--ontask-modern-primary) !important;
 	color: var(--ontask-modern-primary) !important;
+}
+
+/* ========================================
+   DAY PLANNER
+   SLICE: day-planner
+   ======================================== */
+.ontask-day-planner-container {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.ontask-day-planner-generate-btn {
+	padding: 10px;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-weight: bold;
+	text-align: center;
+	transition: background 0.2s ease;
+}
+
+.ontask-day-planner-generate-btn:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.ontask-day-planner-generate-btn:disabled {
+	background: var(--background-modifier-border);
+	color: var(--text-muted);
+	cursor: not-allowed;
+}
+
+.ontask-day-planner-grid {
+	display: grid;
+	grid-template-columns: 80px 1fr;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.ontask-day-planner-row {
+	display: contents;
+}
+
+.ontask-day-planner-time {
+	padding: 10px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	border-right: 1px solid var(--background-modifier-border);
+	font-weight: 500;
+	text-align: right;
+	background: var(--background-secondary);
+}
+
+.ontask-day-planner-tasks {
+	padding: 10px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	min-height: 40px;
+}
+
+.ontask-day-planner-row:last-child .ontask-day-planner-time,
+.ontask-day-planner-row:last-child .ontask-day-planner-tasks {
+	border-bottom: none;
 }

@@ -7,6 +7,7 @@ export interface ViewHeaderCallbacks {
 	onSearch: () => void;
 	onFilters: () => void;
 	onSettings: () => void;
+	onToggleDayPlanner: () => void;
 }
 
 export interface ViewHeaderServiceInterface {
@@ -38,6 +39,13 @@ export class ViewHeaderService implements ViewHeaderServiceInterface {
 		
 		// Right button group - Action buttons
 		const rightButtonsContainer = header.createDiv('ontask-buttons-right');
+		
+		const plannerButton = rightButtonsContainer.createEl('button');
+		plannerButton.addClass('ontask-header-button');
+		plannerButton.addClass('ontask-day-planner-btn');
+		IconService.setIcon(plannerButton, 'star');
+		plannerButton.title = 'Day Planner';
+		plannerButton.addEventListener('click', callbacks.onToggleDayPlanner, { passive: true });
 		
 		const searchButton = rightButtonsContainer.createEl('button');
 		searchButton.addClass('ontask-header-button');
