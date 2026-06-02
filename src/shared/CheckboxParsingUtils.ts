@@ -53,8 +53,19 @@ export class CheckboxParsingUtils {
 		
 		let indentationLevel = 0;
 		let currentItem = listItemsByLine.get(lineIndex);
+		const visitedLines = new Set<number>();
 
 		while (currentItem && currentItem.parent >= 0) {
+			const currentLine = currentItem.position.start.line;
+			if (visitedLines.has(currentLine)) {
+				break; // Prevent infinite loops from circular references
+			}
+			visitedLines.add(currentLine);
+
+			if (currentItem.parent === currentLine) {
+				break; // Prevent infinite loops if parent points to self
+			}
+
 			currentItem = listItemsByLine.get(currentItem.parent);
 			if (currentItem && currentItem.task !== undefined) {
 				indentationLevel++;
