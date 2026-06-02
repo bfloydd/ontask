@@ -292,6 +292,11 @@ export class OnTaskViewImpl extends ItemView {
 		this.dateControls.updateDateFilterState();
 		this.contentTrackingService.initializeTracking(this.checkboxes);
 		this.updateServiceReferences();
+		
+		const settings = this.settingsService.getSettings();
+		if (settings.lastDayPlan) {
+			this.dayPlannerViewService.renderPlan(settings.lastDayPlan, settings.dayPlannerScheduleFromNow, this.checkboxes);
+		}
 	}
 
 	private updateCheckboxRowInPlace(checkbox: CheckboxItem, newLineContent: string): void {
@@ -308,6 +313,11 @@ export class OnTaskViewImpl extends ItemView {
 			newLineContent,
 			this.checkboxes
 		);
+		
+		const settings = this.settingsService.getSettings();
+		if (settings.lastDayPlan) {
+			this.dayPlannerViewService.renderPlan(settings.lastDayPlan, settings.dayPlannerScheduleFromNow, this.checkboxes);
+		}
 	}
 
 	private async loadMoreTasks(): Promise<void> {
