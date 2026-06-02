@@ -76,7 +76,7 @@
    ======================================== */
 
 .ontask-header {
-	padding-bottom: 15px;
+	padding-bottom: 10px;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -133,7 +133,7 @@
 }
 
 .ontask-header-button {
-	/* padding: 0px 6px 0px 6px; */
+	padding: 0px 6px 0px 6px;
 	gap: 6px;
 	height: 25px;
 }
@@ -629,14 +629,14 @@
 }
 
 .is-mobile .ontask-header-button {
-	/* padding: 0px 4px 0px 4px; */
+	padding: 0px 6px 0px 6px;
 	gap: 4px;
 	height: 25px;
 	font-size: 12px;
 }
 
 .is-phone .ontask-header-button {
-	/* padding: 0px 3px 0px 3px; */
+	padding: 0px 6px 0px 6px;
 	gap: 3px;
 	height: 25px;
 	font-size: 11px;
