@@ -89,12 +89,23 @@ export class DayPlannerViewService {
 						checkboxEl.style.borderBottom = 'none';
 						tasksContainer.appendChild(checkboxEl);
 					} else {
-						// Fallback if not found (e.g. task was deleted since plan was generated)
-						const fallbackEl = tasksContainer.createDiv('ontask-day-planner-task-fallback');
-						fallbackEl.setText(taskStr);
-						fallbackEl.style.padding = '8px';
-						fallbackEl.style.color = 'var(--text-muted)';
-						fallbackEl.style.fontStyle = 'italic';
+						// Fallback if not found (e.g. task was deleted since plan was generated or LLM altered the text)
+						const cleanTaskText = taskStr.replace(/^[-*]\s*(\[.*?\])?\s*/, '').replace(/^\d+\.\s*/, '').replace(/^\.\s*/, '').trim();
+						const mockTaskItem: CheckboxItem = {
+							file: null as any,
+							lineNumber: -1,
+							lineContent: `- [ ] ${cleanTaskText}`,
+							checkboxText: cleanTaskText,
+							sourceName: 'Day Planner',
+							sourcePath: '',
+							isCompleted: false
+						};
+						
+						const fallbackEl = this.domRenderingService.createCheckboxElement(mockTaskItem);
+						fallbackEl.style.margin = '0';
+						fallbackEl.style.borderBottom = 'none';
+						fallbackEl.style.opacity = '0.85'; // Slight transparency to indicate it's disconnected
+						tasksContainer.appendChild(fallbackEl);
 					}
 				}
 			}
