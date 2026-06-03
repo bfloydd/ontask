@@ -2987,15 +2987,16 @@
 }
 
 .ontask-day-planner-grid {
-	display: grid;
-	grid-template-columns: 80px 1fr;
+	display: flex;
+	flex-direction: column;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
 	overflow: hidden;
 }
 
 .ontask-day-planner-row {
-	display: contents;
+	display: grid;
+	grid-template-columns: 80px 1fr;
 }
 
 .ontask-day-planner-time {
