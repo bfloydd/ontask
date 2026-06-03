@@ -4,6 +4,7 @@ import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
 import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
 import { DateFileUtils } from '../../../shared/DateFileUtils';
+import { VaultUtils } from '../../../shared/VaultUtils';
 
 export class StreamsTaskStrategy implements TaskFinderStrategy {
 	private app: App;
@@ -68,9 +69,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 			const streamFolder = this.app.vault.getAbstractFileByPath(baseFolder);
 
 			if (!streamFolder || !(streamFolder instanceof TFile)) {
-				let files = this.app.vault.getMarkdownFiles().filter(file =>
-					file.path.startsWith(baseFolder)
-				);
+				let files = VaultUtils.getMarkdownFilesInFolder(this.app.vault, baseFolder);
 
 				if (context.onlyShowToday) {
 					files = files.filter(file => DateFileUtils.isTodayFile(file));

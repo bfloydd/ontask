@@ -1,6 +1,13 @@
 import { StreamsTaskStrategy } from '../strategies/StreamsTaskStrategy';
 import { StreamsService } from '../../streams';
 
+jest.mock('../../../shared/VaultUtils', () => ({
+	VaultUtils: {
+		getMarkdownFilesInFolder: jest.fn()
+	}
+}));
+import { VaultUtils } from '../../../shared/VaultUtils';
+
 const mockStreamsService = {
 	isStreamsPluginAvailable: jest.fn().mockReturnValue(true),
 	getAllStreams: jest.fn().mockReturnValue([]),
@@ -13,6 +20,9 @@ const mockApp = {
 		getAbstractFileByPath: jest.fn(),
 		read: jest.fn(),
 		cachedRead: jest.fn()
+	},
+	metadataCache: {
+		getFileCache: jest.fn()
 	}
 } as any;
 
@@ -74,7 +84,7 @@ describe('StreamsTaskStrategy', () => {
 				if (path === '/Work' || path === '/Personal') return { name: path.slice(1), path };
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Work Task')
 				.mockResolvedValueOnce('- [x] Personal Task');
@@ -109,7 +119,7 @@ describe('StreamsTaskStrategy', () => {
 				if (path === '/Work') return { name: 'Work', path: '/Work' };
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Today Stream Task');
 
 			// Mock Date to return 2024-01-15
@@ -161,7 +171,7 @@ describe('StreamsTaskStrategy', () => {
 				if (path === '/Work') return { name: 'Work', path: '/Work' };
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(`
 - [ ] Task 1
 - [x] Task 2
@@ -194,7 +204,7 @@ describe('StreamsTaskStrategy', () => {
 				if (path === '/Work') return { name: 'Work', path: '/Work' };
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			// Reset and set up fresh mock for this test - each file returns one task
 			mockApp.vault.cachedRead = jest.fn((file) => {
 				if (file.path === '/Work/task1.md') {

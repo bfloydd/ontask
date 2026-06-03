@@ -9,6 +9,7 @@ import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 import { OnTaskSettings } from '../../settings/SettingsServiceInterface';
 import { DateFilterService } from '../date-filter';
 import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
+import { VaultUtils } from '../../../shared/VaultUtils';
 
 export interface TaskLoadingResult {
 	tasks: CheckboxItem[];
@@ -169,54 +170,51 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 
 	async getFilesFromStrategies(dateFilter: OnTaskSettings['dateFilter']): Promise<string[]> {
 		const allFiles: string[] = [];
+		const settings = this.settingsService.getSettings();
 
-		const streamsService = this.taskFinderFactory.getStreamsService();
-		if (streamsService && streamsService.isStreamsPluginAvailable()) {
-			const allStreams = streamsService.getAllStreams();
-			const streams = allStreams.filter(stream => {
-				const folder = streamsService.getStreamBaseFolder(stream);
-				return folder && folder.trim() !== '';
-			});
+		switch (settings.checkboxSource) {
+			case 'streams': {
+				const streamsService = this.taskFinderFactory.getStreamsService();
+				if (streamsService && streamsService.isStreamsPluginAvailable()) {
+					const allStreams = streamsService.getAllStreams();
+					const streams = allStreams.filter(stream => {
+						const folder = streamsService.getStreamBaseFolder(stream);
+						return folder && folder.trim() !== '';
+					});
 
-			for (const stream of streams) {
-				const streamFolderStr = streamsService.getStreamBaseFolder(stream);
-				if (streamFolderStr) {
-					const streamFolder = this.app.vault.getAbstractFileByPath(streamFolderStr);
-					if (streamFolder) {
-						if (streamFolder instanceof TFile) {
-							allFiles.push(streamFolderStr);
-						} else {
-							// For folders, ensure we match exactly the folder or its subfolders,
-							// not just another folder with the same prefix string
-							const targetFolder = streamFolderStr.endsWith('/') ? streamFolderStr : `${streamFolderStr}/`;
-							const streamFiles = this.app.vault.getMarkdownFiles().filter((file: TFile) =>
-								file.path === streamFolderStr || file.path.startsWith(targetFolder)
-							);
+					for (const stream of streams) {
+						const streamFolderStr = streamsService.getStreamBaseFolder(stream);
+						if (streamFolderStr) {
+							const streamFiles = VaultUtils.getMarkdownFilesInFolder(this.app.vault, streamFolderStr);
 							allFiles.push(...streamFiles.map((file: TFile) => file.path));
 						}
 					}
 				}
+				break;
 			}
-		}
-
-		const dailyNotesPlugin = (this.app as AppWithPlugins).plugins?.getPlugin('daily-notes');
-		if (dailyNotesPlugin) {
-			const dailyNotes = this.app.vault.getMarkdownFiles().filter((file: TFile) => {
-				const fileName = file.name.toLowerCase();
-				return fileName.match(/\d{4}-\d{2}-\d{2}/) ||
-					fileName.match(/\d{2}-\d{2}-\d{4}/) ||
-					fileName.match(/\d{4}\d{2}\d{2}/);
-			});
-			allFiles.push(...dailyNotes.map((file: TFile) => file.path));
-		}
-
-		const settings = this.settingsService.getSettings();
-		if (settings.checkboxSource === 'folder' && settings.customFolderPath) {
-			const normalizedFolderPath = normalizePath(settings.customFolderPath);
-			const folderFiles = this.app.vault.getMarkdownFiles().filter((file: TFile) =>
-				normalizePath(file.path).startsWith(normalizedFolderPath)
-			);
-			allFiles.push(...folderFiles.map((file: TFile) => file.path));
+			case 'daily-notes': {
+				// Get the daily notes folder from the core plugin settings, default to root
+				const dailyNotesPlugin = (this.app as any).internalPlugins?.plugins?.['daily-notes']?.instance;
+				const dailyNotesFolderStr = dailyNotesPlugin?.options?.folder || '/';
+				
+				const dailyNotesFolderFiles = VaultUtils.getMarkdownFilesInFolder(this.app.vault, dailyNotesFolderStr);
+				
+				const dailyNotes = dailyNotesFolderFiles.filter((file: TFile) => {
+					const fileName = file.name.toLowerCase();
+					return fileName.match(/\d{4}-\d{2}-\d{2}/) ||
+						fileName.match(/\d{2}-\d{2}-\d{4}/) ||
+						fileName.match(/\d{4}\d{2}\d{2}/);
+				});
+				allFiles.push(...dailyNotes.map((file: TFile) => file.path));
+				break;
+			}
+			case 'folder': {
+				if (settings.customFolderPath) {
+					const folderFiles = VaultUtils.getMarkdownFilesInFolder(this.app.vault, settings.customFolderPath);
+					allFiles.push(...folderFiles.map((file: TFile) => file.path));
+				}
+				break;
+			}
 		}
 
 		// De-duplicate early; filter implementations should not need to handle duplicates.

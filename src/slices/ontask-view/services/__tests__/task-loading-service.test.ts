@@ -16,6 +16,13 @@ import { StatusConfigService } from '../../../settings/StatusConfig';
 import { DEFAULT_SETTINGS, OnTaskSettings } from '../../../settings/SettingsServiceInterface';
 import { DateFilterService } from '../../date-filter';
 
+jest.mock('../../../../shared/VaultUtils', () => ({
+	VaultUtils: {
+		getMarkdownFilesInFolder: jest.fn()
+	}
+}));
+import { VaultUtils } from '../../../../shared/VaultUtils';
+
 // Mock dependencies
 const mockStreamsService = {
 	isStreamsPluginAvailable: jest.fn().mockReturnValue(true),
@@ -63,6 +70,9 @@ const mockApp = {
 		getAbstractFileByPath: jest.fn(),
 		read: jest.fn(),
 		cachedRead: jest.fn()
+	},
+	metadataCache: {
+		getFileCache: jest.fn()
 	}
 } as any;
 
@@ -110,6 +120,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			// Initialize file tracking with mock files
@@ -143,6 +154,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1') // file1.md - 1 task
 				.mockResolvedValueOnce(`- [ ] Task 2
@@ -177,6 +189,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('No tasks here');
 
 			await taskLoadingService.initializeFileTracking('all');
@@ -204,6 +217,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');
 
 			// Mock the streams service to return files in unsorted order
@@ -235,6 +249,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3') // file1.md - 3 tasks
 				.mockResolvedValueOnce('- [ ] Task 4\n- [ ] Task 5\n- [ ] Task 6'); // file2.md - 3 tasks
@@ -275,6 +290,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n- [ ] Task 4\n- [ ] Task 5') // file1.md - 5 tasks
 				.mockResolvedValueOnce('- [ ] Task 6\n- [ ] Task 7\n- [ ] Task 8\n- [ ] Task 9\n- [ ] Task 10'); // file2.md - 5 tasks
@@ -315,6 +331,7 @@ describe('TaskLoadingService', () => {
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			await taskLoadingService.initializeFileTracking('all');
@@ -356,6 +373,7 @@ Some regular text without checkboxes`;
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			await taskLoadingService.initializeFileTracking('all');
@@ -386,6 +404,7 @@ Some regular text without checkboxes`;
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(mockFileContent);
 
 			await taskLoadingService.initializeFileTracking('all');
@@ -415,6 +434,7 @@ Some regular text without checkboxes`;
 				if (path === 'missing-file.md') return null; // File not found
 				return mockFiles.find(f => f.path === path) || null;
 			});
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');
 
 			await taskLoadingService.initializeFileTracking('all');
@@ -445,6 +465,7 @@ Some regular text without checkboxes`;
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Task 1') // file1.md - success
 				.mockRejectedValueOnce(new Error('Read error')) // error-file.md - error
@@ -485,6 +506,7 @@ Some regular text without checkboxes`;
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Task');
 
 			// Mock the streams service to return files

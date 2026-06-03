@@ -3,6 +3,7 @@ import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderIn
 import { Logger } from '../../logging/Logger';
 import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
 import { DateFileUtils } from '../../../shared/DateFileUtils';
+import { VaultUtils } from '../../../shared/VaultUtils';
 
 export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 	private app: App;
@@ -58,10 +59,7 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 					return checkboxes;
 				}
 
-				const allFiles = this.app.vault.getMarkdownFiles();
-				const dailyNotesFiles = allFiles.filter(file => 
-					file.path.startsWith(dailyNotesFolder)
-				);
+				const dailyNotesFiles = VaultUtils.getMarkdownFilesInFolder(this.app.vault, dailyNotesFolder);
 				let filesToProcess = dailyNotesFiles;
 				if (context.onlyShowToday) {
 					filesToProcess = dailyNotesFiles.filter(file => DateFileUtils.isTodayFile(file));

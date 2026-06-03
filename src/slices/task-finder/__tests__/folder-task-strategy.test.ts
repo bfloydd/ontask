@@ -44,12 +44,22 @@ jest.mock('obsidian', () => {
 import { FolderTaskStrategy, FolderStrategyConfig } from '../strategies/FolderTaskStrategy';
 import { TFolder } from '../../../__mocks__/obsidian';
 
+jest.mock('../../../shared/VaultUtils', () => ({
+	VaultUtils: {
+		getMarkdownFilesInFolder: jest.fn()
+	}
+}));
+import { VaultUtils } from '../../../shared/VaultUtils';
+
 const mockApp = {
 	vault: {
 		getMarkdownFiles: jest.fn(),
 		getAbstractFileByPath: jest.fn(),
 		read: jest.fn(),
 		cachedRead: jest.fn()
+	},
+	metadataCache: {
+		getFileCache: jest.fn()
 	}
 } as any;
 
@@ -115,7 +125,7 @@ describe('FolderTaskStrategy', () => {
 				if (path === '/Projects') return mockFolder;
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn()
 				.mockResolvedValueOnce('- [ ] Project Task 1')
 				.mockResolvedValueOnce('- [x] Project Task 2');
@@ -147,7 +157,7 @@ describe('FolderTaskStrategy', () => {
 				if (path === '/Projects') return mockFolder;
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue('- [ ] Today Project Task');
 
 			// Mock Date to return 2024-01-15
@@ -182,7 +192,7 @@ describe('FolderTaskStrategy', () => {
 				if (path === '/Projects') return mockFolder;
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.cachedRead = jest.fn().mockResolvedValue(`
 - [ ] Task 1
 - [x] Task 2
@@ -210,7 +220,7 @@ describe('FolderTaskStrategy', () => {
 				{ path: '/Projects/file2.md', name: 'file2.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 
 			const mockFolder = new TFolder('/Projects', 'Projects');
 			const result = strategy.getFilesInFolder(mockFolder as any);

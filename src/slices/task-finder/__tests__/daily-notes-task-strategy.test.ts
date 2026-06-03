@@ -1,11 +1,21 @@
 import { DailyNotesTaskStrategy } from '../strategies/DailyNotesTaskStrategy';
 
+jest.mock('../../../shared/VaultUtils', () => ({
+	VaultUtils: {
+		getMarkdownFilesInFolder: jest.fn()
+	}
+}));
+import { VaultUtils } from '../../../shared/VaultUtils';
+
 const mockApp = {
 	vault: {
 		getMarkdownFiles: jest.fn(),
 		getAbstractFileByPath: jest.fn(),
 		read: jest.fn(),
 		cachedRead: jest.fn()
+	},
+	metadataCache: {
+		getFileCache: jest.fn()
 	},
 	plugins: {
 		getPlugin: jest.fn()
@@ -95,7 +105,7 @@ describe('DailyNotesTaskStrategy', () => {
 				{ path: '/Daily Notes/2024-01-14.md', name: '2024-01-14.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
@@ -138,7 +148,7 @@ describe('DailyNotesTaskStrategy', () => {
 				{ path: '/Daily Notes/2024-01-14.md', name: '2024-01-14.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);
@@ -182,7 +192,7 @@ describe('DailyNotesTaskStrategy', () => {
 				{ path: '/Daily Notes/2024-01-15.md', name: '2024-01-15.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockReturnValue(mockFiles);
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => 
 				mockFiles.find(f => f.path === path) || null
 			);

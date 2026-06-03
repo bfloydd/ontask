@@ -3,6 +3,7 @@ import { TaskFinderStrategy, TaskItem, TaskFinderContext } from '../TaskFinderIn
 import { Logger } from '../../logging/Logger';
 import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
 import { DateFileUtils } from '../../../shared/DateFileUtils';
+import { VaultUtils } from '../../../shared/VaultUtils';
 
 export interface FolderStrategyConfig {
 	folderPath: string;
@@ -87,29 +88,10 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 	}
 
 	public getFilesInFolder(folder: TFolder): TFile[] {
-		const files: TFile[] = [];
-		
 		if (folder instanceof TFile) {
-			files.push(folder);
-		} else {
-			const allFiles = this.app.vault.getMarkdownFiles();
-			
-			const normalizedFolderPath = normalizePath(this.config.folderPath);
-			for (const file of allFiles) {
-				const normalizedFilePath = normalizePath(file.path);
-				if (this.config.recursive) {
-					if (normalizedFilePath.startsWith(normalizedFolderPath)) {
-						files.push(file);
-					}
-				} else {
-					const relativePath = normalizedFilePath.substring(normalizedFolderPath.length + 1);
-					if (!relativePath.includes('/') && normalizedFilePath.startsWith(normalizedFolderPath)) {
-						files.push(file);
-					}
-				}
-			}
+			return [folder];
 		}
-		
+		const files = VaultUtils.getMarkdownFilesInFolder(this.app.vault, this.config.folderPath, this.config.recursive);
 		return files;
 	}
 

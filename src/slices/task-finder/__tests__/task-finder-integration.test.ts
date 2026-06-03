@@ -48,6 +48,13 @@ import { StreamsTaskStrategy } from '../strategies/StreamsTaskStrategy';
 import { StreamsService } from '../../streams';
 import { TFolder } from '../../../__mocks__/obsidian';
 
+jest.mock('../../../shared/VaultUtils', () => ({
+	VaultUtils: {
+		getMarkdownFilesInFolder: jest.fn()
+	}
+}));
+import { VaultUtils } from '../../../shared/VaultUtils';
+
 // Mock dependencies
 const mockStreamsService = {
 	isStreamsPluginAvailable: jest.fn().mockReturnValue(true),
@@ -63,6 +70,9 @@ const mockApp = {
 		cachedRead: jest.fn(),
 		getMarkdownFiles: jest.fn(),
 		getFiles: jest.fn()
+	},
+	metadataCache: {
+		getFileCache: jest.fn()
 	},
 	plugins: {
 		getPlugin: jest.fn()
@@ -119,7 +129,7 @@ describe('TaskFinder Integration Tests', () => {
 				{ path: '/Daily Notes/2024-01-14.md', name: '2024-01-14.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockImplementation((vault, path) => mockFiles.filter(f => f.path.startsWith(path)));
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
@@ -154,7 +164,7 @@ describe('TaskFinder Integration Tests', () => {
 				{ path: '/Daily Notes/2024-01-14.md', name: '2024-01-14.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockImplementation((vault, path) => mockFiles.filter(f => f.path.startsWith(path)));
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
@@ -213,7 +223,7 @@ describe('TaskFinder Integration Tests', () => {
 				{ path: '/Projects/task2.md', name: 'task2.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockImplementation((vault, path) => mockFiles.filter(f => f.path.startsWith(path)));
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => {
 				if (path === '/Projects') return new TFolder('/Projects', 'Projects');
 				return mockFiles.find(f => f.path === path) || null;
@@ -278,7 +288,7 @@ describe('TaskFinder Integration Tests', () => {
 				if (path === '/Personal') return new TFolder('/Personal', 'Personal');
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockImplementation((vault, path) => mockFiles.filter(f => f.path.startsWith(path)));
 			mockApp.vault.cachedRead = jest.fn((file) => {
 				if (file.path === '/Work/task1.md') return Promise.resolve('- [ ] Work Task');
 				if (file.path === '/Personal/task2.md') return Promise.resolve('- [x] Personal Task');
@@ -338,7 +348,7 @@ describe('TaskFinder Integration Tests', () => {
 				if (path === '/Work') return null; // Return null so it uses fallback logic
 				return mockFiles.find(f => f.path === path) || null;
 			});
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockImplementation((vault, path) => mockFiles.filter(f => f.path.startsWith(path)));
 			mockApp.vault.cachedRead = jest.fn((file) => {
 				if (file.path.includes('2024-01-14')) return Promise.resolve('- [ ] Today Stream Task');
 				return Promise.resolve('');
@@ -401,7 +411,7 @@ describe('TaskFinder Integration Tests', () => {
 				{ path: '/Projects/task2.md', name: 'task2.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockImplementation((vault, path) => mockFiles.filter(f => f.path.startsWith(path)));
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) => {
 				if (path === '/Work') return new TFolder('/Work', 'Work');
 				if (path === '/Projects') return new TFolder('/Projects', 'Projects');
@@ -457,7 +467,7 @@ describe('TaskFinder Integration Tests', () => {
 				{ path: '/Daily Notes/2024-01-15.md', name: '2024-01-15.md' }
 			];
 
-			mockApp.vault.getMarkdownFiles = jest.fn().mockReturnValue(mockFiles);
+			(VaultUtils.getMarkdownFilesInFolder as jest.Mock).mockImplementation((vault, path) => mockFiles.filter(f => f.path.startsWith(path)));
 			mockApp.vault.getAbstractFileByPath = jest.fn((path) =>
 				mockFiles.find(f => f.path === path) || null
 			);
