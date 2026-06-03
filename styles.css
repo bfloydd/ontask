@@ -575,8 +575,8 @@
 	padding: 10px;
 }
 
-.ontask-toptask-hero-item {
-	border: none !important;
+.ontask-toptask-hero-item.ontask-toptask-hero-item {
+	border: none;
 	background: var(--background-primary);
 	border-radius: 6px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -770,35 +770,35 @@
 /* More specific selector to override Obsidian's .setting-item defaults within the filter modal
  * HIGH SPECIFICITY: Required to override Obsidian's default .setting-item styles
  * Uses !important as Obsidian's core CSS has high specificity for setting components */
-.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item {
-	padding: 0 !important;
-	border: none !important;
-	background: none !important;
-	margin: 0 !important;
-	margin-right: 0 !important;
-	margin-left: 0 !important;
-	margin-top: 0 !important;
-	margin-bottom: 0 !important;
+.ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item {
+	padding: 0;
+	border: none;
+	background: none;
+	margin: 0;
+	margin-right: 0;
+	margin-left: 0;
+	margin-top: 0;
+	margin-bottom: 0;
 	flex-shrink: 0;
-	width: auto !important;
+	width: auto;
 }
 
 /* Hide the setting-item-name which might be creating spacing
  * HIGH SPECIFICITY: Required to override Obsidian's default spacing from .setting-item-name */
-.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-name {
-	display: none !important;
-	width: 0 !important;
-	margin: 0 !important;
-	padding: 0 !important;
+.ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-name {
+	display: none;
+	width: 0;
+	margin: 0;
+	padding: 0;
 }
 
 /* Hide setting-item-info if it exists
  * HIGH SPECIFICITY: Required to override Obsidian's default spacing from .setting-item-info */
-.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-info {
-	display: none !important;
-	width: 0 !important;
-	margin: 0 !important;
-	padding: 0 !important;
+.ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-info {
+	display: none;
+	width: 0;
+	margin: 0;
+	padding: 0;
 }
 
 .ontask-filters-modal .setting-item {
@@ -808,26 +808,26 @@
 
 /* Override the general modal setting-item rule for quick filters - must come after
  * HIGH SPECIFICITY: Duplicate selector ensures proper cascade order for quick filters */
-.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item {
-	padding: 0 !important;
+.ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item {
+	padding: 0;
 }
 
-.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control {
+.ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control {
 	flex: none;
-	margin: 0 !important;
-	margin-left: 0 !important;
-	margin-right: 0 !important;
-	margin-top: 0 !important;
-	margin-bottom: 0 !important;
-	padding: 0 !important;
+	margin: 0;
+	margin-left: 0;
+	margin-right: 0;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding: 0;
 }
 
-.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button {
-	margin: 0 !important;
-	margin-left: 0 !important;
-	margin-top: 0 !important;
-	margin-bottom: 0 !important;
-	margin-right: 0 !important;
+.ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button {
+	margin: 0;
+	margin-left: 0;
+	margin-top: 0;
+	margin-bottom: 0;
+	margin-right: 0;
 	padding: 6px 12px;
 	background: var(--background-secondary);
 	color: var(--text-normal);
@@ -1040,12 +1040,12 @@
 /* Disabled status config symbol styling
  * HIGH SPECIFICITY: Uses !important to prevent accidental overriding of disabled state
  * Required for locked/default status symbols that cannot be modified */
-.status-config-modal-symbol-disabled {
-	background: var(--background-modifier-border) !important;
-	color: var(--text-muted) !important;
-	border-color: var(--background-modifier-border) !important;
-	cursor: not-allowed !important;
-	opacity: 0.6 !important;
+.status-config-modal-symbol-disabled.status-config-modal-symbol-disabled {
+	background: var(--background-modifier-border);
+	color: var(--text-muted);
+	border-color: var(--background-modifier-border);
+	cursor: not-allowed;
+	opacity: 0.6;
 	position: relative;
 }
 
@@ -1059,11 +1059,11 @@
 	opacity: 0.7;
 }
 
-.status-config-modal-symbol-disabled:hover {
-	background: var(--background-modifier-border) !important;
-	border-color: var(--background-modifier-border) !important;
-	transform: none !important;
-	box-shadow: none !important;
+.status-config-modal-symbol-disabled.status-config-modal-symbol-disabled:hover {
+	background: var(--background-modifier-border);
+	border-color: var(--background-modifier-border);
+	transform: none;
+	box-shadow: none;
 }
 
 .status-config-list {
@@ -1222,10 +1222,10 @@
 }
 
 /* Ensure icons are visible on iPad - override inline styles if present */
-.is-mobile .status-config-edit-btn svg,
-.is-mobile .status-config-edit-btn svg * {
-	fill: currentColor !important;
-	stroke: currentColor !important;
+.is-mobile .status-config-edit-btn.status-config-edit-btn svg,
+.is-mobile .status-config-edit-btn.status-config-edit-btn svg * {
+	fill: currentColor;
+	stroke: currentColor;
 }
 
 .status-config-edit-btn svg,
@@ -1257,10 +1257,10 @@
 }
 
 /* Ensure icons are visible on iPad - override inline styles if present */
-.is-mobile .status-config-delete-btn svg,
-.is-mobile .status-config-delete-btn svg * {
-	fill: currentColor !important;
-	stroke: currentColor !important;
+.is-mobile .status-config-delete-btn.status-config-delete-btn svg,
+.is-mobile .status-config-delete-btn.status-config-delete-btn svg * {
+	fill: currentColor;
+	stroke: currentColor;
 }
 
 .status-config-delete-btn:hover {
@@ -1469,10 +1469,10 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.ontask-quick-filter-selected {
-	background: var(--interactive-accent) !important;
-	color: var(--text-on-accent) !important;
-	border-color: var(--interactive-accent) !important;
+.ontask-quick-filter-selected.ontask-quick-filter-selected {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
 	/* font-weight: 600; */
 	/* box-shadow: 0 0 0 2px var(--interactive-accent-hover); */
 }
@@ -1480,10 +1480,10 @@
 /* Specific styling for quick filter buttons in the modal
  * HIGH SPECIFICITY: Chained selectors required to override Obsidian's button styles within modals
  * Ensures selected state is visible despite Obsidian's default modal button styling */
-.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
-	background: var(--interactive-accent) !important;
-	color: var(--text-on-accent) !important;
-	border-color: var(--interactive-accent) !important;
+.ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
 	/* font-weight: 600; */
 	/* box-shadow: 0 0 0 2px var(--interactive-accent-hover); */
 }
@@ -1492,41 +1492,41 @@
  * Removed margin-left: auto since we're centering the entire group
  * HIGH SPECIFICITY: Uses !important to override Obsidian's default button styles in settings
  * Required for consistent button appearance within Obsidian's modal system */
-.ontask-config-button {
-	background: var(--background-secondary) !important;
-	color: var(--text-normal) !important;
-	border: 1px solid var(--background-modifier-border) !important;
-	font-size: 13px !important;
-	padding: 6px !important;
-	border-radius: 4px !important;
-	transition: all 0.2s ease !important;
-	width: auto !important;
-	min-width: 28px !important;
-	height: auto !important;
-	min-height: 28px !important;
-	display: flex !important;
-	align-items: center !important;
-	justify-content: center !important;
-	line-height: 1 !important;
+.ontask-config-button.ontask-config-button {
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	font-size: 13px;
+	padding: 6px;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+	width: auto;
+	min-width: 28px;
+	height: auto;
+	min-height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
 }
 
 /* Constrain icon size within config button to match text button visual size */
-.ontask-config-button svg {
-	width: 16px !important;
-	height: 16px !important;
+.ontask-config-button.ontask-config-button svg {
+	width: 16px;
+	height: 16px;
 }
 
-.ontask-config-button:hover {
-	background: var(--interactive-hover) !important;
-	color: var(--text-normal) !important;
-	border-color: var(--background-modifier-border-hover) !important;
-	transform: translateY(-1px) !important;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+.ontask-config-button.ontask-config-button:hover {
+	background: var(--interactive-hover);
+	color: var(--text-normal);
+	border-color: var(--background-modifier-border-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.ontask-config-button:active {
-	transform: translateY(0) !important;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+.ontask-config-button.ontask-config-button:active {
+	transform: translateY(0);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .quick-filter-item {
@@ -1589,15 +1589,15 @@
 /* Hide any default checkbox styling from Setting component
  * HIGH SPECIFICITY: Uses !important to completely hide Obsidian's default checkboxes
  * Required because we use custom visual checkboxes (badges) instead */
-.quick-filter-item input[type="checkbox"],
-.quick-filter-item .setting-item-control input[type="checkbox"] {
-	display: none !important;
-	visibility: hidden !important;
-	opacity: 0 !important;
-	width: 0 !important;
-	height: 0 !important;
-	margin: 0 !important;
-	padding: 0 !important;
+.quick-filter-item.quick-filter-item input[type="checkbox"],
+.quick-filter-item.quick-filter-item .setting-item-control input[type="checkbox"] {
+	display: none;
+	visibility: hidden;
+	opacity: 0;
+	width: 0;
+	height: 0;
+	margin: 0;
+	padding: 0;
 }
 
 .quick-filter-name {
@@ -1648,10 +1648,10 @@
 }
 
 /* Ensure icons are visible on iPad - override inline styles if present */
-.is-mobile .quick-filter-edit-btn svg,
-.is-mobile .quick-filter-edit-btn svg * {
-	fill: currentColor !important;
-	stroke: currentColor !important;
+.is-mobile .quick-filter-edit-btn.quick-filter-edit-btn svg,
+.is-mobile .quick-filter-edit-btn.quick-filter-edit-btn svg * {
+	fill: currentColor;
+	stroke: currentColor;
 }
 
 .quick-filter-edit-btn svg,
@@ -1672,10 +1672,10 @@
 }
 
 /* Ensure icons are visible on iPad - override inline styles if present */
-.is-mobile .quick-filter-delete-btn svg,
-.is-mobile .quick-filter-delete-btn svg * {
-	fill: currentColor !important;
-	stroke: currentColor !important;
+.is-mobile .quick-filter-delete-btn.quick-filter-delete-btn svg,
+.is-mobile .quick-filter-delete-btn.quick-filter-delete-btn svg * {
+	fill: currentColor;
+	stroke: currentColor;
 }
 
 .quick-filter-item .quick-filter-statuses {
@@ -2051,11 +2051,11 @@
 /* Filter section container
  * HIGH SPECIFICITY: Uses !important to override default Obsidian view container styles
  * Required to achieve transparent/expandable filter input design */
-.ontask-filter-section {
-	border: none !important;
-	border-radius: 0 !important;
-	box-shadow: none !important;
-	background: transparent !important;
+.ontask-filter-section.ontask-filter-section {
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
 	overflow: hidden;
 	transition: all 0.3s ease;
 	max-height: 0;
@@ -2344,11 +2344,11 @@
 	color: var(--ontask-alt1-green);
 }
 
-.ontask-view-style-alt1 .ontask-quick-filter-selected,
-.ontask-view-style-alt1 .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
-	background: var(--ontask-alt1-green) !important;
-	color: #ffffff !important;
-	border-color: var(--ontask-alt1-green) !important;
+.ontask-view-style-alt1 .ontask-quick-filter-selected.ontask-quick-filter-selected,
+.ontask-view-style-alt1 .ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
+	background: var(--ontask-alt1-green);
+	color: #ffffff;
+	border-color: var(--ontask-alt1-green);
 }
 
 /* Context menus - Blue borders with green accents */
@@ -2463,15 +2463,15 @@
 }
 
 /* Config button - Blue theme */
-.ontask-view-style-alt1 .ontask-config-button {
-	border-color: var(--ontask-alt1-blue) !important;
-	color: var(--ontask-alt1-blue) !important;
+.ontask-view-style-alt1 .ontask-config-button.ontask-config-button {
+	border-color: var(--ontask-alt1-blue);
+	color: var(--ontask-alt1-blue);
 }
 
-.ontask-view-style-alt1 .ontask-config-button:hover {
-	background: var(--ontask-alt1-blue-light) !important;
-	border-color: var(--ontask-alt1-green) !important;
-	color: var(--ontask-alt1-green) !important;
+.ontask-view-style-alt1 .ontask-config-button.ontask-config-button:hover {
+	background: var(--ontask-alt1-blue-light);
+	border-color: var(--ontask-alt1-green);
+	color: var(--ontask-alt1-green);
 }
 
 /* ========================================
@@ -2748,12 +2748,12 @@
 	transform: translateY(-1px);
 }
 
-.ontask-view-style-modern .ontask-quick-filter-selected,
-.ontask-view-style-modern .ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
-	background: var(--ontask-modern-primary) !important;
-	color: #ffffff !important;
-	border-color: var(--ontask-modern-primary) !important;
-	box-shadow: var(--ontask-modern-shadow) !important;
+.ontask-view-style-modern .ontask-quick-filter-selected.ontask-quick-filter-selected,
+.ontask-view-style-modern .ontask-filters-modal.ontask-filters-modal .ontask-filters-quick-filters-container .setting-item-control button.ontask-quick-filter-selected {
+	background: var(--ontask-modern-primary);
+	color: #ffffff;
+	border-color: var(--ontask-modern-primary);
+	box-shadow: var(--ontask-modern-shadow);
 }
 
 /* Context menus - Modern glassmorphism */
@@ -2940,18 +2940,18 @@
 }
 
 /* Config button - Modern minimal design */
-.ontask-view-style-modern .ontask-config-button {
-	border: 2px solid var(--ontask-modern-border) !important;
-	border-radius: 8px !important;
-	color: var(--text-normal) !important;
-	background: transparent !important;
-	transition: all 0.2s ease !important;
+.ontask-view-style-modern .ontask-config-button.ontask-config-button {
+	border: 2px solid var(--ontask-modern-border);
+	border-radius: 8px;
+	color: var(--text-normal);
+	background: transparent;
+	transition: all 0.2s ease;
 }
 
-.ontask-view-style-modern .ontask-config-button:hover {
-	background: var(--ontask-modern-surface) !important;
-	border-color: var(--ontask-modern-primary) !important;
-	color: var(--ontask-modern-primary) !important;
+.ontask-view-style-modern .ontask-config-button.ontask-config-button:hover {
+	background: var(--ontask-modern-surface);
+	border-color: var(--ontask-modern-primary);
+	color: var(--ontask-modern-primary);
 }
 
 /* ========================================
