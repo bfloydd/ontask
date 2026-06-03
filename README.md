@@ -2,24 +2,21 @@
 
 ## Features
 
-- Daily Bullet journal–inspired productivity, or
-- Week view planning
-- Quick filters
-- Top task priority <--> Stay focused
-- Status tracking
-- Status configuration
-- Status icons
-- Status colors
-- Status background colors
-- Maintains visual task indentation for sub-tasks
-- Ignores tasks placed inside code blocks
+- Daily Bullet journal–inspired productivity
 - Automatically grabs tasks from your vault
+- Visual task indentation for sub-tasks
+- Week view planning
+- Automated Day Planner
+- Quick filters
+- Top task priority <--> Stay on task!
+- Status tracking
+- Status customization
+- Ignore tasks placed inside code blocks
 - Flexible filtering to find what matters most
 - Top task
     - Set your top task and stay focused 
-    - ... despite distractions    
     - Personalize your top task’s appearance  
-- Seamless Streams integration
+- Seamless Streams Plugin integration
 
 ## Other Plugins
 
