@@ -1568,8 +1568,22 @@
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.quick-filter-item:hover .quick-filter-statuses {
-	scrollbar-color: var(--background-modifier-border-hover) transparent;
+.quick-filter-item .quick-filter-statuses::-webkit-scrollbar {
+	height: 4px;
+	width: 4px;
+}
+
+.quick-filter-item .quick-filter-statuses::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.quick-filter-item .quick-filter-statuses::-webkit-scrollbar-thumb {
+	background: transparent;
+	border-radius: 4px;
+}
+
+.quick-filter-item:hover .quick-filter-statuses::-webkit-scrollbar-thumb {
+	background: var(--background-modifier-border-hover);
 }
 
 /* Hide any default checkbox styling from Setting component
