@@ -2,20 +2,14 @@
 
 ## Features
 
-- Daily Bullet journal–inspired productivity
-- Automatically grabs tasks from your vault
-- Visual task indentation for sub-tasks
-- Week view planning
-- Automated Day Planner
+- Tasks anywhere in your vault!
+- Automatic day planning
+- Sub-tasks
+- Today & week view
 - Quick filters
-- Top task priority <--> Stay on task!
+- Top task priority (shown in the Status Bar)
 - Status tracking
 - Status customization
-- Ignore tasks placed inside code blocks
-- Flexible filtering to find what matters most
-- Top task
-    - Set your top task and stay focused 
-    - Personalize your top task’s appearance  
 - Seamless Streams Plugin integration
 
 ## Other Plugins
