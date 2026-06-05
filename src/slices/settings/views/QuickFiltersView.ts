@@ -328,7 +328,7 @@ export class QuickFiltersView {
 	}
 
 	private generateId(): string {
-		return 'quick-filter-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+		return 'quick-filter-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
 	}
 }
 

@@ -57,3 +57,9 @@ We will omit the plugin ID prefix when defining command IDs (e.g., using `open-v
 
 **Decision:**
 We will always explicitly prefix global timers (`setTimeout`, `clearTimeout`, `setInterval`, `clearInterval`) and animation frames (`requestAnimationFrame`, `cancelAnimationFrame`) with `window.` (e.g. `window.setTimeout`). In Obsidian, popout windows run in their own independent window context. Implicitly calling the global functions can cause timers or animations to fail, stall, or target the wrong context if the user has detached the view into a separate popout window.
+### 7. Deprecated JavaScript Features
+**Feedback:**
+- Warning: `substr` is deprecated. A legacy feature for browser compatibility.
+
+**Decision:**
+We will avoid using deprecated or legacy JavaScript APIs. For string manipulation, we will strictly use modern standards like `String.prototype.substring()` or `String.prototype.slice()` instead of `String.prototype.substr()`. This ensures long-term compatibility and avoids unnecessary warnings in modern JavaScript environments like Obsidian's Electron wrapper.
