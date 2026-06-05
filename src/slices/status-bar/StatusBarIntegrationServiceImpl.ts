@@ -217,7 +217,6 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 		try {
 			const settings = this.settingsService.getSettings();
 
-			const onlyShowToday = settings.dateFilter === 'today';
 			await this.taskLoadingService.initializeFileTracking(settings.dateFilter);
 			const result = await this.taskLoadingService.loadTasksWithFiltering(settings);
 

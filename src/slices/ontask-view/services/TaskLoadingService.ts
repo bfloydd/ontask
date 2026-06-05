@@ -1,5 +1,4 @@
-import { TFile, App, normalizePath } from 'obsidian';
-import { AppWithPlugins } from '../../../types';
+import { TFile, App } from 'obsidian';
 import { TaskFinderFactoryImpl } from '../../task-finder/TaskFinderFactoryImpl';
 import { SettingsService } from '../../settings';
 import { StatusConfigService } from '../../settings/StatusConfig';

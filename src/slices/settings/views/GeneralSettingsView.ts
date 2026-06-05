@@ -111,7 +111,7 @@ export class GeneralSettingsView {
 	private renderCheckboxSourceSettings(): void {
 		const settings = this.settingsService.getSettings();
 
-		const sourceSetting = new Setting(this.containerEl)
+		new Setting(this.containerEl)
 			.setName('Checkbox source')
 			.setDesc('Choose where to find checkboxes from')
 			.addDropdown(dropdown => dropdown
@@ -138,7 +138,7 @@ export class GeneralSettingsView {
 			}
 		}
 		if (settings.checkboxSource === 'folder') {
-			const folderPathSetting = new Setting(this.containerEl)
+			new Setting(this.containerEl)
 				.setName('Folder path')
 				.setDesc('Path to the folder containing your task files')
 				.addText(text => {

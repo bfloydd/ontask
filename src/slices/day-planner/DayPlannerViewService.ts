@@ -134,7 +134,7 @@ export class DayPlannerViewService {
 		
 		// Use the last time found in the string (end time if it's a range, or the only time)
 		const targetMatch = matches[matches.length - 1];
-		let [_, hoursStr, minsStr, ampm] = targetMatch;
+		let [, hoursStr, minsStr, ampm] = targetMatch;
 		
 		let hours = parseInt(hoursStr, 10);
 		const mins = parseInt(minsStr, 10);

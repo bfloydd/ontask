@@ -13,7 +13,7 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 	}
 
 	addMobileTouchHandlers(element: HTMLElement, task: CheckboxItem): void {
-		let touchStartTime: number = 0;
+
 		let touchStartX: number = 0;
 		let touchStartY: number = 0;
 		let longPressTimer: number | null = null;
@@ -22,7 +22,7 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 		const MOVE_THRESHOLD = 10; // 10px movement threshold
 
 		element.addEventListener('touchstart', (e) => {
-			touchStartTime = Date.now();
+
 			touchStartX = e.touches[0].clientX;
 			touchStartY = e.touches[0].clientY;
 			hasMoved = false;

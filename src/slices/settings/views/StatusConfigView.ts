@@ -78,7 +78,7 @@ export class StatusConfigView {
 
 		// Add lock icon for non-editable symbols
 		if (isNonEditableSymbol) {
-			const lockIcon = previewEl.createEl('span', {
+			previewEl.createEl('span', {
 				cls: 'status-config-symbol-lock',
 				text: '🔒',
 				attr: { title: 'This symbol is read-only (used for task detection)' }
@@ -88,13 +88,13 @@ export class StatusConfigView {
 
 		// Status info
 		const infoEl = itemEl.createEl('div', { cls: 'status-config-info' });
-		const nameEl = infoEl.createEl('div', {
+		infoEl.createEl('div', {
 			cls: 'status-config-name',
 			text: config.name
 		});
 
 		// Add description on the same line
-		const descriptionEl = infoEl.createEl('span', {
+		infoEl.createEl('span', {
 			cls: 'status-config-description',
 			text: ` - ${config.description}`
 		});

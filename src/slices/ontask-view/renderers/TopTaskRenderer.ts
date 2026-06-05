@@ -219,12 +219,10 @@ export class TopTaskRenderer {
 			const g = parseInt(hex.substr(2, 2), 16);
 			const b = parseInt(hex.substr(4, 2), 16);
 
-			// Create shadow colors with higher opacity for more prominence
 			const shadowColor1 = `rgba(${r}, ${g}, ${b}, 0.25)`;
-			const shadowColor2 = `rgba(${r}, ${g}, ${b}, 0.15)`;
 
 			return shadowColor1;
-		} catch (error) {
+		} catch {
 			// Fallback to default red shadow if color parsing fails
 			return 'rgba(255, 0, 0, 0.25)';
 		}

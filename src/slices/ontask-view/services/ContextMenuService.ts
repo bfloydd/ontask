@@ -7,15 +7,7 @@ import { DataService, QuickFilter } from '../../data/DataServiceInterface';
 import { StatusConfig } from '../../settings/StatusConfig';
 import { OnTaskSettingsTab } from '../../settings/views/SettingsView';
 import { AppWithSettings } from '../../../types';
-import { IconService } from '../../../shared/IconService';
 
-// Type definitions for Obsidian Setting components
-interface ObsidianToggle {
-	setValue(value: boolean): void;
-	getValue(): boolean;
-	onChange(callback: () => void): void;
-	toggleEl: HTMLElement;
-}
 
 interface ObsidianButton {
 	setButtonText(text: string): ObsidianButton;

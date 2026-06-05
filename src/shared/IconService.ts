@@ -51,7 +51,7 @@ export class IconService {
 			try {
 				const iconIds = getIconIds();
 				IconService.availableIconIds = new Set(iconIds);
-			} catch (error) {
+			} catch {
 				if (IconService.logger) {
 					IconService.logger.warn('[OnTask IconService] Failed to get icon IDs from Obsidian');
 				}
@@ -107,9 +107,9 @@ export class IconService {
 			}
 
 			return clonedIcon;
-		} catch (error) {
+		} catch {
 			if (IconService.logger) {
-				IconService.logger.warn(`[OnTask IconService] Failed to get icon "${obsidianIconId}": ${error}`);
+				IconService.logger.warn(`[OnTask IconService] Failed to get icon "${obsidianIconId}"`);
 			}
 			return null;
 		}
@@ -159,9 +159,9 @@ export class IconService {
 			}
 
 			return clonedIcon;
-		} catch (error) {
+		} catch {
 			if (IconService.logger) {
-				IconService.logger.warn(`[OnTask IconService] Failed to get config icon "${obsidianIconId}": ${error}`);
+				IconService.logger.warn(`[OnTask IconService] Failed to get config icon "${obsidianIconId}"`);
 			}
 			return null;
 		}
@@ -184,9 +184,9 @@ export class IconService {
 
 		try {
 			setIcon(parent, obsidianIconId);
-		} catch (error) {
+		} catch {
 			if (IconService.logger) {
-				IconService.logger.warn(`[OnTask IconService] Failed to set icon "${obsidianIconId}": ${error}`);
+				IconService.logger.warn(`[OnTask IconService] Failed to set icon "${obsidianIconId}"`);
 			}
 		}
 	}
@@ -207,9 +207,9 @@ export class IconService {
 
 		try {
 			setIcon(parent, obsidianIconId);
-		} catch (error) {
+		} catch {
 			if (IconService.logger) {
-				IconService.logger.warn(`[OnTask IconService] Failed to set config icon "${obsidianIconId}": ${error}`);
+				IconService.logger.warn(`[OnTask IconService] Failed to set config icon "${obsidianIconId}"`);
 			}
 		}
 	}

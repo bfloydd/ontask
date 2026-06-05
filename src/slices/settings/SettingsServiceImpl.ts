@@ -35,6 +35,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 		if (loadedSettings && 'onlyShowToday' in loadedSettings && !('dateFilter' in loadedSettings)) {
 			this.settings.dateFilter = (loadedSettings as { onlyShowToday?: boolean }).onlyShowToday ? 'today' : 'all';
 			// Remove old property by creating a new object without it
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { onlyShowToday, ...restSettings } = this.settings as OnTaskSettings & { onlyShowToday?: boolean };
 			this.settings = restSettings as OnTaskSettings;
 			await this.getPlugin()!.saveData(this.settings);

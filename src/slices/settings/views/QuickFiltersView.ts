@@ -171,7 +171,7 @@ export class QuickFiltersView {
 		const selectedStatuses = new Set(existingFilter?.statusSymbols || []);
 
 		// Name input
-		const nameSetting = new Setting(content)
+		new Setting(content)
 			.setName('Filter name')
 			.setDesc('The name that will appear on the button')
 			.addText(text => text
@@ -182,7 +182,7 @@ export class QuickFiltersView {
 				}));
 
 		// Enable/disable toggle
-		const enabledSetting = new Setting(content)
+		new Setting(content)
 			.setName('Enabled')
 			.setDesc('When disabled, this filter will not appear in the filter menu')
 			.addToggle(toggle => toggle

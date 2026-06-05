@@ -24,7 +24,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 	async initialize(): Promise<void> {
 		if (this.initialized) return;
 		
-		const { app, plugin, settingsService, taskLoadingService, streamsService, dataService, statusConfigService } = this.dependencies;
+		const { app, plugin, settingsService, streamsService } = this.dependencies;
 		
 		await this.setupUI(app, plugin, settingsService);
 		this.setupEventListeners();
@@ -75,8 +75,6 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 
 
 	setupEventListeners(): void {
-		const { app, settingsService } = this.dependencies;
-		
 		const settingsSubscription = this.eventSystem.on<EventData<SettingsChangeEvent>>('settings:changed', (event) => {
 			this.logger.debug('[OnTask Orchestrator] Settings changed event received:', event.data);
 			if (event.data) {
