@@ -75,9 +75,9 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 
 		for (let fileIndex = this.currentFileIndex; fileIndex < this.trackedFiles.length; fileIndex++) {
 			const filePath = this.trackedFiles[fileIndex];
-			const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
+			const file = this.app.vault.getAbstractFileByPath(filePath);
 
-			if (!file) {
+			if (!(file instanceof TFile)) {
 				this.logger.warn(`TaskLoadingService: File not found: ${filePath}`);
 				continue;
 			}

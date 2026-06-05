@@ -63,3 +63,9 @@ We will always explicitly prefix global timers (`setTimeout`, `clearTimeout`, `s
 
 **Decision:**
 We will avoid using deprecated or legacy JavaScript APIs. For string manipulation, we will strictly use modern standards like `String.prototype.substring()` or `String.prototype.slice()` instead of `String.prototype.substr()`. This ensures long-term compatibility and avoids unnecessary warnings in modern JavaScript environments like Obsidian's Electron wrapper.
+### 8. Type Safety with Abstract Files
+**Feedback:**
+- Warning: Avoid casting to `TFile`. Use an `instanceof TFile` check to safely narrow the type.
+
+**Decision:**
+When retrieving abstract files from the vault (e.g., using `this.app.vault.getAbstractFileByPath()`), we will strictly use the `instanceof TFile` type guard to verify the result is actually a `TFile` instead of blindly casting it using `as TFile`. This ensures runtime safety in case the path points to a directory (`TFolder`) or the file does not exist.

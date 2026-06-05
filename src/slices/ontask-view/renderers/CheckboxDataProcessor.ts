@@ -20,10 +20,12 @@ export class CheckboxDataProcessor {
 
 		for (const checkbox of checkboxes) {
 			const filePath = checkbox.file?.path || 'Unknown';
-			if (!grouped.has(filePath)) {
-				grouped.set(filePath, []);
+			let fileCheckboxes = grouped.get(filePath);
+			if (!fileCheckboxes) {
+				fileCheckboxes = [];
+				grouped.set(filePath, fileCheckboxes);
 			}
-			grouped.get(filePath)!.push(checkbox);
+			fileCheckboxes.push(checkbox);
 		}
 
 		// Sort checkboxes within each file strictly by ascending line number to maintain visual hierarchy.
@@ -52,10 +54,10 @@ export class CheckboxDataProcessor {
 				const dateMatchB = fileNameB.match(/(\d{4}-\d{2}-\d{2})/);
 
 				if (!dateMatchA || !dateMatchB) {
-					const fileA = this.app.vault.getAbstractFileByPath(a[0]) as TFile;
-					const fileB = this.app.vault.getAbstractFileByPath(b[0]) as TFile;
+					const fileA = this.app.vault.getAbstractFileByPath(a[0]);
+					const fileB = this.app.vault.getAbstractFileByPath(b[0]);
 
-					if (!fileA || !fileB) {
+					if (!(fileA instanceof TFile) || !(fileB instanceof TFile)) {
 						return 0;
 					}
 

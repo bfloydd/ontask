@@ -30,8 +30,8 @@ export class OnTaskViewHelpers {
 	 * Opens a file in Obsidian and scrolls to the specified line number
 	 */
 	async openFile(filePath: string, lineNumber: number): Promise<void> {
-		const file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
-		if (file) {
+		const file = this.app.vault.getAbstractFileByPath(filePath);
+		if (file instanceof TFile) {
 			await this.handleStreamUpdate(filePath);
 			
 			this.app.workspace.openLinkText(filePath, '');
