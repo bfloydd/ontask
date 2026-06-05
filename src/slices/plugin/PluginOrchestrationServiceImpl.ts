@@ -49,12 +49,12 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		const existingLeaf = app.workspace.getLeavesOfType(ONTASK_VIEW_TYPE)[0];
 		
 		if (existingLeaf) {
-			app.workspace.revealLeaf(existingLeaf);
+			await app.workspace.revealLeaf(existingLeaf);
 		} else {
 			const leaf = app.workspace.getRightLeaf(false);
 			if (leaf) {
 				await leaf.setViewState({ type: ONTASK_VIEW_TYPE });
-				app.workspace.revealLeaf(leaf);
+				await app.workspace.revealLeaf(leaf);
 			}
 		}
 		
@@ -98,7 +98,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 
 		const streamsSubscription = this.eventSystem.on('streams:ready', () => {
 			this.logger.debug('[OnTask Orchestrator] Streams ready event received, refreshing OnTask views');
-			this.refreshOnTaskViews();
+			void this.refreshOnTaskViews();
 		});
 		this.eventListeners.push(() => streamsSubscription.unsubscribe());
 
@@ -127,7 +127,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		));
 
 		const ribbonIconEl = plugin.addRibbonIcon('checkmark', 'On Task', () => {
-			this.openOnTaskView();
+			void this.openOnTaskView();
 		});
 		ribbonIconEl.addClass('on-task-ribbon-class');
 
@@ -139,7 +139,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 			id: 'open-view',
 			name: 'Open',
 			callback: () => {
-				this.openOnTaskView();
+				void this.openOnTaskView();
 			}
 		});
 	}
@@ -147,7 +147,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 	private setupStreamsReadyCallback(app: App, streamsService: StreamsService): void {
 		app.workspace.onLayoutReady(() => {
 			if (streamsService.isStreamsPluginAvailable()) {
-				this.refreshOnTaskViews();
+				void this.refreshOnTaskViews();
 			}
 		});
 	}

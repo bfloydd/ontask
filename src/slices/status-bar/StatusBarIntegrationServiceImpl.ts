@@ -17,7 +17,8 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 	private logger: Logger;
 	private statusBarItem: HTMLElement | null = null;
 	private currentTopTask: CheckboxItem | null = null;
-	private pendingDecorationUpdate: boolean = false;
+	private pendingDecorationUpdate = false;
+	private initialized = false;
 	private updateRequestId: number | null = null;
 	private topTaskMemory: CheckboxItem | null = null;
 
@@ -88,8 +89,8 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 
 		this.initialized = true;
 		if (this.isEnabled()) {
-			setTimeout(() => {
-				this.findTopTaskIndependently();
+			window.setTimeout(() => {
+				void this.findTopTaskIndependently();
 			}, 1000);
 		}
 	}
@@ -108,7 +109,7 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 		this.updateRequestId = window.requestAnimationFrame(() => {
 			this.pendingDecorationUpdate = false;
 			this.updateRequestId = null;
-			this.updateStatusBar();
+			void this.updateStatusBar();
 		});
 	}
 
@@ -142,7 +143,7 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 				this.statusBarItem = plugin.addStatusBarItem();
 				this.statusBarItem.addClass('ontask-status-bar-item');
 				this.statusBarItem.addEventListener('click', () => {
-					this.app.workspace.openLinkText(topTask.file.path, '', true);
+					void this.app.workspace.openLinkText(topTask.file.path, '', true);
 				});
 			}
 

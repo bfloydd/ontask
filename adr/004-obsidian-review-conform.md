@@ -69,3 +69,10 @@ We will avoid using deprecated or legacy JavaScript APIs. For string manipulatio
 
 **Decision:**
 When retrieving abstract files from the vault (e.g., using `this.app.vault.getAbstractFileByPath()`), we will strictly use the `instanceof TFile` type guard to verify the result is actually a `TFile` instead of blindly casting it using `as TFile`. This ensures runtime safety in case the path points to a directory (`TFolder`) or the file does not exist.
+
+### 9. Explicitly Handling Floating Promises
+**Feedback:**
+- Warning: Promises must be awaited, end with a call to `.catch`, end with a call to `.then` with a rejection handler or be explicitly marked as ignored with the `void` operator.
+
+**Decision:**
+We will never leave promises floating. When calling an asynchronous function where we deliberately do not want to `await` its resolution (e.g., inside synchronous event listeners, UI callbacks, or fire-and-forget background tasks), we will explicitly mark it with the `void` operator (e.g., `void this.refreshCheckboxes();`). This signals intentionality to both the compiler and other developers, and prevents silent failures.
