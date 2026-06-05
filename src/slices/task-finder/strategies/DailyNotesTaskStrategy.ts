@@ -5,6 +5,32 @@ import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
 import { DateFileUtils } from '../../../shared/DateFileUtils';
 import { VaultUtils } from '../../../shared/VaultUtils';
 
+interface DailyNotesOptions {
+	folder?: string;
+}
+
+interface DailyNotesInstance {
+	options?: DailyNotesOptions;
+}
+
+interface InternalPlugin {
+	enabled: boolean;
+	instance?: DailyNotesInstance;
+}
+
+interface InternalPlugins {
+	plugins: Record<string, InternalPlugin | undefined>;
+}
+
+interface CommunityPlugins {
+	getPlugin(id: string): unknown | null;
+}
+
+interface AppWithPlugins extends App {
+	internalPlugins?: InternalPlugins;
+	plugins?: CommunityPlugins;
+}
+
 export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 	private app: App;
 	private logger?: Logger;
@@ -19,15 +45,17 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 	}
 
 	isAvailable(): boolean {
+		const appWithPlugins = this.app as AppWithPlugins;
+		
 		// Type assertion necessary: Obsidian's internal plugin APIs are not fully typed
 		// The plugins and internalPlugins properties exist but are not in the public API types
 		// This is a known limitation when accessing community plugins or core plugins
-		const dailyNotesPlugin = (this.app as any).plugins?.getPlugin('daily-notes');
-		const hasDailyNotesPlugin = dailyNotesPlugin !== null;
+		const dailyNotesPlugin = appWithPlugins.plugins?.getPlugin('daily-notes');
+		const hasDailyNotesPlugin = dailyNotesPlugin != null;
 		
 		// Type assertion necessary: internalPlugins is an internal Obsidian API
 		// Used to check if the core Daily Notes plugin is enabled
-		const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
+		const dailyNotesCore = appWithPlugins.internalPlugins?.plugins?.['daily-notes'];
 		const hasDailyNotesCore = !!(dailyNotesCore && dailyNotesCore.enabled);
 		
 		return hasDailyNotesPlugin || hasDailyNotesCore;
@@ -48,7 +76,8 @@ export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 			} else {
 				// Type assertion necessary: internalPlugins is an internal Obsidian API
 				// Used to access the core Daily Notes plugin configuration
-				const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
+				const appWithPlugins = this.app as AppWithPlugins;
+				const dailyNotesCore = appWithPlugins.internalPlugins?.plugins?.['daily-notes'];
 				if (!dailyNotesCore || !dailyNotesCore.enabled) {
 					return checkboxes;
 				}
