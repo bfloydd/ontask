@@ -50,9 +50,10 @@ We will default to declaring all variables using `const`. The `let` keyword will
 **Decision:**
 We will omit the plugin ID prefix when defining command IDs (e.g., using `open-view` instead of `open-ontask-view`). Obsidian automatically namespaces all commands with the plugin's ID under the hood to prevent conflicts, so including it in the definition creates redundant identifiers (e.g., `ontask:open-ontask-view`).
 
-### 6. Popout Window Compatibility for Animation Frames
+### 6. Popout Window Compatibility for Timers and Animation Frames
 **Feedback:**
 - Warning: Use `window.requestAnimationFrame()` instead of `requestAnimationFrame()` for popout window compatibility.
+- Warning: Use `window.clearTimeout()` instead of `clearTimeout()` for popout window compatibility.
 
 **Decision:**
-We will always explicitly prefix `requestAnimationFrame` and `cancelAnimationFrame` with `window.` (e.g. `window.requestAnimationFrame`). In Obsidian, popout windows run in their own independent window context. Implicitly calling the global functions can cause animations to fail, stall, or target the wrong context if the user has detached the view into a separate popout window.
+We will always explicitly prefix global timers (`setTimeout`, `clearTimeout`, `setInterval`, `clearInterval`) and animation frames (`requestAnimationFrame`, `cancelAnimationFrame`) with `window.` (e.g. `window.setTimeout`). In Obsidian, popout windows run in their own independent window context. Implicitly calling the global functions can cause timers or animations to fail, stall, or target the wrong context if the user has detached the view into a separate popout window.

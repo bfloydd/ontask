@@ -187,7 +187,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 	 */
 	scheduleRefresh(callback: () => void): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 		}
 		
 		this.refreshTimeout = window.setTimeout(() => {
@@ -202,7 +202,7 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 	 */
 	cleanup(): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 			this.refreshTimeout = null;
 		}
 	}

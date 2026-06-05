@@ -51,7 +51,7 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 				if (deltaX > MOVE_THRESHOLD || deltaY > MOVE_THRESHOLD) {
 					hasMoved = true;
 					if (longPressTimer) {
-						clearTimeout(longPressTimer);
+						window.clearTimeout(longPressTimer);
 						longPressTimer = null;
 					}
 				}
@@ -60,14 +60,14 @@ export class MobileTouchService implements MobileTouchServiceInterface {
 
 		element.addEventListener('touchend', (e) => {
 			if (longPressTimer) {
-				clearTimeout(longPressTimer);
+				window.clearTimeout(longPressTimer);
 				longPressTimer = null;
 			}
 		}, { passive: true });
 
 		element.addEventListener('touchcancel', (e) => {
 			if (longPressTimer) {
-				clearTimeout(longPressTimer);
+				window.clearTimeout(longPressTimer);
 				longPressTimer = null;
 			}
 		}, { passive: true });
