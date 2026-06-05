@@ -15,9 +15,7 @@ This ADR serves as a living document to track the review feedback and the corres
 - Warning: Unsafe member access on an `any` value.
 
 **Decision:** 
-We will strictly avoid casting to `any` when accessing undocumented or internal Obsidian APIs (e.g., `this.app.internalPlugins` or community plugins). Instead, we will define explicit, narrow TypeScript interfaces for the internal structures we need to interact with, and cast the `App` or `Plugin` objects to those explicit interfaces.
-
-This approach guarantees that property accesses are properly checked by the compiler and satisfies strict linting rules regarding unsafe member access. It also serves as self-documenting code for which parts of the internal API we rely on.
+We will strictly avoid casting to `any` when accessing undocumented or internal Obsidian APIs (e.g., `this.app.internalPlugins` or community plugins). Instead, we will define explicit, narrow TypeScript interfaces for the internal structures we need to interact with. To ensure consistency and reusability, these types will be centralized in a shared definitions file (e.g., `ObsidianInternal.ts`) and imported wherever we need to access internal APIs. We will cast the `App` or `Plugin` objects to these explicit interfaces rather than `any`.
 
 ### 2. Eliminating Unused Assignments and Definitions
 **Feedback:**
@@ -31,13 +29,9 @@ We will proactively prune all unused variables, imports, and parameters. This ap
 3. **Catch Blocks:** If an error parameter in a `catch` block is unused, we will use the parameterless `catch { ... }` syntax.
 4. **Imports & Interfaces:** Unused module imports or interface definitions will be aggressively removed.
 
-This approach keeps the codebase clean, compliant with strict linting rules, and prevents confusion regarding unused state or components.
-
 ### 3. Handling Deprecated `display()` API
 **Feedback:**
 - Warning: `display` is deprecated. Since 1.13.0. Use `getSettingDefinitions` instead.
 
 **Decision:**
-To support users on older Obsidian versions while clearing deprecation warnings, we will maintain our `display()` method implementation (as required by the older `PluginSettingTab` API) but extract the internal rendering logic into a private `renderSettings()` method. Any internal calls that previously invoked `this.display()` to force a UI re-render will now invoke `this.renderSettings()`. 
-
-This safely bypasses the linting warnings triggered by *calling* a deprecated method while avoiding the massive architectural shift to the new declarative `getSettingDefinitions` API, ensuring backward compatibility.
+To support users on older Obsidian versions while clearing deprecation warnings, we will maintain our `display()` method implementation (as required by the older `PluginSettingTab` API) but extract the internal rendering logic into a private `renderSettings()` method. Any internal calls that previously invoked `this.display()` to force a UI re-render will now invoke `this.renderSettings()`.

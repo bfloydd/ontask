@@ -1,5 +1,6 @@
 import { App, Plugin } from 'obsidian';
 import { OnTaskSettings, DEFAULT_SETTINGS, SettingsChangeEvent, SettingsService } from './SettingsServiceInterface';
+import { AppWithPlugins } from '../../shared/ObsidianInternal';
 import { EventSystem } from '../events';
 import { SettingsAwareSliceService } from '../../shared/BaseSlice';
 import { Logger } from '../logging/Logger';
@@ -102,11 +103,12 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 	}
 
 	isDailyNotesAvailable(): boolean {
-		const dailyNotesPlugin = (this.app as any).plugins?.getPlugin('daily-notes');
-		const hasDailyNotesPlugin = dailyNotesPlugin !== null;
+		const appWithPlugins = this.app as AppWithPlugins;
+		const dailyNotesPlugin = appWithPlugins.plugins?.getPlugin('daily-notes');
+		const hasDailyNotesPlugin = dailyNotesPlugin !== null && dailyNotesPlugin !== undefined;
 		
-		const dailyNotesCore = (this.app as any).internalPlugins?.plugins?.['daily-notes'];
-		const hasDailyNotesCore = dailyNotesCore && dailyNotesCore.enabled;
+		const dailyNotesCore = appWithPlugins.internalPlugins?.plugins?.['daily-notes'];
+		const hasDailyNotesCore = !!(dailyNotesCore && dailyNotesCore.enabled);
 		
 		return hasDailyNotesPlugin || hasDailyNotesCore;
 	}

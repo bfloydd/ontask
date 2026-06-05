@@ -5,31 +5,7 @@ import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
 import { DateFileUtils } from '../../../shared/DateFileUtils';
 import { VaultUtils } from '../../../shared/VaultUtils';
 
-interface DailyNotesOptions {
-	folder?: string;
-}
-
-interface DailyNotesInstance {
-	options?: DailyNotesOptions;
-}
-
-interface InternalPlugin {
-	enabled: boolean;
-	instance?: DailyNotesInstance;
-}
-
-interface InternalPlugins {
-	plugins: Record<string, InternalPlugin | undefined>;
-}
-
-interface CommunityPlugins {
-	getPlugin(id: string): unknown | null;
-}
-
-interface AppWithPlugins extends App {
-	internalPlugins?: InternalPlugins;
-	plugins?: CommunityPlugins;
-}
+import { AppWithPlugins } from '../../../shared/ObsidianInternal';
 
 export class DailyNotesTaskStrategy implements TaskFinderStrategy {
 	private app: App;
