@@ -130,7 +130,7 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		this.scrollToTopButton.classList.add('ontask-scroll-visible');
 		
 		// Use requestAnimationFrame for smooth animation
-		requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
 			if (this.scrollToTopButton) {
 				this.scrollToTopButton.classList.add('ontask-scroll-animated');
 			}

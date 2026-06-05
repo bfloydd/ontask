@@ -102,10 +102,10 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 		this.pendingDecorationUpdate = true;
 
 		if (this.updateRequestId !== null) {
-			cancelAnimationFrame(this.updateRequestId);
+			window.cancelAnimationFrame(this.updateRequestId);
 		}
 
-		this.updateRequestId = requestAnimationFrame(() => {
+		this.updateRequestId = window.requestAnimationFrame(() => {
 			this.pendingDecorationUpdate = false;
 			this.updateRequestId = null;
 			this.updateStatusBar();
@@ -195,7 +195,7 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 
 	cleanup(): void {
 		if (this.updateRequestId !== null) {
-			cancelAnimationFrame(this.updateRequestId);
+			window.cancelAnimationFrame(this.updateRequestId);
 			this.updateRequestId = null;
 		}
 		this.pendingDecorationUpdate = false;
