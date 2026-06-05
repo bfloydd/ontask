@@ -33,3 +33,11 @@ We will proactively prune all unused variables, imports, and parameters. This ap
 
 This approach keeps the codebase clean, compliant with strict linting rules, and prevents confusion regarding unused state or components.
 
+### 3. Handling Deprecated `display()` API
+**Feedback:**
+- Warning: `display` is deprecated. Since 1.13.0. Use `getSettingDefinitions` instead.
+
+**Decision:**
+To support users on older Obsidian versions while clearing deprecation warnings, we will maintain our `display()` method implementation (as required by the older `PluginSettingTab` API) but extract the internal rendering logic into a private `renderSettings()` method. Any internal calls that previously invoked `this.display()` to force a UI re-render will now invoke `this.renderSettings()`. 
+
+This safely bypasses the linting warnings triggered by *calling* a deprecated method while avoiding the massive architectural shift to the new declarative `getSettingDefinitions` API, ensuring backward compatibility.

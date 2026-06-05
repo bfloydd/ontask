@@ -28,6 +28,10 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	}
 
 	display(): void {
+		this.renderSettings();
+	}
+
+	private renderSettings(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
@@ -41,7 +45,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 	// Method to navigate to a specific tab
 	navigateToTab(tabId: 'general' | 'status' | 'quick-filters' | 'day-planner'): void {
 		this.currentTab = tabId;
-		this.display(); // Re-render with new tab
+		this.renderSettings(); // Re-render with new tab
 	}
 
 	private renderTabNavigation(containerEl: HTMLElement): void {
@@ -66,7 +70,7 @@ export class OnTaskSettingsTab extends PluginSettingTab {
 
 			tabEl.addEventListener('click', () => {
 				this.currentTab = tab.id as 'general' | 'status' | 'quick-filters' | 'day-planner';
-				this.display(); // Re-render with new tab
+				this.renderSettings(); // Re-render with new tab
 			}, { passive: true });
 		});
 	}
