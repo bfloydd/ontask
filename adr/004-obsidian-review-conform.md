@@ -15,7 +15,7 @@ This ADR serves as a living document to track the review feedback and the corres
 - Warning: Unsafe member access on an `any` value.
 
 **Decision:** 
-We will strictly avoid casting to `any` when accessing undocumented or internal Obsidian APIs (e.g., `this.app.internalPlugins` or community plugins). Instead, we will define explicit, narrow TypeScript interfaces for the internal structures we need to interact with. To ensure consistency and reusability, these types will be centralized in a shared definitions file (e.g., `ObsidianInternal.ts`) and imported wherever we need to access internal APIs. We will cast the `App` or `Plugin` objects to these explicit interfaces rather than `any`.
+We will strictly avoid casting to `any` when accessing undocumented or internal Obsidian APIs (e.g., `this.app.internalPlugins` or `this.app.plugins`). Instead, we will define explicit, narrow TypeScript interfaces for the internal structures we need to interact with. To ensure consistency and reusability, these types will be centralized in a shared definitions file (e.g., `ObsidianInternal.ts`) and imported wherever we need to access internal APIs. We will cast the `App` or `Plugin` objects to these explicit interfaces rather than `any`.
 
 ### 2. Eliminating Unused Assignments and Definitions
 **Feedback:**
@@ -35,3 +35,17 @@ We will proactively prune all unused variables, imports, and parameters. This ap
 
 **Decision:**
 To support users on older Obsidian versions while clearing deprecation warnings, we will maintain our `display()` method implementation (as required by the older `PluginSettingTab` API) but extract the internal rendering logic into a private `renderSettings()` method. Any internal calls that previously invoked `this.display()` to force a UI re-render will now invoke `this.renderSettings()`.
+
+### 4. Enforcing Immutable Variable Declarations
+**Feedback:**
+- Error: Variable is never reassigned. Use `const` instead.
+
+**Decision:**
+We will default to declaring all variables using `const`. The `let` keyword will only be used when a variable is explicitly reassigned later within its scope.
+
+### 5. Command ID Redundancy
+**Feedback:**
+- Warning: The command ID should not include the plugin ID. Obsidian will make sure that there are no conflicts with other plugins.
+
+**Decision:**
+We will omit the plugin ID prefix when defining command IDs (e.g., using `open-view` instead of `open-ontask-view`). Obsidian automatically namespaces all commands with the plugin's ID under the hood to prevent conflicts, so including it in the definition creates redundant identifiers (e.g., `ontask:open-ontask-view`).

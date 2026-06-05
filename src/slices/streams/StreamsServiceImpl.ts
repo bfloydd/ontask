@@ -1,5 +1,6 @@
 import { App, Plugin } from 'obsidian';
 import { StreamsService, Stream } from './StreamsServiceInterface';
+import { AppWithPlugins } from '../../shared/ObsidianInternal';
 import { Logger } from '../logging/Logger';
 
 interface StreamsPlugin extends Plugin {
@@ -24,7 +25,8 @@ export class StreamsServiceImpl implements StreamsService {
 			// Type assertion necessary: Obsidian's plugin API for accessing community plugins
 			// The plugins.getPlugin() method exists but the return type is not fully typed
 			// We cast to StreamsPlugin interface which defines the expected methods
-			const streamsPlugin = (this.app as any).plugins?.getPlugin('streams') as StreamsPlugin;
+			const appWithPlugins = this.app as AppWithPlugins;
+			const streamsPlugin = appWithPlugins.plugins?.getPlugin('streams') as StreamsPlugin;
 			this.streamsPlugin = streamsPlugin;
 		});
 	}
@@ -53,7 +55,7 @@ export class StreamsServiceImpl implements StreamsService {
 	public getStreamBaseFolder(stream: Stream): string {
 		const format = stream.dateFormat || stream.folder || '';
 		const firstBraceIndex = format.indexOf('{');
-		let base = firstBraceIndex !== -1 ? format.substring(0, firstBraceIndex) : format;
+		const base = firstBraceIndex !== -1 ? format.substring(0, firstBraceIndex) : format;
 		return base.replace(/\/+$/, '');
 	}
 

@@ -136,7 +136,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 
 	private addCommands(plugin: Plugin): void {
 		plugin.addCommand({
-			id: 'open-ontask-view',
+			id: 'open-view',
 			name: 'Open',
 			callback: () => {
 				this.openOnTaskView();
