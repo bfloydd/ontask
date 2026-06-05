@@ -15,7 +15,7 @@ This ADR serves as a living document to track the review feedback and the corres
 - Warning: Unsafe member access on an `any` value.
 
 **Decision:** 
-We will strictly avoid casting to `any` when accessing undocumented or internal Obsidian APIs (e.g., `this.app.internalPlugins` or `this.app.plugins`). Instead, we will define explicit, narrow TypeScript interfaces for the internal structures we need to interact with. To ensure consistency and reusability, these types will be centralized in a shared definitions file (e.g., `ObsidianInternal.ts`) and imported wherever we need to access internal APIs. We will cast the `App` or `Plugin` objects to these explicit interfaces rather than `any`.
+We will strictly avoid casting to `any` when accessing undocumented Obsidian APIs (e.g., `this.app.internalPlugins`, `this.app.plugins`, or deep properties like `.options` and `.settingsTab`) or external HTTP API responses (e.g., `response.json`). Instead, we will define explicit, narrow TypeScript interfaces for the structures we need to interact with. To ensure consistency and reusability, these types will be centralized in a shared definitions file (e.g., `ObsidianInternal.ts`) and imported wherever we need to access them. We will cast the objects to these explicit interfaces rather than `any`.
 
 ### 2. Eliminating Unused Assignments and Definitions
 **Feedback:**
@@ -24,7 +24,7 @@ We will strictly avoid casting to `any` when accessing undocumented or internal 
 
 **Decision:**
 We will proactively prune all unused variables, imports, and parameters. This applies specifically to:
-1. **DOM Elements:** When creating DOM elements (especially using Obsidian's built-in helper `createEl`), we will only assign the returned element to a variable if we need to interact with it again.
+1. **DOM Elements:** When creating DOM elements (especially using Obsidian's built-in helpers like `createEl` or `createDiv`), we will only assign the returned element to a variable if we need to interact with it again.
 2. **Destructuring:** When destructuring objects or arrays, we will omit unused variables (e.g. `let [, secondItem] = array;`).
 3. **Catch Blocks:** If an error parameter in a `catch` block is unused, we will use the parameterless `catch { ... }` syntax.
 4. **Imports & Interfaces:** Unused module imports or interface definitions will be aggressively removed.

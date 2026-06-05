@@ -7,6 +7,16 @@ export interface DayPlanResult {
 	notes: string;
 }
 
+interface GeminiGenerateContentResponse {
+	candidates?: Array<{
+		content?: {
+			parts?: Array<{
+				text?: string;
+			}>;
+		};
+	}>;
+}
+
 export class DayPlannerService {
 	private logger: Logger;
 
@@ -87,7 +97,7 @@ export class DayPlannerService {
 				return null;
 			}
 
-			const data = response.json;
+			const data = response.json as GeminiGenerateContentResponse;
 			const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
 			
 			if (textResult) {

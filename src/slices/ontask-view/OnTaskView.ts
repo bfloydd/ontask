@@ -25,6 +25,7 @@ import { AppWithSettings } from '../../types';
 import { DateFilterService } from './date-filter';
 import { DayPlannerService } from '../day-planner/DayPlannerService';
 import { DayPlannerViewService } from '../day-planner/DayPlannerViewService';
+import { OnTaskPlugin } from '../../shared/ObsidianInternal';
 
 export const ONTASK_VIEW_TYPE = 'ontask-view';
 
@@ -51,13 +52,13 @@ export class OnTaskViewImpl extends ItemView {
 	private viewRefreshService: ViewRefreshService;
 	private checkboxUpdateService: CheckboxUpdateService;
 	private checkboxes: CheckboxItem[] = [];
-	private isUpdatingStatus: boolean = false;
-	private displayedTasksCount: number = 10;
-	private currentFilter: string = '';
-	private isSearchFilterVisible: boolean = false;
+	private isUpdatingStatus = false;
+	private displayedTasksCount = 10;
+	private currentFilter = '';
+	private isSearchFilterVisible = false;
 	private settingsUnsubscribe: (() => void) | null = null;
 	
-	private isDayPlannerVisible: boolean = false;
+	private isDayPlannerVisible = false;
 	private dayPlannerService: DayPlannerService;
 	private dayPlannerViewService: DayPlannerViewService;
 	private dayPlannerContainer: HTMLElement;
@@ -172,7 +173,7 @@ export class OnTaskViewImpl extends ItemView {
 			onToggleDayPlanner: () => this.toggleDayPlanner()
 		});
 		
-		const contentArea = this.contentEl.createDiv('ontask-content');
+		this.contentEl.createDiv('ontask-content');
 		
 		this.dayPlannerContainer = this.contentEl.createDiv('ontask-day-planner-wrapper');
 		this.dayPlannerContainer.hide();
@@ -374,7 +375,7 @@ export class OnTaskViewImpl extends ItemView {
 			appWithSettings.setting.openTabById(this.plugin.manifest.id);
 			
 			if (this.isDayPlannerVisible) {
-				const myPlugin = this.plugin as any;
+				const myPlugin = this.plugin as OnTaskPlugin;
 				if (myPlugin.settingsTab && typeof myPlugin.settingsTab.navigateToTab === 'function') {
 					myPlugin.settingsTab.navigateToTab('day-planner');
 				}

@@ -6,6 +6,8 @@ import { StreamsService } from '../../streams';
 import { Logger } from '../../logging/Logger';
 import { CheckboxItem } from '../../task-finder/TaskFinderInterfaces';
 import { OnTaskSettings } from '../../settings/SettingsServiceInterface';
+
+import { AppWithPlugins } from '../../../shared/ObsidianInternal';
 import { DateFilterService } from '../date-filter';
 import { CheckboxParsingUtils } from '../../../shared/CheckboxParsingUtils';
 import { VaultUtils } from '../../../shared/VaultUtils';
@@ -36,8 +38,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 	private app: App;
 	private logger: Logger;
 
-	private currentFileIndex: number = 0;
-	private currentTaskIndex: number = 0;
+	private currentFileIndex = 0;
+	private currentTaskIndex = 0;
 	private trackedFiles: string[] = [];
 
 	constructor(
@@ -193,7 +195,8 @@ export class TaskLoadingService implements TaskLoadingServiceInterface {
 			}
 			case 'daily-notes': {
 				// Get the daily notes folder from the core plugin settings, default to root
-				const dailyNotesPlugin = (this.app as any).internalPlugins?.plugins?.['daily-notes']?.instance;
+				const appWithPlugins = this.app as AppWithPlugins;
+				const dailyNotesPlugin = appWithPlugins.internalPlugins?.plugins?.['daily-notes']?.instance;
 				const dailyNotesFolderStr = dailyNotesPlugin?.options?.folder || '/';
 				
 				const dailyNotesFolderFiles = VaultUtils.getMarkdownFilesInFolder(this.app.vault, dailyNotesFolderStr);

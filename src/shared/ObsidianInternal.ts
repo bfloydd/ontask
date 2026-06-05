@@ -1,4 +1,4 @@
-import { App } from 'obsidian';
+import { App, Plugin } from 'obsidian';
 
 export interface DailyNotesOptions {
 	folder?: string;
@@ -24,4 +24,10 @@ export interface CommunityPlugins {
 export interface AppWithPlugins extends App {
 	internalPlugins?: InternalPlugins;
 	plugins?: CommunityPlugins;
+}
+
+export interface OnTaskPlugin extends Plugin {
+	settingsTab?: {
+		navigateToTab(tabId: string): void;
+	};
 }
