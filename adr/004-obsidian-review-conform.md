@@ -10,12 +10,17 @@ This ADR serves as a living document to track the review feedback and the corres
 
 ## Decisions
 
-### 1. Typing Internal Plugin APIs
+### 1. Strictly Disallowing Explicit Any and Unsafe Types
 **Feedback:** 
+- Warning: Unexpected any. Specify a different type (`@typescript-eslint/no-explicit-any`).
 - Warning: Unsafe member access on an `any` value.
+- Warning: Returns unsafe values from typed code (`@typescript-eslint/no-unsafe-return`).
+- Warning: Passes unsafe values into typed parameters (`@typescript-eslint/no-unsafe-argument`).
+- Warning: Unsafe assignment of an `any` value (`@typescript-eslint/no-unsafe-assignment`).
+- Warning: Unsafe call of an `any` typed value (`@typescript-eslint/no-unsafe-call`).
 
 **Decision:** 
-We will strictly avoid casting to `any` when accessing undocumented Obsidian APIs (e.g., `this.app.internalPlugins`, `this.app.plugins`, or deep properties like `.options` and `.settingsTab`) or external HTTP API responses (e.g., `response.json`). Instead, we will define explicit, narrow TypeScript interfaces for the structures we need to interact with. To ensure consistency and reusability, these types will be centralized in a shared definitions file (e.g., `ObsidianInternal.ts`) and imported wherever we need to access them. We will cast the objects to these explicit interfaces rather than `any`.
+We will strictly avoid using `any` type declarations in our source code and prevent unsafe operations (assignments, calls, returns, parameters, or member access) involving implicit or explicit `any` values. When dealing with dynamically typed objects, undocumented APIs, or external data, we will use `unknown` as a safer alternative or explicitly cast the values to defined, narrow TypeScript interfaces before interacting with them. We will also directly import strictly-typed objects instead of relying on untyped global variables.
 
 ### 2. Eliminating Unused Assignments and Definitions
 **Feedback:**
@@ -81,77 +86,49 @@ When retrieving abstract files from the vault (e.g., using `this.app.vault.getAb
 **Decision:**
 We will never leave promises floating and will ensure that asynchronous operations are not implicitly returned to synchronous callers. When calling an asynchronous function where we deliberately do not want to await its resolution, we will explicitly mark it with the `void` operator. When a signature expects a `void` return type, we will not pass an `async` function; instead, we will either wrap the asynchronous logic within an immediately invoked async function expression or use the `void` operator.
 
-### 10. Safe Return Types
-**Feedback:**
-- Warning: Returns unsafe values from typed code (`@typescript-eslint/no-unsafe-return`).
-
-**Decision:**
-When a method defines a strict return type, we will never return values that evaluate to `any`. For external calls that inherently return `any` (such as Obsidian's `Plugin.loadData()`), we will explicitly assert the response to the expected type (e.g., `(loaded || {}) as DataServiceData`) to satisfy the compiler and guarantee type safety moving forward.
-
-### 11. Strict Empty Object Typing
+### 10. Strict Empty Object Typing
 **Feedback:**
 - Warning: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
 
 **Decision:**
 We will never use `{}` to represent an empty object in TypeScript, as it is fundamentally unsafe and acts more like an `any non-nullish` wildcard. When defining an object type that intentionally contains no properties (such as an empty event payload), we will strictly use `Record<string, never>` to enforce that the object is truly empty at compile time.
 
-### 12. Popout Window Document Context
+### 11. Popout Window Document Context
 **Feedback:**
 - Warning: Use `activeDocument` instead of `document` for popout window compatibility.
 
 **Decision:**
 In Obsidian's architecture, views can be torn off into separate popout windows. Using the global `document` variable will strictly reference the main application window's DOM. This means elements created via `document.createElement()` or appended to `document.body` may render in the wrong window or fail completely. We will exclusively use `activeDocument` for all DOM manipulations to ensure 100% popout window compatibility.
 
-### 13. Type Safe Moment Imports
-**Feedback:**
-- Warning: Unsafe member access `.format` on an `any` value.
-
-**Decision:**
-We will avoid accessing global dependencies through untyped avenues like `(window as any).moment`. Instead, we will directly import the provided and strongly-typed objects from the Obsidian API (e.g., `import { moment } from 'obsidian'`). This ensures full type safety across our date/time utilities and prevents unsafe member access warnings.
-
-### 14. Safe Typed Parameter Passing
-**Feedback:**
-- Warning: Passes unsafe values into typed parameters (`@typescript-eslint/no-unsafe-argument`).
-
-**Decision:**
-We will never pass variables typed as `any` into strictly typed function parameters. For generic utility functions (such as `Logger`), we will prefer `unknown` over `any` to force explicit checks. When dealing with dynamically typed objects from external APIs (like Obsidian's `loadData()`), we will explicitly cast the response (e.g., `as Partial<OnTaskSettings>`) before spreading it or passing it as an argument.
-
-### 15. Disallowing Explicit Any
-**Feedback:**
-- Warning: Unexpected any. Specify a different type (`@typescript-eslint/no-explicit-any`).
-
-**Decision:**
-We will strictly avoid using `any` type declarations in our source code. When dealing with dynamically typed objects or unknown data, we will use `unknown` as a safer alternative, which forces the developer to perform type narrowing or explicit casting before interacting with the object. If a mock or fallback object is required for testing or edge cases, we will cast through `unknown` first (e.g., `null as unknown as TFile`).
-
-### 16. Avoiding Static Styles Assignments
+### 12. Avoiding Static Styles Assignments
 **Feedback:**
 - Error: Sets styles directly instead of using CSS classes or `setCssProps` (`obsidianmd/no-static-styles-assignment`).
 
 **Decision:**
 We will never assign styles directly via the `.style` property on DOM elements (e.g., `element.style.color = 'red'`). All static styling must be extracted to CSS classes within `styles.css` and applied via `element.addClass(...)`. This ensures our user interface responds appropriately to Obsidian's native themes, allows custom CSS snippets to override the default look, and strictly complies with Obsidian developer policies.
 
-### 17. Maintaining Minimum App Version Compatibility
+### 13. Maintaining Minimum App Version Compatibility
 **Feedback:**
 - Error: Uses Obsidian APIs newer than the declared `minAppVersion` (`obsidianmd/no-unsupported-api`).
 
 **Decision:**
 Our plugin naturally utilizes modern Obsidian APIs (such as advanced Menu configurations, settings inputs, and workspace layout utilities). Rather than writing legacy polyfills or restricting functionality to support outdated clients, we will maintain a realistic `minAppVersion` in `manifest.json` (currently `1.4.0`) that aligns with our actual API usage. We will always keep `versions.json` synchronized when bumping this version floor.
 
-### 18. Avoiding Undescribed Linter Directives
+### 14. Avoiding Undescribed Linter Directives
 **Feedback:**
 - Error: Unexpected undescribed directive comment. Include descriptions to explain why the comment is necessary.
 
 **Decision:**
 We will avoid using undescribed linter directive comments to silence warnings. Whenever possible, we will refactor the code to natively comply with the linter rules (for instance, by appropriately naming unused variables or refining type casts). If a directive comment is absolutely necessary to bypass a verified false positive, it must be accompanied by a clear description explaining the rationale.
 
-### 19. Removing Unnecessary Type Assertions
+### 15. Removing Unnecessary Type Assertions
 **Feedback:**
 - Warning: This assertion is unnecessary since it does not change the type of the expression.
 
 **Decision:**
 We will trust TypeScript's type inference and type narrowing capabilities, avoiding explicit casts (using the `as` keyword) when the compiler already knows the correct type. Redundant type assertions will be removed to ensure a clean and idiomatic codebase.
 
-### 20. Avoiding Redundant Union Types
+### 16. Avoiding Redundant Union Types
 **Feedback:**
 - Warning: 'unknown' overrides all other types in this union type (`@typescript-eslint/no-redundant-type-constituents`).
 
