@@ -1,6 +1,6 @@
 {
 	"name": "on-task",
-	"version": "1.0.10",
+	"version": "1.0.11",
 	"description": "Task management plugin for Obsidian to help you stay organized and productive",
 	"main": "main.js",
 	"scripts": {
