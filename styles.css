@@ -3036,3 +3036,33 @@
 .ontask-day-planner-row.is-past .ontask-day-planner-tasks {
 	text-decoration: line-through;
 }
+/* Day Planner and Config Inline Styles Extraction */
+.ontask-day-planner-notes {
+    font-style: italic;
+    color: var(--text-muted);
+    padding: 10px;
+}
+
+.ontask-day-planner-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ontask-day-planner-task-item {
+    margin: 0 !important;
+    border-bottom: none !important;
+}
+
+.ontask-day-planner-task-item.is-disconnected {
+    opacity: 0.85;
+}
+
+.ontask-day-planner-error {
+    color: var(--text-error);
+    padding: 10px;
+}
+
+.ontask-task-ranking {
+    margin-left: 8px;
+}

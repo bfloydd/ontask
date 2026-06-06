@@ -125,3 +125,10 @@ We will strictly avoid using `any` type declarations in our source code. When de
 
 **Decision:**
 Obsidian expects the `Plugin.onunload()` lifecycle method to be strictly synchronous (returning `void`). We will never mark `onunload()` as `async`. If any asynchronous teardown logic is required during plugin unloading (such as gracefully shutting down an orchestrator), we will execute it as a floating promise explicitly prefixed with the `void` operator (e.g., `void this.orchestrator.shutdown();`) to satisfy both the compiler and Obsidian's lifecycle design.
+
+### 17. Avoiding Static Styles Assignments
+**Feedback:**
+- Error: Sets styles directly instead of using CSS classes or `setCssProps` (`obsidianmd/no-static-styles-assignment`).
+
+**Decision:**
+We will never assign styles directly via the `.style` property on DOM elements (e.g., `element.style.color = 'red'`). All static styling must be extracted to CSS classes within `styles.css` and applied via `element.addClass(...)`. This ensures our user interface responds appropriately to Obsidian's native themes, allows custom CSS snippets to override the default look, and strictly complies with Obsidian developer policies.

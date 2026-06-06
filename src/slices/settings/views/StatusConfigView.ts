@@ -109,8 +109,6 @@ export class StatusConfigView {
 					'data-rank': config.topTaskRanking.toString()
 				}
 			});
-			// Add some margin so it doesn't touch the description text
-			indicatorEl.style.marginLeft = '8px';
 		}
 
 		// Edit button

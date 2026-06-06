@@ -46,9 +46,6 @@ export class DayPlannerViewService {
 		if (plan.notes) {
 			const notesEl = plannerContainer.createDiv('ontask-day-planner-notes');
 			notesEl.setText(plan.notes);
-			notesEl.style.fontStyle = 'italic';
-			notesEl.style.color = 'var(--text-muted)';
-			notesEl.style.padding = '10px';
 		}
 
 		// The Grid
@@ -67,9 +64,6 @@ export class DayPlannerViewService {
 			const tasksEl = rowEl.createDiv('ontask-day-planner-tasks');
 			if (slot.tasks && slot.tasks.length > 0) {
 				const tasksContainer = tasksEl.createDiv('ontask-day-planner-tasks-list');
-				tasksContainer.style.display = 'flex';
-				tasksContainer.style.flexDirection = 'column';
-				tasksContainer.style.gap = '4px';
 				
 				for (const taskStr of slot.tasks) {
 					// Clean up the LLM string (it sometimes returns "- task" instead of "- [ ] task")
@@ -85,8 +79,7 @@ export class DayPlannerViewService {
 						// Render as a fully functional checkbox
 						const checkboxEl = this.domRenderingService.createCheckboxElement(taskItem);
 						// Strip out unnecessary margins for the dense day planner view
-						checkboxEl.style.margin = '0';
-						checkboxEl.style.borderBottom = 'none';
+						checkboxEl.addClass('ontask-day-planner-task-item');
 						tasksContainer.appendChild(checkboxEl);
 					} else {
 						// Fallback if not found (e.g. task was deleted since plan was generated or LLM altered the text)
@@ -102,9 +95,7 @@ export class DayPlannerViewService {
 						};
 						
 						const fallbackEl = this.domRenderingService.createCheckboxElement(mockTaskItem);
-						fallbackEl.style.margin = '0';
-						fallbackEl.style.borderBottom = 'none';
-						fallbackEl.style.opacity = '0.85'; // Slight transparency to indicate it's disconnected
+						fallbackEl.addClass('ontask-day-planner-task-item', 'is-disconnected');
 						tasksContainer.appendChild(fallbackEl);
 					}
 				}
@@ -124,8 +115,6 @@ export class DayPlannerViewService {
 
 		const errorEl = plannerContainer.createDiv('ontask-day-planner-error');
 		errorEl.setText(message);
-		errorEl.style.color = 'var(--text-error)';
-		errorEl.style.padding = '10px';
 	}
 
 	private isTimeInPast(timeStr: string): boolean {

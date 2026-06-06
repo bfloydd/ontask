@@ -212,8 +212,6 @@ export class QuickFiltersView {
 				indicatorEl.textContent = `Rank ${statusConfig.topTaskRanking}`;
 				indicatorEl.setAttribute('title', `Top Task Rank ${statusConfig.topTaskRanking}`);
 				indicatorEl.setAttribute('data-rank', statusConfig.topTaskRanking.toString());
-				// Add some margin so it doesn't touch the text
-				indicatorEl.style.marginLeft = '8px';
 				statusSetting.nameEl.appendChild(indicatorEl);
 			}
 
