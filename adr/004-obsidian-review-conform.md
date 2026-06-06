@@ -56,7 +56,7 @@ We will omit the plugin ID prefix when defining command IDs (e.g., using `open-v
 - Warning: Use `window.clearTimeout()` instead of `clearTimeout()` for popout window compatibility.
 
 **Decision:**
-We will always explicitly prefix global timers (`setTimeout`, `clearTimeout`, `setInterval`, `clearInterval`) and animation frames (`requestAnimationFrame`, `cancelAnimationFrame`) with `window.` (e.g. `window.setTimeout`). In Obsidian, popout windows run in their own independent window context. Implicitly calling the global functions can cause timers or animations to fail, stall, or target the wrong context if the user has detached the view into a separate popout window.
+We will always explicitly prefix global timers and animation frames with the window object reference.
 
 ### 7. Deprecated JavaScript Features
 **Feedback:**

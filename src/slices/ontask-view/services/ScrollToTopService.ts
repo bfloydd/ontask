@@ -145,7 +145,7 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		this.scrollToTopButton.classList.add('ontask-scroll-hiding');
 		
 		// Hide the button after animation completes
-		setTimeout(() => {
+		window.setTimeout(() => {
 			if (this.scrollToTopButton && !this.isVisible) {
 				this.scrollToTopButton.classList.add('ontask-scroll-hidden');
 				this.scrollToTopButton.classList.remove('ontask-scroll-hiding');

@@ -36,7 +36,7 @@ export class OnTaskViewHelpers {
 			
 			void this.app.workspace.openLinkText(filePath, '');
 			
-			setTimeout(() => {
+			window.setTimeout(() => {
 				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (markdownView && markdownView.editor) {
 					try {

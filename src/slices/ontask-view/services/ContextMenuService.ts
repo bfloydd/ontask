@@ -117,7 +117,7 @@ class FilterModal extends Modal {
 					}
 
 					// Navigate to Quick Filters tab after a short delay to ensure settings are loaded
-					setTimeout(() => {
+					window.setTimeout(() => {
 						const settingsTab = (this.plugin as OnTaskPlugin).settingsTab;
 						if (settingsTab && settingsTab.navigateToTab) {
 							settingsTab.navigateToTab('quick-filters');

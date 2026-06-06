@@ -52,7 +52,7 @@ export class OnTaskViewFiltering {
 					// Focus the input field
 					const filterInput = filterSection.querySelector('.ontask-filter-input') as HTMLInputElement;
 					if (filterInput) {
-						setTimeout(() => filterInput.focus(), 100);
+						window.setTimeout(() => filterInput.focus(), 100);
 					}
 				} else {
 					filterSection.classList.add('ontask-filter-collapsed');
