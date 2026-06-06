@@ -37,13 +37,13 @@ export interface OnTaskEvents {
 	'ui:view-closed': {
 		viewType: string;
 	};
-	'plugin:initialized': {};
-	'plugin:shutdown': {};
+	'plugin:initialized': Record<string, never>;
+	'plugin:shutdown': Record<string, never>;
 	'plugin:error': {
 		error: Error;
 		context: string;
 	};
-	'streams:ready': {};
+	'streams:ready': Record<string, never>;
 	'streams:changed': {
 		count: number;
 	};

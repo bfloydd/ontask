@@ -83,3 +83,10 @@ We will never leave promises floating. When calling an asynchronous function whe
 
 **Decision:**
 When a method defines a strict return type, we will never return values that evaluate to `any`. For external calls that inherently return `any` (such as Obsidian's `Plugin.loadData()`), we will explicitly assert the response to the expected type (e.g., `(loaded || {}) as DataServiceData`) to satisfy the compiler and guarantee type safety moving forward.
+
+### 11. Strict Empty Object Typing
+**Feedback:**
+- Warning: The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+
+**Decision:**
+We will never use `{}` to represent an empty object in TypeScript, as it is fundamentally unsafe and acts more like an `any non-nullish` wildcard. When defining an object type that intentionally contains no properties (such as an empty event payload), we will strictly use `Record<string, never>` to enforce that the object is truly empty at compile time.
