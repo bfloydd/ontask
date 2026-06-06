@@ -93,7 +93,7 @@ export class DayPlannerService {
 			});
 
 			if (response.status !== 200) {
-				this.logger.error('Gemini API Error:', response.json);
+				this.logger.error('Gemini API Error:', response.json as unknown);
 				return null;
 			}
 

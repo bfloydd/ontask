@@ -25,7 +25,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 		if (this.initialized) return;
 		
 		const loadedSettings = await this.getPlugin()!.loadData();
-		this.settings = { ...DEFAULT_SETTINGS, ...loadedSettings };
+		this.settings = { ...DEFAULT_SETTINGS, ...(loadedSettings as Partial<OnTaskSettings>) };
 		
 		await this.migrateFromOldStructure(loadedSettings);
 		this.initialized = true;

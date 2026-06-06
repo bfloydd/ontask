@@ -104,3 +104,10 @@ In Obsidian's architecture, views can be torn off into separate popout windows. 
 
 **Decision:**
 We will avoid accessing global dependencies through untyped avenues like `(window as any).moment`. Instead, we will directly import the provided and strongly-typed objects from the Obsidian API (e.g., `import { moment } from 'obsidian'`). This ensures full type safety across our date/time utilities and prevents unsafe member access warnings.
+
+### 14. Safe Typed Parameter Passing
+**Feedback:**
+- Warning: Passes unsafe values into typed parameters (`@typescript-eslint/no-unsafe-argument`).
+
+**Decision:**
+We will never pass variables typed as `any` into strictly typed function parameters. For generic utility functions (such as `Logger`), we will prefer `unknown` over `any` to force explicit checks. When dealing with dynamically typed objects from external APIs (like Obsidian's `loadData()`), we will explicitly cast the response (e.g., `as Partial<OnTaskSettings>`) before spreading it or passing it as an argument.
