@@ -1,4 +1,4 @@
-import { App, Plugin } from 'obsidian';
+import { Plugin } from 'obsidian';
 import { OnTaskSettings, SettingsService, OnTaskSettingsTab } from './src/slices/settings';
 import { PluginOrchestrator } from './src/slices/plugin';
 import { EventSystem } from './src/slices/events';
