@@ -118,3 +118,10 @@ We will never pass variables typed as `any` into strictly typed function paramet
 
 **Decision:**
 We will strictly avoid using `any` type declarations in our source code. When dealing with dynamically typed objects or unknown data, we will use `unknown` as a safer alternative, which forces the developer to perform type narrowing or explicit casting before interacting with the object. If a mock or fallback object is required for testing or edge cases, we will cast through `unknown` first (e.g., `null as unknown as TFile`).
+
+### 16. Synchronous Plugin Teardown
+**Feedback:**
+- Warning: Promise-returning method provided where a void return was expected by extended/implemented type 'Plugin' (`@typescript-eslint/no-misused-promises`).
+
+**Decision:**
+Obsidian expects the `Plugin.onunload()` lifecycle method to be strictly synchronous (returning `void`). We will never mark `onunload()` as `async`. If any asynchronous teardown logic is required during plugin unloading (such as gracefully shutting down an orchestrator), we will execute it as a floating promise explicitly prefixed with the `void` operator (e.g., `void this.orchestrator.shutdown();`) to satisfy both the compiler and Obsidian's lifecycle design.

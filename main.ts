@@ -57,9 +57,9 @@ export default class OnTask extends Plugin {
 		return this.loggingService.getLogger();
 	}
 
-	async onunload() {
+	onunload() {
 		if (this.orchestrator) {
-			await this.orchestrator.shutdown();
+			void this.orchestrator.shutdown();
 		}
 		
 		if (this.statusBarIntegrationService) {
