@@ -132,3 +132,10 @@ Obsidian expects the `Plugin.onunload()` lifecycle method to be strictly synchro
 
 **Decision:**
 We will never assign styles directly via the `.style` property on DOM elements (e.g., `element.style.color = 'red'`). All static styling must be extracted to CSS classes within `styles.css` and applied via `element.addClass(...)`. This ensures our user interface responds appropriately to Obsidian's native themes, allows custom CSS snippets to override the default look, and strictly complies with Obsidian developer policies.
+
+### 18. Maintaining Minimum App Version Compatibility
+**Feedback:**
+- Error: Uses Obsidian APIs newer than the declared `minAppVersion` (`obsidianmd/no-unsupported-api`).
+
+**Decision:**
+Our plugin naturally utilizes modern Obsidian APIs (such as advanced Menu configurations, settings inputs, and workspace layout utilities). Rather than writing legacy polyfills or restricting functionality to support outdated clients, we will maintain a realistic `minAppVersion` in `manifest.json` (currently `1.4.0`) that aligns with our actual API usage. We will always keep `versions.json` synchronized when bumping this version floor.
