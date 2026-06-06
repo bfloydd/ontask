@@ -198,7 +198,7 @@ export class OnTaskViewServiceFactory {
 			false, // isUpdatingStatus - will be set by view
 			callbacks.refreshCheckboxes,
 			(contentArea: HTMLElement, checkboxes: CheckboxItem[]) => domRenderingService.updateTopTaskSection(contentArea, checkboxes),
-			callbacks.scheduleDebouncedRefresh,
+			(file: TFile) => { void callbacks.scheduleDebouncedRefresh(file); },
 			logger
 		);
 

@@ -177,7 +177,7 @@ export class OnTaskViewImpl extends ItemView {
 		
 		this.dayPlannerContainer = this.contentEl.createDiv('ontask-day-planner-wrapper');
 		this.dayPlannerContainer.hide();
-		this.dayPlannerViewService = new DayPlannerViewService(this.dayPlannerContainer, this.domRenderingService, () => this.generateDayPlan());
+		this.dayPlannerViewService = new DayPlannerViewService(this.dayPlannerContainer, this.domRenderingService, () => { void this.generateDayPlan(); });
 		
 		await this.refreshCheckboxes();
 
@@ -342,7 +342,7 @@ export class OnTaskViewImpl extends ItemView {
 
 
 	private scheduleRefresh(): void {
-		this.viewRefreshService.scheduleRefresh(() => this.refreshCheckboxes());
+		this.viewRefreshService.scheduleRefresh(() => { void this.refreshCheckboxes(); });
 	}
 
 	private async scheduleDebouncedRefresh(file: TFile): Promise<void> {

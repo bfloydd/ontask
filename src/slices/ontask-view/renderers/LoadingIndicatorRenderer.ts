@@ -14,8 +14,8 @@ export class LoadingIndicatorRenderer {
 		loadMoreButton.className = 'ontask-load-more-button';
 		loadMoreSection.appendChild(loadMoreButton);
 		
-		loadMoreButton.addEventListener('click', async () => {
-			await onLoadMore();
+		loadMoreButton.addEventListener('click', () => {
+			void onLoadMore();
 		}, { passive: true });
 		
 		return loadMoreSection;

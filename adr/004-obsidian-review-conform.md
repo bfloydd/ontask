@@ -57,12 +57,14 @@ We will omit the plugin ID prefix when defining command IDs (e.g., using `open-v
 
 **Decision:**
 We will always explicitly prefix global timers (`setTimeout`, `clearTimeout`, `setInterval`, `clearInterval`) and animation frames (`requestAnimationFrame`, `cancelAnimationFrame`) with `window.` (e.g. `window.setTimeout`). In Obsidian, popout windows run in their own independent window context. Implicitly calling the global functions can cause timers or animations to fail, stall, or target the wrong context if the user has detached the view into a separate popout window.
+
 ### 7. Deprecated JavaScript Features
 **Feedback:**
 - Warning: `substr` is deprecated. A legacy feature for browser compatibility.
 
 **Decision:**
 We will avoid using deprecated or legacy JavaScript APIs. For string manipulation, we will strictly use modern standards like `String.prototype.substring()` or `String.prototype.slice()` instead of `String.prototype.substr()`. This ensures long-term compatibility and avoids unnecessary warnings in modern JavaScript environments like Obsidian's Electron wrapper.
+
 ### 8. Type Safety with Abstract Files
 **Feedback:**
 - Warning: Avoid casting to `TFile`. Use an `instanceof TFile` check to safely narrow the type.
@@ -119,12 +121,13 @@ We will never pass variables typed as `any` into strictly typed function paramet
 **Decision:**
 We will strictly avoid using `any` type declarations in our source code. When dealing with dynamically typed objects or unknown data, we will use `unknown` as a safer alternative, which forces the developer to perform type narrowing or explicit casting before interacting with the object. If a mock or fallback object is required for testing or edge cases, we will cast through `unknown` first (e.g., `null as unknown as TFile`).
 
-### 16. Synchronous Plugin Teardown
+### 16. Avoiding Misused Promises in Synchronous Contexts
 **Feedback:**
 - Warning: Promise-returning method provided where a void return was expected by extended/implemented type 'Plugin' (`@typescript-eslint/no-misused-promises`).
+- Warning: Promise returned in function argument where a void return was expected.
 
 **Decision:**
-Obsidian expects the `Plugin.onunload()` lifecycle method to be strictly synchronous (returning `void`). We will never mark `onunload()` as `async`. If any asynchronous teardown logic is required during plugin unloading (such as gracefully shutting down an orchestrator), we will execute it as a floating promise explicitly prefixed with the `void` operator (e.g., `void this.orchestrator.shutdown();`) to satisfy both the compiler and Obsidian's lifecycle design.
+We will strictly ensure that asynchronous operations are not implicitly returned to synchronous callers (such as event listener callbacks or the `Plugin.onunload()` lifecycle method). When a signature expects a `void` return type, we will not pass an `async` function. Instead, we will either wrap the asynchronous logic within an immediately invoked async function expression (IIFE) or explicitly mark the fire-and-forget promise with the `void` operator. This prevents unhandled promise rejections and satisfies strict compiler checks.
 
 ### 17. Avoiding Static Styles Assignments
 **Feedback:**

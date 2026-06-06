@@ -267,7 +267,7 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		}
 	}, { passive: true });
 
-	itemElement.addEventListener('drop', async (e: DragEvent) => {
+	itemElement.addEventListener('drop', (e: DragEvent) => {
 		if (e.preventDefault) {
 			e.preventDefault();
 		}
@@ -290,7 +290,7 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 			// If we have container/item selectors, use DOM-based index calculation for more accuracy
 			// This ensures we get the correct target position even if DOM order differs slightly
 			if (containerSelector && itemSelector) {
-				const container = itemElement.closest(containerSelector);
+				const container = itemElement.closest<DragDropContainer>(containerSelector);
 				if (container) {
 					const allItems = Array.from(container.querySelectorAll(itemSelector));
 					targetIndex = allItems.indexOf(itemElement);
@@ -304,18 +304,19 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 			const [movedItem] = itemsCopy.splice(draggedIndex, 1);
 			itemsCopy.splice(targetIndex, 0, movedItem);
 
-			// Save the new order
-			await saveItems(itemsCopy);
-			
-			// Trigger re-render if callback provided
-			if (onReorder) {
-				onReorder();
-			}
+			void (async () => {
+				// Save the new order
+				await saveItems(itemsCopy);
+				
+				// Trigger re-render if callback provided
+				if (onReorder) {
+					onReorder();
+				}
+			})();
 		}
 
 		return false;
 	}, { passive: false });
 }
-
 
 

@@ -128,7 +128,7 @@ export class StatusConfigView {
 		}
 
 		// Event listeners
-		editBtn.addEventListener('click', () => this.editStatus(config, index), { passive: true });
+		editBtn.addEventListener('click', () => { void this.editStatus(config, index); }, { passive: true });
 		if (deleteBtn) {
 			deleteBtn.addEventListener('click', () => this.showDeleteConfirmation(config, index), { passive: true });
 		}
@@ -159,7 +159,7 @@ export class StatusConfigView {
 			text: '+ Add new status'
 		});
 
-		addBtn.addEventListener('click', () => this.addNewStatus(), { passive: true });
+		addBtn.addEventListener('click', () => { void this.addNewStatus(); }, { passive: true });
 	}
 
 	private async editStatus(config: StatusConfig, index: number): Promise<void> {
@@ -340,17 +340,19 @@ export class StatusConfigView {
 			modal.close();
 		}, { passive: true });
 
-		saveBtn.addEventListener('click', async () => {
-			if (existingConfig && index !== undefined) {
-				// Editing existing status
-				await this.saveStatus(workingConfig, index);
-			} else {
-				// Adding new status
-				await this.statusConfigService.addStatusConfig(workingConfig);
-				this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
-				this.render();
-			}
-			modal.close();
+		saveBtn.addEventListener('click', () => {
+			void (async () => {
+				if (existingConfig && index !== undefined) {
+					// Editing existing status
+					await this.saveStatus(workingConfig, index);
+				} else {
+					// Adding new status
+					await this.statusConfigService.addStatusConfig(workingConfig);
+					this.statusConfigs = [...this.statusConfigService.getStatusConfigs()];
+					this.render();
+				}
+				modal.close();
+			})();
 		}, { passive: true });
 
 		modal.open();
@@ -374,9 +376,11 @@ export class StatusConfigView {
 		cancelButton.addEventListener('click', () => modal.close(), { passive: true });
 
 		const deleteButton = buttonContainer.createEl('button', { text: 'Delete' });
-		deleteButton.addEventListener('click', async () => {
-			await this.deleteStatus(index);
-			modal.close();
+		deleteButton.addEventListener('click', () => {
+			void (async () => {
+				await this.deleteStatus(index);
+				modal.close();
+			})();
 		}, { passive: true });
 
 		modal.open();
