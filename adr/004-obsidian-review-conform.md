@@ -146,3 +146,10 @@ Our plugin naturally utilizes modern Obsidian APIs (such as advanced Menu config
 
 **Decision:**
 We will avoid using undescribed linter directive comments to silence warnings. Whenever possible, we will refactor the code to natively comply with the linter rules (for instance, by appropriately naming unused variables or refining type casts). If a directive comment is absolutely necessary to bypass a verified false positive, it must be accompanied by a clear description explaining the rationale.
+
+### 20. Removing Unnecessary Type Assertions
+**Feedback:**
+- Warning: This assertion is unnecessary since it does not change the type of the expression.
+
+**Decision:**
+We will trust TypeScript's type inference and type narrowing capabilities, avoiding explicit casts (using the `as` keyword) when the compiler already knows the correct type. Redundant type assertions will be removed to ensure a clean and idiomatic codebase.

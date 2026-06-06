@@ -84,13 +84,13 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		let container: HTMLElement | null = null;
 
 		if (this.contentEl) {
-			const leaf = this.contentEl.closest('.workspace-leaf-content') as HTMLElement | null;
+			const leaf = this.contentEl.closest('.workspace-leaf-content');
 			const viewContent = leaf?.querySelector<HTMLElement>('.view-content');
 			container = viewContent?.contains(this.contentEl) ? viewContent : leaf;
 		}
 
 		if (!container) {
-			container = activeDocument.querySelector('.workspace-leaf.mod-active .workspace-leaf-content') as HTMLElement | null;
+			container = activeDocument.querySelector('.workspace-leaf.mod-active .workspace-leaf-content');
 		}
 
 		if (container) {

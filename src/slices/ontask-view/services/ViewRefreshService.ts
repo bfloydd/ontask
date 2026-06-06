@@ -167,10 +167,10 @@ export class ViewRefreshService implements ViewRefreshServiceInterface {
 
 		// The hero section is separate markup; this targets the regular list rows.
 		const selector = `.ontask-checkbox-item[data-file-path="${CSS.escape(topTask.file.path)}"][data-line-number="${topTask.lineNumber}"]`;
-		const topTaskRow = contentArea.querySelector(selector) as HTMLElement | null;
+		const topTaskRow = contentArea.querySelector(selector);
 		if (!topTaskRow) return;
 
-		const fileSection = topTaskRow.closest('.ontask-file-section') as HTMLElement | null;
+		const fileSection = topTaskRow.closest('.ontask-file-section');
 		topTaskRow.remove();
 
 		// Clean up empty sections so we don't leave orphaned headers.

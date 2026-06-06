@@ -68,7 +68,7 @@ export class PluginOrchestrationServiceImpl extends SettingsAwareSliceService im
 		
 		for (const leaf of leaves) {
 			if (leaf.view instanceof OnTaskViewImpl) {
-				await (leaf.view as OnTaskViewImpl).refreshCheckboxes();
+				await leaf.view.refreshCheckboxes();
 			}
 		}
 	}

@@ -68,7 +68,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 				// Type assertion necessary: TypeScript loses the key-value relationship with Partial<>
 				// This is safe because we're iterating over keys that exist in OnTaskSettings
 				// and value comes from the same updates object
-				(this.settings as Record<keyof OnTaskSettings, OnTaskSettings[keyof OnTaskSettings]>)[key] = value as OnTaskSettings[keyof OnTaskSettings];
+				(this.settings as Record<keyof OnTaskSettings, OnTaskSettings[keyof OnTaskSettings]>)[key] = value;
 				changes.push({ key, value, oldValue });
 			}
 		});
