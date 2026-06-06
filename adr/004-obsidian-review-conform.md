@@ -28,11 +28,7 @@ We will strictly avoid using `any` type declarations in our source code and prev
 - Warning: Entity is defined but never used.
 
 **Decision:**
-We will proactively prune all unused variables, imports, and parameters. This applies specifically to:
-1. **DOM Elements:** When creating DOM elements (especially using Obsidian's built-in helpers like `createEl` or `createDiv`), we will only assign the returned element to a variable if we need to interact with it again.
-2. **Destructuring:** When destructuring objects or arrays, we will omit unused variables (e.g. `let [, secondItem] = array;`).
-3. **Catch Blocks:** If an error parameter in a `catch` block is unused, we will use the parameterless `catch { ... }` syntax.
-4. **Imports & Interfaces:** Unused module imports or interface definitions will be aggressively removed.
+We will proactively prune all unused variables, imports, and parameters. When creating DOM elements using built-in helpers, we will only assign the returned element to a variable if we need to interact with it again. For destructuring assignments, we will either omit unused array elements or restructure our logic to avoid extracting unused object properties. For error handling, we will use parameterless catch blocks if the error object is not utilized. We will also aggressively remove unused module imports and interface definitions.
 
 ### 3. Handling Deprecated `display()` API
 **Feedback:**

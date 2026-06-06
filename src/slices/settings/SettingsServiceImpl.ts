@@ -35,9 +35,9 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 		// Migrate from onlyShowToday boolean to dateFilter string
 		if (loadedSettings && 'onlyShowToday' in loadedSettings && !('dateFilter' in loadedSettings)) {
 			this.settings.dateFilter = (loadedSettings as { onlyShowToday?: boolean }).onlyShowToday ? 'today' : 'all';
-			// Remove old property by creating a new object without it
-			const { onlyShowToday: _onlyShowToday, ...restSettings } = this.settings as OnTaskSettings & { onlyShowToday?: boolean };
-			this.settings = restSettings as OnTaskSettings;
+			// Remove old property
+			const tempSettings = this.settings as Record<string, unknown>;
+			delete tempSettings.onlyShowToday;
 			await this.getPlugin()!.saveData(this.settings);
 			this.logger.debug('[OnTask Settings] Migrated onlyShowToday to dateFilter');
 		}
