@@ -156,3 +156,10 @@ We will avoid using undescribed linter directive comments to silence warnings. W
 
 **Decision:**
 We will trust TypeScript's type inference and type narrowing capabilities, avoiding explicit casts (using the `as` keyword) when the compiler already knows the correct type. Redundant type assertions will be removed to ensure a clean and idiomatic codebase.
+
+### 21. Avoiding Redundant Union Types
+**Feedback:**
+- Warning: 'unknown' overrides all other types in this union type (`@typescript-eslint/no-redundant-type-constituents`).
+
+**Decision:**
+We will avoid creating union types where one constituent completely subsumes the others (such as `unknown | null` or `any | string`), as this makes the explicit types redundant and misleading. Instead, we will either use the specific, narrow type (e.g., `Plugin | null` instead of `unknown | null`) or use the single broad type if strictly necessary.

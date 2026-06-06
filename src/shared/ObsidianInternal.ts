@@ -18,7 +18,7 @@ export interface InternalPlugins {
 }
 
 export interface CommunityPlugins {
-	getPlugin(id: string): unknown | null;
+	getPlugin(id: string): Plugin | null;
 }
 
 export interface AppWithPlugins extends App {
