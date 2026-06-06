@@ -101,7 +101,7 @@ export class StatusConfigView {
 
 		// Add visual indicator for ranking after description
 		if (config.topTaskRanking !== undefined) {
-			const indicatorEl = infoEl.createEl('span', {
+			infoEl.createEl('span', {
 				cls: 'ontask-task-ranking',
 				text: `Rank ${config.topTaskRanking}`,
 				attr: {
