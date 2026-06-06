@@ -35,7 +35,7 @@ export class FolderTaskStrategy implements TaskFinderStrategy {
 		return folder !== null;
 	}
 
-	getConfiguration(): Record<string, any> {
+	getConfiguration(): Record<string, unknown> {
 		return {
 			folderPath: this.config.folderPath,
 			recursive: this.config.recursive,

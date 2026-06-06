@@ -65,7 +65,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 		const checkboxes: TaskItem[] = [];
 
 		try {
-			const baseFolder = this.streamsService.getStreamBaseFolder(stream as any);
+			const baseFolder = this.streamsService.getStreamBaseFolder(stream as unknown as import('../../streams/StreamsServiceInterface').Stream);
 			const streamFolder = this.app.vault.getAbstractFileByPath(baseFolder);
 
 			if (!streamFolder || !(streamFolder instanceof TFile)) {
@@ -118,7 +118,7 @@ export class StreamsTaskStrategy implements TaskFinderStrategy {
 						lineContent: line.trim(),
 						checkboxText: line.trim(),
 						sourceName: 'Streams',
-						sourcePath: this.streamsService.getStreamBaseFolder(stream as any),
+						sourcePath: this.streamsService.getStreamBaseFolder(stream as unknown as import('../../streams/StreamsServiceInterface').Stream),
 						indentationLevel
 					});
 

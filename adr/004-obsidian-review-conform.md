@@ -111,3 +111,10 @@ We will avoid accessing global dependencies through untyped avenues like `(windo
 
 **Decision:**
 We will never pass variables typed as `any` into strictly typed function parameters. For generic utility functions (such as `Logger`), we will prefer `unknown` over `any` to force explicit checks. When dealing with dynamically typed objects from external APIs (like Obsidian's `loadData()`), we will explicitly cast the response (e.g., `as Partial<OnTaskSettings>`) before spreading it or passing it as an argument.
+
+### 15. Disallowing Explicit Any
+**Feedback:**
+- Warning: Unexpected any. Specify a different type (`@typescript-eslint/no-explicit-any`).
+
+**Decision:**
+We will strictly avoid using `any` type declarations in our source code. When dealing with dynamically typed objects or unknown data, we will use `unknown` as a safer alternative, which forces the developer to perform type narrowing or explicit casting before interacting with the object. If a mock or fallback object is required for testing or edge cases, we will cast through `unknown` first (e.g., `null as unknown as TFile`).

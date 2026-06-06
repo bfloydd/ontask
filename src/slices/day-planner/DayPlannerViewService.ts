@@ -92,7 +92,7 @@ export class DayPlannerViewService {
 						// Fallback if not found (e.g. task was deleted since plan was generated or LLM altered the text)
 						const cleanTaskText = taskStr.replace(/^[-*]\s*(\[.*?\])?\s*/, '').replace(/^\d+\.\s*/, '').replace(/^\.\s*/, '').trim();
 						const mockTaskItem: CheckboxItem = {
-							file: null as any,
+							file: null as unknown as import('obsidian').TFile,
 							lineNumber: -1,
 							lineContent: `- [ ] ${cleanTaskText}`,
 							checkboxText: cleanTaskText,

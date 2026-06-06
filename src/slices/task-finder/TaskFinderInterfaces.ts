@@ -45,7 +45,7 @@ export interface TaskFinderStrategy {
 	/**
 	 * Get configuration options for this strategy
 	 */
-	getConfiguration?(): Record<string, any>;
+	getConfiguration?(): Record<string, unknown>;
 }
 
 // Backward compatibility
