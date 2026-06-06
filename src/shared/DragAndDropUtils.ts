@@ -111,7 +111,7 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		let dropIndicator = container[indicatorKey] as HTMLElement | null;
 		
 		if (!dropIndicator) {
-			dropIndicator = document.createElement('div');
+			dropIndicator = activeDocument.createElement('div');
 			const obsidianElement = dropIndicator as ObsidianHTMLElement;
 			if (typeof obsidianElement.addClass === 'function') {
 				obsidianElement.addClass(dropIndicatorClass);

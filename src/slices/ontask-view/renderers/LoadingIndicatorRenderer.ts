@@ -6,10 +6,10 @@ export class LoadingIndicatorRenderer {
 	 * Creates a load more button element.
 	 */
 	createLoadMoreButtonElement(onLoadMore: () => Promise<void>): HTMLElement {
-		const loadMoreSection = document.createElement('div');
+		const loadMoreSection = activeDocument.createElement('div');
 		loadMoreSection.className = 'ontask-load-more-section';
 		
-		const loadMoreButton = document.createElement('button');
+		const loadMoreButton = activeDocument.createElement('button');
 		loadMoreButton.textContent = 'Load more';
 		loadMoreButton.className = 'ontask-load-more-button';
 		loadMoreSection.appendChild(loadMoreButton);
@@ -25,10 +25,10 @@ export class LoadingIndicatorRenderer {
 	 * Creates a loading indicator element.
 	 */
 	createLoadingIndicatorElement(): HTMLElement {
-		const loadingSection = document.createElement('div');
+		const loadingSection = activeDocument.createElement('div');
 		loadingSection.className = 'ontask-load-more-section';
 		
-		const loadingIndicator = document.createElement('div');
+		const loadingIndicator = activeDocument.createElement('div');
 		loadingIndicator.textContent = 'Loading tasks...';
 		loadingIndicator.className = 'ontask-loading-indicator';
 		loadingSection.appendChild(loadingIndicator);
@@ -40,10 +40,10 @@ export class LoadingIndicatorRenderer {
 	 * Creates a "no more tasks" indicator element.
 	 */
 	createNoMoreTasksIndicatorElement(): HTMLElement {
-		const noMoreSection = document.createElement('div');
+		const noMoreSection = activeDocument.createElement('div');
 		noMoreSection.className = 'ontask-load-more-section';
 		
-		const noMoreIndicator = document.createElement('div');
+		const noMoreIndicator = activeDocument.createElement('div');
 		noMoreIndicator.textContent = 'No more tasks';
 		noMoreIndicator.className = 'ontask-no-more-tasks-indicator';
 		noMoreSection.appendChild(noMoreIndicator);

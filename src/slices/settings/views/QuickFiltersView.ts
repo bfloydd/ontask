@@ -200,14 +200,14 @@ export class QuickFiltersView {
 				.setDesc('');
 
 			// Add description on the same line
-			const descriptionEl = document.createElement('span');
+			const descriptionEl = activeDocument.createElement('span');
 			descriptionEl.className = 'status-config-description';
 			descriptionEl.textContent = ` - ${statusConfig.description}`;
 			statusSetting.nameEl.appendChild(descriptionEl);
 
 			// Add visual indicator for ranking after description
 			if (statusConfig.topTaskRanking !== undefined) {
-				const indicatorEl = document.createElement('span');
+				const indicatorEl = activeDocument.createElement('span');
 				indicatorEl.className = 'ontask-task-ranking';
 				indicatorEl.textContent = `Rank ${statusConfig.topTaskRanking}`;
 				indicatorEl.setAttribute('title', `Top Task Rank ${statusConfig.topTaskRanking}`);

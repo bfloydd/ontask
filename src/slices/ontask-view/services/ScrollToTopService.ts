@@ -11,8 +11,8 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 	private app: App;
 	private contentEl: HTMLElement | null = null;
 	private scrollToTopButton: HTMLButtonElement | null = null;
-	private scrollThreshold: number = 100; // Show button after scrolling 100px down
-	private isVisible: boolean = false;
+	private scrollThreshold = 100; // Show button after scrolling 100px down
+	private isVisible = false;
 	private scrollHandler: (() => void) | null = null;
 	private scrollContainer: HTMLElement | null = null;
 	private usingWindowScroll = false;
@@ -35,11 +35,11 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		if (!this.contentEl) return;
 
 		// Create the scroll-to-top button
-		this.scrollToTopButton = document.createElement('button');
+		this.scrollToTopButton = activeDocument.createElement('button');
 		this.scrollToTopButton.className = 'ontask-scroll-to-top-button';
 		
 		// Use DOM API instead of innerHTML for security
-		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		const svg = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		svg.setAttribute('class', 'lucide lucide-chevron-up');
 		svg.setAttribute('width', '16');
 		svg.setAttribute('height', '16');
@@ -50,7 +50,7 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		svg.setAttribute('stroke-linecap', 'round');
 		svg.setAttribute('stroke-linejoin', 'round');
 		
-		const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		const path = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
 		path.setAttribute('d', 'm18 15-6-6-6 6');
 		svg.appendChild(path);
 		
@@ -90,7 +90,7 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		}
 
 		if (!container) {
-			container = document.querySelector('.workspace-leaf.mod-active .workspace-leaf-content') as HTMLElement | null;
+			container = activeDocument.querySelector('.workspace-leaf.mod-active .workspace-leaf-content') as HTMLElement | null;
 		}
 
 		if (container) {
@@ -110,7 +110,7 @@ export class ScrollToTopService implements ScrollToTopServiceInterface {
 		if (this.scrollContainer) {
 			scrollTop = this.scrollContainer.scrollTop;
 		} else if (this.usingWindowScroll) {
-			scrollTop = window.scrollY || document.documentElement.scrollTop;
+			scrollTop = window.scrollY || activeDocument.documentElement.scrollTop;
 		}
 
 		const shouldShow = scrollTop > this.scrollThreshold;

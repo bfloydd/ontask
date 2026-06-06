@@ -16,7 +16,7 @@ export class FileSectionRenderer {
 	 * Creates a file section element with header and checkboxes.
 	 */
 	createFileSectionElement(filePath: string, fileCheckboxes: CheckboxItem[], maxTasksToShow: number, tasksShown: number): HTMLElement {
-		const fileSection = document.createElement('div');
+		const fileSection = activeDocument.createElement('div');
 		fileSection.className = 'ontask-file-section';
 		fileSection.setAttribute('data-file-path', filePath);
 		

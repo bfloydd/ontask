@@ -19,7 +19,7 @@ export class CheckboxRenderer {
 	 * Creates a checkbox DOM element with all styling, event handlers, and data attributes.
 	 */
 	createCheckboxElement(checkbox: CheckboxItem): HTMLElement {
-		const checkboxEl = document.createElement('div');
+		const checkboxEl = activeDocument.createElement('div');
 		checkboxEl.addClass('ontask-checkbox-item');
 
 		if (checkbox.indentationLevel && checkbox.indentationLevel > 0) {
@@ -37,10 +37,10 @@ export class CheckboxRenderer {
 			checkboxEl.addClass('ontask-toptask-hero');
 		}
 
-		const checkboxContainer = document.createElement('div');
+		const checkboxContainer = activeDocument.createElement('div');
 		checkboxContainer.addClass('ontask-checkbox-label');
 
-		const statusDisplay = document.createElement('div');
+		const statusDisplay = activeDocument.createElement('div');
 		statusDisplay.addClass('ontask-checkbox-display');
 
 		const { statusSymbol, remainingText } = this.parseCheckboxLine(checkbox.lineContent);
@@ -64,13 +64,13 @@ export class CheckboxRenderer {
 			}
 		}
 
-		const textEl = document.createElement('span');
+		const textEl = activeDocument.createElement('span');
 		textEl.textContent = remainingText || 'Task';
 		textEl.addClass('ontask-checkbox-text');
 
 		// Add ranking badge if task has topTaskRanking
 		if (checkbox.topTaskRanking !== undefined) {
-			const rankingEl = document.createElement('span');
+			const rankingEl = activeDocument.createElement('span');
 			rankingEl.textContent = `Rank ${checkbox.topTaskRanking}`;
 			rankingEl.addClass('ontask-task-ranking');
 			rankingEl.setAttribute('data-rank', checkbox.topTaskRanking.toString());

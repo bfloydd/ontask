@@ -6,7 +6,7 @@ export class FilterSectionRenderer {
 	 * Creates the filter section element with input field and clear button.
 	 */
 	createFilterSectionElement(currentFilter: string, onFilterChange: (filter: string) => void, onClearFilter: () => void): HTMLElement {
-		const filterSection = document.createElement('div');
+		const filterSection = activeDocument.createElement('div');
 		filterSection.className = 'ontask-filter-section ontask-file-section ontask-filter-collapsed';
 		
 		const filterContainer = filterSection.createDiv('ontask-filter-container');

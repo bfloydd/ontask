@@ -26,7 +26,7 @@ export class TopTaskRenderer {
 		textEl.textContent = remainingText || 'Top task';
 
 		if (topTaskRanking !== undefined) {
-			const rankingEl = document.createElement('span');
+			const rankingEl = activeDocument.createElement('span');
 			rankingEl.textContent = `Rank ${topTaskRanking}`;
 			rankingEl.addClass('ontask-task-ranking');
 			rankingEl.setAttribute('data-rank', topTaskRanking.toString());
@@ -38,7 +38,7 @@ export class TopTaskRenderer {
 	 * Creates a top task section element (for fragment usage).
 	 */
 	createTopTaskSectionElement(topTask: CheckboxItem): HTMLElement {
-		const topTaskSection = document.createElement('div');
+		const topTaskSection = activeDocument.createElement('div');
 		topTaskSection.className = 'ontask-toptask-hero-section ontask-file-section';
 
 		// Apply the configurable top task color

@@ -85,7 +85,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		this.dataProcessor = new CheckboxDataProcessor(app, getFileName, logger);
 	}
 
-	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, supportsLoadMore: boolean = true): void {
+	renderCheckboxes(contentArea: HTMLElement, checkboxes: CheckboxItem[], displayedTasksCount: number, currentFilter?: string, onFilterChange?: (filter: string) => void, onClearFilter?: () => void, onLoadMore?: () => Promise<void>, supportsLoadMore = true): void {
 		const topTask = checkboxes.find(checkbox => checkbox.isTopTask);
 		const listCheckboxes = checkboxes.filter((checkbox) => !checkbox.isTopTask);
 
@@ -97,7 +97,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		}
 
 		// Use DocumentFragment for optimized DOM manipulation
-		const fragment = document.createDocumentFragment();
+		const fragment = activeDocument.createDocumentFragment();
 
 		if (topTask) {
 			const topTaskSection = this.topTaskRenderer.createTopTaskSectionElement(topTask);
@@ -191,7 +191,7 @@ export class DOMRenderingService implements DOMRenderingServiceInterface {
 		}
 		
 		for (const [filePath, fileTasks] of tasksByFile) {
-			let existingFileSection = contentArea.querySelector(`[data-file-path="${filePath}"]`) as HTMLElement;
+			const existingFileSection = contentArea.querySelector(`[data-file-path="${filePath}"]`) as HTMLElement;
 			
 			if (existingFileSection) {
 				this.fileSectionRenderer.appendTasksToExistingFile(existingFileSection, fileTasks, filePath);

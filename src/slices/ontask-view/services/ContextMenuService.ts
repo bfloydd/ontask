@@ -243,7 +243,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 				const menuEl = (item as unknown as MenuItemWithDom).dom;
 				if (menuEl) {
 					// Create a styled status display element
-					const statusDisplay = document.createElement('span');
+					const statusDisplay = activeDocument.createElement('span');
 					statusDisplay.className = 'ontask-context-menu-status-display';
 					statusDisplay.textContent = status.symbol;
 					statusDisplay.style.setProperty('--ontask-status-color', status.color);

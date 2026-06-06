@@ -42,7 +42,7 @@ export class OnTaskViewDateControls {
 			}
 			
 			// Append text label with space
-			button.appendChild(document.createTextNode(' ' + option.label));
+			button.appendChild(activeDocument.createTextNode(' ' + option.label));
 			
 			button.addEventListener('click', () => this.setDateFilter(option.id), { passive: true });
 			

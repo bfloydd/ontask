@@ -18,7 +18,6 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 	private statusBarItem: HTMLElement | null = null;
 	private currentTopTask: CheckboxItem | null = null;
 	private pendingDecorationUpdate = false;
-	private initialized = false;
 	private updateRequestId: number | null = null;
 	private topTaskMemory: CheckboxItem | null = null;
 
@@ -157,16 +156,16 @@ export class StatusBarIntegrationServiceImpl extends PluginAwareSliceService imp
 			const { remainingText } = this.parseCheckboxLine(topTask.lineContent);
 			const displayText = remainingText || 'Top task';
 
-			const iconSpan = document.createElement('span');
+			const iconSpan = activeDocument.createElement('span');
 			iconSpan.className = 'ontask-status-bar-icon';
 			iconSpan.textContent = '🔥 ';
 
-			const textSpan = document.createElement('span');
+			const textSpan = activeDocument.createElement('span');
 			textSpan.className = 'ontask-status-bar-text';
 			textSpan.textContent = displayText;
 
 			if (topTask.topTaskRanking !== undefined) {
-				const rankingEl = document.createElement('span');
+				const rankingEl = activeDocument.createElement('span');
 				rankingEl.textContent = ` Rank ${topTask.topTaskRanking}`;
 				rankingEl.addClass('ontask-task-ranking');
 				rankingEl.setAttribute('data-rank', topTask.topTaskRanking.toString());

@@ -90,3 +90,10 @@ When a method defines a strict return type, we will never return values that eva
 
 **Decision:**
 We will never use `{}` to represent an empty object in TypeScript, as it is fundamentally unsafe and acts more like an `any non-nullish` wildcard. When defining an object type that intentionally contains no properties (such as an empty event payload), we will strictly use `Record<string, never>` to enforce that the object is truly empty at compile time.
+
+### 12. Popout Window Document Context
+**Feedback:**
+- Warning: Use `activeDocument` instead of `document` for popout window compatibility.
+
+**Decision:**
+In Obsidian's architecture, views can be torn off into separate popout windows. Using the global `document` variable will strictly reference the main application window's DOM. This means elements created via `document.createElement()` or appended to `document.body` may render in the wrong window or fail completely. We will exclusively use `activeDocument` for all DOM manipulations to ensure 100% popout window compatibility.

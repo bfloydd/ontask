@@ -195,7 +195,7 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 		
 		// Add ranking badge if task has topTaskRanking
 		if (checkbox.topTaskRanking !== undefined) {
-			const rankingElement = document.createElement('span');
+			const rankingElement = activeDocument.createElement('span');
 			rankingElement.textContent = `Rank ${checkbox.topTaskRanking}`;
 			rankingElement.addClass('ontask-task-ranking');
 			rankingElement.setAttribute('data-rank', checkbox.topTaskRanking.toString());
@@ -245,7 +245,7 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 				if (existingRanking) {
 					existingRanking.remove();
 				}
-				const rankingElement = document.createElement('span');
+				const rankingElement = activeDocument.createElement('span');
 				rankingElement.textContent = `Rank ${newTopTask.topTaskRanking}`;
 				rankingElement.addClass('ontask-task-ranking');
 				rankingElement.setAttribute('data-rank', newTopTask.topTaskRanking.toString());
