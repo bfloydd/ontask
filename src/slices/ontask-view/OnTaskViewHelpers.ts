@@ -34,7 +34,7 @@ export class OnTaskViewHelpers {
 		if (file instanceof TFile) {
 			await this.handleStreamUpdate(filePath);
 			
-			this.app.workspace.openLinkText(filePath, '');
+			void this.app.workspace.openLinkText(filePath, '');
 			
 			setTimeout(() => {
 				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);

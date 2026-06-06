@@ -72,12 +72,14 @@ We will avoid using deprecated or legacy JavaScript APIs. For string manipulatio
 **Decision:**
 When retrieving abstract files from the vault (e.g., using `this.app.vault.getAbstractFileByPath()`), we will strictly use the `instanceof TFile` type guard to verify the result is actually a `TFile` instead of blindly casting it using `as TFile`. This ensures runtime safety in case the path points to a directory (`TFolder`) or the file does not exist.
 
-### 9. Explicitly Handling Floating Promises
+### 9. Safe Promise Handling in Synchronous Contexts
 **Feedback:**
 - Warning: Promises must be awaited, end with a call to `.catch`, end with a call to `.then` with a rejection handler or be explicitly marked as ignored with the `void` operator.
+- Warning: Promise-returning method provided where a void return was expected by extended/implemented type 'Plugin' (`@typescript-eslint/no-misused-promises`).
+- Warning: Promise returned in function argument where a void return was expected.
 
 **Decision:**
-We will never leave promises floating. When calling an asynchronous function where we deliberately do not want to `await` its resolution (e.g., inside synchronous event listeners, UI callbacks, or fire-and-forget background tasks), we will explicitly mark it with the `void` operator (e.g., `void this.refreshCheckboxes();`). This signals intentionality to both the compiler and other developers, and prevents silent failures.
+We will never leave promises floating and will ensure that asynchronous operations are not implicitly returned to synchronous callers. When calling an asynchronous function where we deliberately do not want to await its resolution, we will explicitly mark it with the `void` operator. When a signature expects a `void` return type, we will not pass an `async` function; instead, we will either wrap the asynchronous logic within an immediately invoked async function expression or use the `void` operator.
 
 ### 10. Safe Return Types
 **Feedback:**
@@ -121,43 +123,35 @@ We will never pass variables typed as `any` into strictly typed function paramet
 **Decision:**
 We will strictly avoid using `any` type declarations in our source code. When dealing with dynamically typed objects or unknown data, we will use `unknown` as a safer alternative, which forces the developer to perform type narrowing or explicit casting before interacting with the object. If a mock or fallback object is required for testing or edge cases, we will cast through `unknown` first (e.g., `null as unknown as TFile`).
 
-### 16. Avoiding Misused Promises in Synchronous Contexts
-**Feedback:**
-- Warning: Promise-returning method provided where a void return was expected by extended/implemented type 'Plugin' (`@typescript-eslint/no-misused-promises`).
-- Warning: Promise returned in function argument where a void return was expected.
-
-**Decision:**
-We will strictly ensure that asynchronous operations are not implicitly returned to synchronous callers (such as event listener callbacks or the `Plugin.onunload()` lifecycle method). When a signature expects a `void` return type, we will not pass an `async` function. Instead, we will either wrap the asynchronous logic within an immediately invoked async function expression (IIFE) or explicitly mark the fire-and-forget promise with the `void` operator. This prevents unhandled promise rejections and satisfies strict compiler checks.
-
-### 17. Avoiding Static Styles Assignments
+### 16. Avoiding Static Styles Assignments
 **Feedback:**
 - Error: Sets styles directly instead of using CSS classes or `setCssProps` (`obsidianmd/no-static-styles-assignment`).
 
 **Decision:**
 We will never assign styles directly via the `.style` property on DOM elements (e.g., `element.style.color = 'red'`). All static styling must be extracted to CSS classes within `styles.css` and applied via `element.addClass(...)`. This ensures our user interface responds appropriately to Obsidian's native themes, allows custom CSS snippets to override the default look, and strictly complies with Obsidian developer policies.
 
-### 18. Maintaining Minimum App Version Compatibility
+### 17. Maintaining Minimum App Version Compatibility
 **Feedback:**
 - Error: Uses Obsidian APIs newer than the declared `minAppVersion` (`obsidianmd/no-unsupported-api`).
 
 **Decision:**
 Our plugin naturally utilizes modern Obsidian APIs (such as advanced Menu configurations, settings inputs, and workspace layout utilities). Rather than writing legacy polyfills or restricting functionality to support outdated clients, we will maintain a realistic `minAppVersion` in `manifest.json` (currently `1.4.0`) that aligns with our actual API usage. We will always keep `versions.json` synchronized when bumping this version floor.
 
-### 19. Avoiding Undescribed Linter Directives
+### 18. Avoiding Undescribed Linter Directives
 **Feedback:**
 - Error: Unexpected undescribed directive comment. Include descriptions to explain why the comment is necessary.
 
 **Decision:**
 We will avoid using undescribed linter directive comments to silence warnings. Whenever possible, we will refactor the code to natively comply with the linter rules (for instance, by appropriately naming unused variables or refining type casts). If a directive comment is absolutely necessary to bypass a verified false positive, it must be accompanied by a clear description explaining the rationale.
 
-### 20. Removing Unnecessary Type Assertions
+### 19. Removing Unnecessary Type Assertions
 **Feedback:**
 - Warning: This assertion is unnecessary since it does not change the type of the expression.
 
 **Decision:**
 We will trust TypeScript's type inference and type narrowing capabilities, avoiding explicit casts (using the `as` keyword) when the compiler already knows the correct type. Redundant type assertions will be removed to ensure a clean and idiomatic codebase.
 
-### 21. Avoiding Redundant Union Types
+### 20. Avoiding Redundant Union Types
 **Feedback:**
 - Warning: 'unknown' overrides all other types in this union type (`@typescript-eslint/no-redundant-type-constituents`).
 

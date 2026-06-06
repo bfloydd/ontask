@@ -52,7 +52,7 @@ export class EventHandlingService implements EventHandlingServiceInterface, Chec
 			this.logger.debug('[OnTask EventHandling] Settings changed event received:', event.data);
 			if (event.data?.key === 'dateFilter' || event.data?.key === 'topTaskColor' || event.data?.key === 'useThemeDefaultColor') {
 				this.logger.debug('[OnTask EventHandling] Setting changed, refreshing entire view');
-				this.onRefreshCheckboxes();
+				void this.onRefreshCheckboxes();
 			}
 		});
 		

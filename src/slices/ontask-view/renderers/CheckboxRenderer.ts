@@ -84,7 +84,7 @@ export class CheckboxRenderer {
 		}, { passive: false });
 
 		textEl.addEventListener('click', () => {
-			this.onOpenFile(checkbox.file?.path || '', checkbox.lineNumber);
+			void this.onOpenFile(checkbox.file?.path || '', checkbox.lineNumber);
 		}, { passive: true });
 
 		checkboxEl.addEventListener('contextmenu', (e) => {

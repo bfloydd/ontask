@@ -351,7 +351,7 @@ export class OnTaskViewImpl extends ItemView {
 		if (hasChanges) {
 			this.logger.debug('[OnTask View] Emitting file:modified event for', file.path);
 			this.eventSystem.emit('file:modified', { path: file.path });
-			this.refreshCheckboxes();
+			void this.refreshCheckboxes();
 		}
 	}
 

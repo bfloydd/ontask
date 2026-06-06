@@ -182,7 +182,7 @@ export class TopTaskRenderer {
 		const topTaskText = topTaskDisplay.createDiv('ontask-toptask-hero-text');
 		this.setTopTaskTextWithRanking(topTaskText, remainingText, topTask.topTaskRanking);
 		topTaskText.addEventListener('click', () => {
-			this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
+			void this.onOpenFile(topTask.file?.path || '', topTask.lineNumber);
 		}, { passive: true });
 
 		const topTaskSource = topTaskDisplay.createDiv('ontask-toptask-hero-source');
