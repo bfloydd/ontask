@@ -289,7 +289,7 @@ export class ContextMenuService implements ContextMenuServiceInterface {
 
 		// Store the modal and clear reference when it closes
 		this.filterModal = modal;
-		const originalOnClose = modal.onClose.bind(modal);
+		const originalOnClose = modal.onClose.bind(modal) as () => void;
 		modal.onClose = () => {
 			originalOnClose();
 			this.filterModal = null;

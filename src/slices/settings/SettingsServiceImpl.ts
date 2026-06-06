@@ -24,7 +24,7 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 	async initialize(): Promise<void> {
 		if (this.initialized) return;
 		
-		const loadedSettings = await this.getPlugin()!.loadData();
+		const loadedSettings: unknown = await this.getPlugin()!.loadData();
 		this.settings = { ...DEFAULT_SETTINGS, ...(loadedSettings as Partial<OnTaskSettings>) };
 		
 		await this.migrateFromOldStructure(loadedSettings);
@@ -85,8 +85,9 @@ export class SettingsServiceImpl extends SettingsAwareSliceService implements Se
 		
 		for (const [key, value] of Object.entries(this.settings)) {
 			const typedKey = key as keyof OnTaskSettings;
+			const typedValue = value as OnTaskSettings[keyof OnTaskSettings];
 			const oldValue = oldSettings[typedKey];
-			this.notifyChange({ key: typedKey, value, oldValue });
+			this.notifyChange({ key: typedKey, value: typedValue, oldValue });
 		}
 	}
 
