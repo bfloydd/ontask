@@ -97,3 +97,10 @@ We will never use `{}` to represent an empty object in TypeScript, as it is fund
 
 **Decision:**
 In Obsidian's architecture, views can be torn off into separate popout windows. Using the global `document` variable will strictly reference the main application window's DOM. This means elements created via `document.createElement()` or appended to `document.body` may render in the wrong window or fail completely. We will exclusively use `activeDocument` for all DOM manipulations to ensure 100% popout window compatibility.
+
+### 13. Type Safe Moment Imports
+**Feedback:**
+- Warning: Unsafe member access `.format` on an `any` value.
+
+**Decision:**
+We will avoid accessing global dependencies through untyped avenues like `(window as any).moment`. Instead, we will directly import the provided and strongly-typed objects from the Obsidian API (e.g., `import { moment } from 'obsidian'`). This ensures full type safety across our date/time utilities and prevents unsafe member access warnings.

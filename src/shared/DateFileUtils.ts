@@ -1,4 +1,4 @@
-import { TFile } from 'obsidian';
+import { TFile, moment } from 'obsidian';
 
 /**
  * Utility functions for working with date-based file naming patterns
@@ -18,8 +18,7 @@ export class DateFileUtils {
 	 * (Monday through Sunday of the current week, based on the local clock).
 	 */
 	static isCurrentWeekFile(file: TFile): boolean {
-		const moment = (window as any).moment;
-		if (moment) {
+		if (typeof moment === 'function') {
 			const currentMoment = moment();
 			const weekStart = currentMoment.clone().startOf('week');
 
