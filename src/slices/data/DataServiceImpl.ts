@@ -100,7 +100,8 @@ export class DataServiceImpl extends PluginAwareSliceService implements DataServ
 
 	async loadData(): Promise<DataServiceData> {
 		try {
-			return await this.getPlugin()!.loadData() || {};
+			const loaded = await this.getPlugin()!.loadData();
+			return (loaded || {}) as DataServiceData;
 		} catch (error) {
 			const logger = this.getLogger();
 			if (logger) {

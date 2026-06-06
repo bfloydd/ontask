@@ -76,3 +76,10 @@ When retrieving abstract files from the vault (e.g., using `this.app.vault.getAb
 
 **Decision:**
 We will never leave promises floating. When calling an asynchronous function where we deliberately do not want to `await` its resolution (e.g., inside synchronous event listeners, UI callbacks, or fire-and-forget background tasks), we will explicitly mark it with the `void` operator (e.g., `void this.refreshCheckboxes();`). This signals intentionality to both the compiler and other developers, and prevents silent failures.
+
+### 10. Safe Return Types
+**Feedback:**
+- Warning: Returns unsafe values from typed code (`@typescript-eslint/no-unsafe-return`).
+
+**Decision:**
+When a method defines a strict return type, we will never return values that evaluate to `any`. For external calls that inherently return `any` (such as Obsidian's `Plugin.loadData()`), we will explicitly assert the response to the expected type (e.g., `(loaded || {}) as DataServiceData`) to satisfy the compiler and guarantee type safety moving forward.
