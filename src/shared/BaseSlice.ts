@@ -22,6 +22,7 @@ export abstract class SettingsAwareSliceService extends PluginAwareSliceService 
         if (!this.plugin) {
             throw new Error('Plugin not set');
         }
+        // eslint-disable-next-line obsidianmd/no-unsupported-api
         return ((this.plugin as Plugin & { settings?: T }).settings || {}) as T;
     }
 
