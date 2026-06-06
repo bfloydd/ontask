@@ -139,3 +139,10 @@ We will never assign styles directly via the `.style` property on DOM elements (
 
 **Decision:**
 Our plugin naturally utilizes modern Obsidian APIs (such as advanced Menu configurations, settings inputs, and workspace layout utilities). Rather than writing legacy polyfills or restricting functionality to support outdated clients, we will maintain a realistic `minAppVersion` in `manifest.json` (currently `1.4.0`) that aligns with our actual API usage. We will always keep `versions.json` synchronized when bumping this version floor.
+
+### 19. Avoiding Undescribed Linter Directives
+**Feedback:**
+- Error: Unexpected undescribed directive comment. Include descriptions to explain why the comment is necessary.
+
+**Decision:**
+We will avoid using undescribed linter directive comments to silence warnings. Whenever possible, we will refactor the code to natively comply with the linter rules (for instance, by appropriately naming unused variables or refining type casts). If a directive comment is absolutely necessary to bypass a verified false positive, it must be accompanied by a clear description explaining the rationale.

@@ -151,6 +151,12 @@ Follow Obsidian's **Developer Policies** and **Plugin Guidelines**. In particula
 - Provide defaults and validation in settings.
 - Write idempotent code paths so reload/unload doesn't leak listeners or intervals.
 - Use `this.register*` helpers for everything that needs cleanup.
+- Always reference the ADRs located in `adr/` when making changes or addressing review feedback.
+- When updating or adding to ADRs, follow these rules:
+  - Don't capture code snippets in the ADR, just the concept.
+  - Don't include consequences.
+  - If ADR sections overlap, just combine them into the same concept.
+  - Don't change other unrelated sections.
 
 **Don't**
 - Introduce network calls without an obvious user-facing reason and documentation.
