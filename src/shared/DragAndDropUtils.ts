@@ -75,7 +75,7 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 	// Get shared dragged element from container
 	const getSharedDraggedElement = (): HTMLElement | null => {
 		const container = containerSelector 
-			? itemElement.closest(containerSelector)
+			? itemElement.closest<DragDropContainer>(containerSelector)
 			: itemElement.parentElement as DragDropContainer | null;
 		
 		if (!container) return null;
@@ -86,7 +86,7 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 
 	const setSharedDraggedElement = (element: HTMLElement | null): void => {
 		const container = containerSelector 
-			? itemElement.closest(containerSelector)
+			? itemElement.closest<DragDropContainer>(containerSelector)
 			: itemElement.parentElement as DragDropContainer | null;
 		
 		if (!container) return;
@@ -101,7 +101,7 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		
 		// Find the container (use containerSelector if provided, otherwise parent)
 		const container = containerSelector 
-			? itemElement.closest(containerSelector)
+			? itemElement.closest<DragDropContainer>(containerSelector)
 			: itemElement.parentElement as DragDropContainer | null;
 		
 		if (!container) return null;
@@ -128,7 +128,7 @@ export function setupDragAndDrop<T>(config: DragAndDropConfig<T>): void {
 		if (!dropIndicatorClass) return;
 		
 		const container = containerSelector 
-			? itemElement.closest(containerSelector)
+			? itemElement.closest<DragDropContainer>(containerSelector)
 			: itemElement.parentElement as DragDropContainer | null;
 		
 		if (!container) return;

@@ -102,7 +102,7 @@ export class CheckboxUpdateService implements CheckboxUpdateServiceInterface {
 			// If this task became the top task, it should not remain in the regular list
 			// (it's displayed in the hero section instead).
 			if (checkbox.isTopTask) {
-				const fileSection = checkboxElement.closest('.ontask-file-section');
+				const fileSection = checkboxElement.closest<HTMLElement>('.ontask-file-section');
 				checkboxElement.remove();
 				if (fileSection) {
 					const remaining = fileSection.querySelectorAll('.ontask-checkbox-item');
