@@ -96,12 +96,13 @@ We will never use `{}` to represent an empty object in TypeScript, as it is fund
 **Decision:**
 In Obsidian's architecture, views can be torn off into separate popout windows. Using the global `document` variable will strictly reference the main application window's DOM. This means elements created via `document.createElement()` or appended to `document.body` may render in the wrong window or fail completely. We will exclusively use `activeDocument` for all DOM manipulations to ensure 100% popout window compatibility.
 
-### 12. Avoiding Static Styles Assignments
+### 12. Strict CSS Best Practices
 **Feedback:**
 - Error: Sets styles directly instead of using CSS classes or `setCssProps` (`obsidianmd/no-static-styles-assignment`).
+- Warning: Avoid !important — override styles by increasing selector specificity or using CSS variables instead.
 
 **Decision:**
-We will never assign styles directly via the `.style` property on DOM elements (e.g., `element.style.color = 'red'`). All static styling must be extracted to CSS classes within `styles.css` and applied via `element.addClass(...)`. This ensures our user interface responds appropriately to Obsidian's native themes, allows custom CSS snippets to override the default look, and strictly complies with Obsidian developer policies.
+We will strictly adhere to CSS best practices for maintainability and theme compatibility. We will never assign styles directly via the DOM style property; all static styling must be extracted to CSS classes. Additionally, we will avoid using the `!important` flag in our CSS. When style overrides are necessary, we will achieve them by increasing CSS selector specificity or utilizing CSS variables rather than forcing overrides.
 
 ### 13. Maintaining Minimum App Version Compatibility
 **Feedback:**

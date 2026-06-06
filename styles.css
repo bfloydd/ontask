@@ -3049,9 +3049,9 @@
     gap: 4px;
 }
 
-.ontask-day-planner-task-item {
-    margin: 0 !important;
-    border-bottom: none !important;
+.ontask-day-planner-tasks-list .ontask-day-planner-task-item {
+    margin: 0;
+    border-bottom: none;
 }
 
 .ontask-day-planner-task-item.is-disconnected {
