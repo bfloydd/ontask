@@ -63,7 +63,7 @@ export class ViewHeaderService implements ViewHeaderServiceInterface {
 		refreshButton.addClass('ontask-header-button');
 		IconService.setIcon(refreshButton, 'refresh-cw');
 		refreshButton.title = 'Refresh';
-		refreshButton.addEventListener('click', callbacks.onRefresh, { passive: true });
+		refreshButton.addEventListener('click', () => void callbacks.onRefresh(), { passive: true });
 		
 		const configureButton = rightButtonsContainer.createEl('button');
 		configureButton.addClass('ontask-header-button');
